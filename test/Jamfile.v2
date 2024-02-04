@@ -1,0 +1,56 @@
+#  Boost.Mp11 Library Test Jamfile
+#
+#  Copyright 2015-2019 Peter Dimov
+#
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+
+import testing ;
+import ../../config/checks/config : requires ;
+
+project
+  : requirements
+
+#    [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_hdr_tuple ]
+    <cxxstd>20
+    <warnings>extra
+
+    <toolset>msvc:<warnings-as-errors>on
+    <toolset>gcc:<warnings-as-errors>on
+    <toolset>clang:<warnings-as-errors>on
+  ;
+
+
+run test_test.cpp ;
+compile-fail test_test.cpp : <define>TEST_COMPILE_FAIL : test_test_TEST_COMPILE_FAIL ;
+
+run test_basics.cpp ;
+run test_basics.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_basics_UNSCOPED ;
+compile-fail test_basics.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNSCOPED : test_basics_FAIL_UNSCOPED ;
+
+run test_rel_ops.cpp ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LT : test_rel_ops_FAIL_RELOPS_DELETE_LT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LE : test_rel_ops_FAIL_RELOPS_DELETE_LE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_GT : test_rel_ops_FAIL_RELOPS_DELETE_GT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_GE : test_rel_ops_FAIL_RELOPS_DELETE_GE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP : test_rel_ops_FAIL_RELOPS_DELETE_SPACESHIP ;
+
+run test_disable_complement.cpp ;
+
+
+compile-fail test_incompat.cpp : <define>TEST_COMPILE_FAIL_WITH_ENABLED : test_incompat_FAIL_WITH_ENABLED ;
+compile-fail test_incompat.cpp : <define>TEST_COMPILE_FAIL_WITH_NOT_ENABLED : test_incompat_FAIL_WITH_NOT_ENABLED ;
+
+run test_utilities.cpp ;
+compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
+compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
+
+
+# text example
+run order_pizza.cpp ;
+compile-fail order_pizza.cpp : <define>TEST_COMPILE_FAIL_ORDER_WITH_COMPLEMENT : order_pizza_FAIL_ORDER_WITH_COMPLEMENT ;
+compile-fail order_pizza.cpp : <define>TEST_COMPILE_FAIL_MIX_INCOMPATIBLE : order_pizza_FAIL_MIX_INCOMPATIBLE ;
+compile-fail order_pizza.cpp : <define>TEST_COMPILE_FAIL_ORDER_WRONG_DESSERT : order_pizza_FAIL_ORDER_WRONG_DESSERT ;
+
+

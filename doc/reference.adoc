@@ -1,0 +1,511 @@
+////
+Copyright 2002, 2017 Peter Dimov
+
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+
+// [#current_function_macro]
+# Reference
+:toc:
+:toc-title:
+:idprefix:
+
+The contents of the library are in namespace boost::flags.
+
+All operators and functions are `constexpr` and use attribute `[[nodiscard]]` whenever possible.
+
+## Types
+
+### enable<T>
+
+To enable the Boost.Flags functionality specialize the template for an enumeration 
+
+[source]
+----
+template<typename T> struct enable<T> : std::false_type {};
+----
+
+and inherited from `std::true_type`
+
+Example:
+[source]
+----
+enum class my_flags {
+    option_a = 0x1,
+    option_b = 0x2,
+};
+
+template<> struct boost::flags::enable<my_flags> : std::true_type {};
+----
+
+A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped/unscoped) flags_.
+
+
+
+
+
+
+### complement<T>
+
+To template `complement` indicates that a value is the bitwise negation of a flag-value.
+It is used to distinguish flag-values from _negative masks_.
+
+[source]
+----
+template<typename T> struct complement<E>; 
+----
+
+By default the usage of `complement` is enable but can be disabled using xref:option_disable_complement[`option_disable_complement`]. 
+
+Boost.Flags operators and functions will always strip double `complement`s from flags.
+
+
+
+
+
+
+
+[#option_disable_complement]
+### option_disable_complement
+
+If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator ~`]) is disabled.
+
+Example:
+[source]
+----
+template<> struct boost::flags::enable<E> 
+    : std::true_type
+    , boost::flags::option_disable_complement 
+    {};
+----
+
+
+
+## Operators
+
+[#negation_operation]
+### operator ~
+
+Reverses all bits of the underlying integer representation of its argument.
+
+The signature of `operator ~` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator ~(E) \-> complement<E>`
+* `operator ~(complement<E>) \-> E`
+
+otherwise
+
+* `operator ~(E) \-> E`
+
+
+If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator ~`]) is disabled.
+
+
+
+
+
+### operator &
+
+Applies a bitwise AND operation on the underlying integer representations of its arguments.
+
+The signature of `operator &` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator & (E, E) \-> E`
+* `operator & (complement<E>, E) \-> E`
+* `operator & (E, complement<E>) \-> E`
+* `operator & (complement<E>, complement<E>) \-> complement<E>`
+
+otherwise
+
+* `operator & (E, E) \-> E`
+
+All other `operator &` where one of the arguments is `E` or `complement<E>` are deleted.
+
+
+### operator |
+
+Applies a bitwise AND operation on the underlying integer representations of its arguments.
+
+The signature of `operator |` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator | (E, E) \-> E`
+* `operator | (complement<E>, E) \-> complement<E>`
+* `operator | (E, complement<E>) \-> complement<E>`
+* `operator | (complement<E>, complement<E>) \-> complement<E>`
+
+otherwise
+
+* `operator | (E, E) \-> E`
+
+All other `operator |` where one of the arguments is `E` or `complement<E>` are deleted.
+
+
+
+
+### operator ^
+
+Applies a bitwise XOR operation on the underlying integer representations of its arguments.
+
+The signature of `operator ^` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator ^ (E, E) \-> E`
+* `operator ^ (complement<E>, E) \-> complement<E>`
+* `operator ^ (E, complement<E>) \-> complement<E>`
+* `operator ^ (complement<E>, complement<E>) \-> E`
+
+otherwise
+
+* `operator ^ (E, E) \-> E`
+
+All other `operator ^` where one of the arguments is `E` or `complement<E>` are deleted.
+
+
+### operator &=
+
+Performs a bitwise AND assignment on the underlying integer representations of its arguments.
+
+The signature of `operator &=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator &= (E&, E) \-> E&`
+* `operator &= (E&, complement<E>) \-> E&`
+* `operator &= (complement<E>&, complement<E>) \-> complement<E>&`
+
+[NOTE]
+====
+The assignment `operator &= (complement<E>&, E)` is *not* available, as it would change the type of the first argument.
+====
+
+otherwise
+
+* `operator &= (E&, E) \-> E&`
+
+All other `operator &=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
+
+
+
+
+
+
+### operator |=
+
+Performs a bitwise OR assignment on the underlying integer representations of its arguments.
+
+The signature of `operator |=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator |= (E&,E) \-> E&`
+* `operator |= (complement<E>&,E) \-> complement<E>&`
+* `operator |= (complement<E>&,complement<E>) \-> complement<E>&`
+
+[NOTE]
+====
+The assignment `operator |= (E&, complement<E>)` is *not* available, as it would change the type of the first argument.
+====
+
+otherwise
+
+* `operator |= (E&,E) \-> E&`
+
+All other `operator |=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
+
+
+
+
+
+
+### operator ^=
+
+Performs a bitwise XOR assignment on the underlying integer representations of its arguments.
+
+The signature of `operator ^=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+
+When `complement` is enabled for flags `E`
+
+* `operator ^= (E&,E) \-> E&`
+* `operator ^= (complement<E>&,E) \-> complement<E>&`
+
+[NOTE]
+====
+The assignment `operator ^= (E&, complement<E>)` and `operator ^= (complement<E>&, complement<E>)` are *not* available, as they would change the type of the first argument.
+====
+
+otherwise
+
+* `operator ^= (E&,E) \-> E&`
+
+All other `operator ^=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
+
+
+### operator !
+
+Tests if a value is empty.
+
+[source]
+----
+    // pseudo code
+    constexpr bool operator !(E e) { returns e == E{}; }
+----
+
+
+### Pseudo operator BF_AND
+
+Takes the bitwise AND of its arguments and converts the result to `bool`.
+
+[source]
+----
+    // pseudo code
+    constexpr bool operator BF_AND(E e1, E e2) { returns !!(e1 & e2); }
+----
+
+`BF_AND` has same precedence and associativity as `operator &`. It is a macro defined as +
+
+[source]
+----
+#define BF_AND  & boost::flags::impl::pseudo_and_op_tag{} &
+----
+
+
+## operator == , operator !=
+
+The description is only given for `operator ==`. Calls with reversed arguments and to `operator !=` will constructed by rewrite rules.
+
+* `operator == (E, E)`
+* `operator == (complement<E>, complement<E>)` 
+
+equality is defined as usual by applying th operator to the underlying integer.
+
+Furthermore the following overloads are defined
+
+* `operator == (E, std::nullptr_t)`
+* `operator == (E, impl::null_tag)`
+
+Both test for equality with an underlying value of `0`. The macro xref:BF_NULL[`BF_NULL`] defines an instance of `impl::null_tag`.
+
+All other `operator ==` where one of the arguments is `E` or `complement<E>` are deleted, especially when the other has integer type.
+
+[NOTE]
+====
+If `E` is a scoped enumeration then
+[source]
+----
+    bool foo(E e){
+        return e == 0;  // literal 0 converts to nullptr, thus
+                        // operator == (E, std::nullptr_t) will be called
+    }
+----
+compiles and returns the expected result.
+
+when `E` is unscoped then above code will fail to compile: the overload `operator(E, int)` is deleted for unscoped enumerations. +
+If it wasn't then comparison with arbitrary integer values would be possible, as unscoped enumerations implicitly convert to their underlying integer type.
+
+
+====
+
+
+## Relational operators <, \<=, > and >=
+The relational operators for enumerations (scoped and unscoped) are provided by the language (by applying the resp. operator to the underlying value).
+Furthermore, the current wording doesn't allow overloading or deleting those operators by a templated operator (there is a pending Defect Report on this topic: 
+https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730).
+
+There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER] to overload and xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE] to delete relational operators.
+
+[WARNING]
+====
+It is strongly recommended to define either `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` or `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
+
+The built-in semantics for relational operators do not coincide with flag entailment!
+====
+
+## Boolean predicates
+
+### any
+Tests if a value is not empty.
+
+[source]
+----
+    // pseudo code
+    constexpr bool any(E e) { returns e != E{}; }
+----
+
+
+
+### none
+Tests if a value is empty.
+
+[source]
+----
+    // pseudo code
+    constexpr bool none(E e) { returns e == E{}; }
+----
+
+
+
+### intersect
+Tests if two values have common bits set.
+
+[source]
+----
+    // pseudo code
+    constexpr bool intersect(E e1, E e2) { returns e1 & e2 != E{}; }
+----
+
+
+### disjoint
+Tests if two values do not have a common bits set.
+
+[source]
+----
+    // pseudo code
+    constexpr bool disjoint(E e1, E e2) { returns e1 & e2 == E{}; }
+----
+
+
+### contained
+Tests if all bits set in the first argument are also set in the second argument.
+
+[source]
+----
+    // pseudo code
+    constexpr bool contained(E e1, E e2) { returns e1 & ~e2 == E{}; }
+----
+
+
+
+
+
+## Utility functions
+
+
+### make_null
+
+[source]
+----
+    // pseudo code
+    constexpr E make_null(E) { returns E{}; }
+----
+
+For flags `E` returns an _empty_ instance of type `E` with underlying value of `0`.  
+
+
+
+
+
+### make_if
+
+[source]
+----
+    // pseudo code
+    constexpr E make_if(E e, bool set) { returns set ? e : E{}; }
+----
+
+Depending on `set` returns either the first argument or empty an instance of type `E`.
+
+
+
+
+
+
+### modify
+
+[source]
+----
+    // pseudo code
+    constexpr E modify(E value, E modification, bool set) { returns set ? value | modification : value & ~modification; }
+----
+
+Depending on `set` either adds or removes all bits from modification to value and returns the result.
+
+
+
+
+
+
+### modify_inplace
+
+[source]
+----
+    // pseudo code
+    constexpr void modify(E& value, E modification, bool set) { value = modify(value, modification, set); }
+----
+
+Similar to `modify` but applies the modification to the first argument. 
+
+
+
+
+
+### nth_bit
+
+[source]
+----
+    // pseudo code
+    constexpr unsigned int nth_bit(unsigned int n) { return 1 << n; }
+----
+
+Returns an `unsigned int` with the n-th bit from the right set (zero-based) set.
+
+
+
+
+
+
+
+## Macros
+
+### BF_NULL
+
+The macro `BF_NULL` can be used for (in-)equailty testing with a flag-value.
+
+For any value `e` of type flags `E` the expression `e == BF_NULL` is equivalent to `e == E{}`. Similarly for  `e != BF_NULL`, `BF_NULL == e` and `BF_NULL != e`.
+
+
+### BOOST_FLAGS_REL_OPS_DELETE
+
+The macro `BOOST_FLAGS_REL_OPS_DELETE(E)` deletes all relational operators for a Boost.Flags enabled enumeration `E`.
+
+The macro `BOOST_FLAGS_REL_OPS_DELETE(E)` has to be defined at global namespace.
+
+
+
+
+
+
+
+### BOOST_FLAGS_REL_OPS_PARTIAL_ORDER
+
+The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines all relational operators for a Boost.Flags enabled enumeration `E`. +
+The following semantics apply
+
+* `e1 \<= e2` : equivalent to `contained(e1, e2)`
+* `e1 >= e2` : equivalent to `contained(e2, e1)`
+* `e1 < e2` : equivalent to `(contained(e1, e2) && e1 != e2)`
+* `e1 > e2` : equivalent to `(contained(e2, e1) && e1 != e2)`
+* `e1 \<\=> e2` : has type `std::partial_ordering` and is equivalent to
+[source]
+----
+    e1 == e2
+    ? std::partial_ordering::equivalent
+    : contained(e1, e2)
+    ? std::partial_ordering::less
+    : contained(e2, e1)
+    ? std::partial_ordering::greater
+    : std::partial_ordering::unordered
+----
+
+
+The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` has to be defined at global namespace.
