@@ -16,6 +16,7 @@
 #define BOOST_FLAGS_HPP_INCLUDED
 
 #include <type_traits>
+#include <utility>
 #include <boost/config.hpp>
 #include <boost/core/underlying_type.hpp>
 
@@ -502,7 +503,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(T value, nullptr_t) {
+            operator==(T value, std::nullptr_t) {
             return impl::get_underlying(value) == 0;
         }
 
