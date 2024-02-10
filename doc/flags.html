@@ -572,12 +572,14 @@ pre.rouge .gs {
 <li><a href="#everything_in_order">Everything in order?</a></li>
 <li><a href="#flags_and_flags">Flags <code>and</code> Flags</a></li>
 <li><a href="#logically_and_and_or">Logically <code>and</code> and <code>or</code></a></li>
+</ul>
+</li>
 <li><a href="#utility_functions">Utility functions</a></li>
 <li><a href="#summary">Summary</a></li>
 </ul>
 </li>
-</ul>
-</li>
+<li><a href="#other_implementations">Other flags-like enum implementations</a></li>
+<li><a href="#design_rationale">Design rationale</a></li>
 <li><a href="#reference">Reference</a>
 <ul class="sectlevel2">
 <li><a href="#types">Types</a>
@@ -597,7 +599,7 @@ pre.rouge .gs {
 <li><a href="#operator_5">operator |=</a></li>
 <li><a href="#operator_6">operator ^=</a></li>
 <li><a href="#operator_7">operator !</a></li>
-<li><a href="#pseudo_operator_bf_and">Pseudo operator BF_AND</a></li>
+<li><a href="#pseudo_operator_boost_flags_and">Pseudo operator BOOST_FLAGS_AND</a></li>
 </ul>
 </li>
 <li><a href="#operator_operator">operator == , operator !=</a></li>
@@ -622,7 +624,7 @@ pre.rouge .gs {
 </li>
 <li><a href="#macros">Macros</a>
 <ul class="sectlevel3">
-<li><a href="#bf_null">BF_NULL</a></li>
+<li><a href="#boost_flags_null">BOOST_FLAGS_NULL</a></li>
 <li><a href="#boost_flags_rel_ops_delete">BOOST_FLAGS_REL_OPS_DELETE</a></li>
 <li><a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a></li>
 </ul>
@@ -659,25 +661,34 @@ pre.rouge .gs {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">pizza_toppings</span> <span class="p">{</span>
-    <span class="n">tomato</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
-    <span class="n">cheese</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
-    <span class="n">salami</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
-    <span class="n">olives</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="c1">// == 0x08</span>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;boost/flags.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">pizza_toppings</span> <span class="p">{</span>
+    <span class="n">tomato</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
+    <span class="n">cheese</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
+    <span class="n">salami</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
+    <span class="n">olives</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="c1">// == 0x08</span>
+
+    <span class="n">all_toppings</span> <span class="o">=</span> <span class="n">tomato</span> <span class="o">|</span> <span class="n">cheese</span> <span class="o">|</span> <span class="n">salami</span> <span class="o">|</span> <span class="n">olives</span><span class="p">,</span>
 <span class="p">};</span>
 <span class="c1">// enable Boost.Flags for pizza_toppings</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">pizza_toppings</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
 <span class="k">enum</span> <span class="k">class</span> <span class="nc">ice_cream_flavours</span> <span class="p">{</span>
-    <span class="n">vanilla</span>     <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
-    <span class="n">chocolate</span>   <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
-    <span class="n">strawberry</span>  <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
+    <span class="n">vanilla</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
+    <span class="n">chocolate</span>    <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
+    <span class="n">strawberry</span>   <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
 <span class="p">};</span>
 <span class="c1">// enable Boost.Flags for ice_cream_flavours</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">ice_cream_flavours</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
-<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> <span class="n">toppings</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
-<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> <span class="n">flavours</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> <span class="cm">/<strong>toppings</strong>/</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// order selected pizza</span>
+ <span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> <span class="cm">/<strong>flavours</strong>/</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// order selected dessert</span>
+ <span class="p">}</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">pizza_toppings</span> <span class="n">toppings</span> <span class="o">=</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">tomato</span> <span class="o">|</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">cheese</span><span class="p">;</span> <span class="c1">// a decent start</span>
@@ -686,8 +697,14 @@ pre.rouge .gs {
     <span class="n">order_pizza</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">salami</span><span class="p">);</span>    <span class="c1">// order a vegetarian pizza</span>
     <span class="n">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span><span class="o">::</span><span class="n">vanilla</span><span class="p">);</span>       <span class="c1">// order desert</span>
 
+    <span class="c1">// Guest: "Pizza without olives!"</span>
+    <span class="c1">// Waiter: "Ok, no olives. But what else to put on it?"</span>
     <span class="c1">// error: negative mask is not a pizza topping</span>
     <span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">order_pizza(~pizza_toppings::olives);</span>
+
+    <span class="c1">// Guest: "Pizza with all toppings but olives!"</span>
+    <span class="c1">// Waiter: "Ok, got it!"</span>
+    <span class="n">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">all_toppings</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">olives</span><span class="p">);</span>
 
     <span class="c1">// error: mixing different enumerations</span>
     <span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">toppings |= ice_cream_flavours::strawberry;</span>
@@ -711,6 +728,9 @@ pre.rouge .gs {
 <li>
 <p>is non-intrusive - only requires a template specialization</p>
 </li>
+<li>
+<p>zero-overhead in optimized builds</p>
+</li>
 </ul>
 </div>
 </div>
@@ -730,7 +750,7 @@ pre.rouge .gs {
 </ul>
 </div>
 <div class="paragraph">
-<p>Instead of testing against <code>0</code> the macro <code>BF_NULL</code> or <code>nullptr</code> can be used. (For both kinds of enumerations.)</p>
+<p>Instead of testing against <code>0</code> the macro <code>BOOST_FLAGS_NULL</code> or <code>nullptr</code> can be used. (For both kinds of enumerations.)</p>
 </div>
 </div>
 <div class="sect2">
@@ -767,7 +787,7 @@ Boolean arguments loudly declare that the function does more than one thing. The
 </ul>
 </div>
 <div class="paragraph">
-<p>C++ has everything needed to work flags, so why do we need Boost.Flags?</p>
+<p>C++ has everything needed to work with flags, so why do we need Boost.Flags?</p>
 </div>
 <div class="sect3">
 <h4 id="type_safety">Type-Safety</h4>
@@ -786,18 +806,18 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 <div class="sect4">
 <h5 id="switching_to_enumerations_makes_it_even_worse">Switching to enumerations makes it even worse</h5>
 <div class="paragraph">
-<p>If the Windows team had decided to use unscoped enumerations instead of macros it wouldn&#8217;t have helped: the arguments of builtin bitwise operators are subject to integral promotion, i.e. they forget about the enumeration&#8217;s "semantic overhead". Even worse:</p>
+<p>If the Windows team had decided to use unscoped enumerations instead of macros it wouldn&#8217;t have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration&#8217;s "semantic overhead". Even worse:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>The builtin operators <code>&amp;</code>, <code>|</code>, <code>^</code> and <code>~</code> return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.</p>
+<p>The built-in operators <code>&amp;</code>, <code>|</code>, <code>^</code> and <code>~</code> return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.</p>
 </li>
 <li>
-<p>The builtin operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> require the left-hand type to be arithmetic, which excludes enumerations.</p>
+<p>The built-in operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> require the left-hand type to be arithmetic, which excludes enumerations.</p>
 </li>
 <li>
-<p>Scoped enumerations (which didn&#8217;t exist when <code>Windows.h</code> was created) prohibit implicit integral promotion and therefore don&#8217;t work with builtin bitwise operators at all.</p>
+<p>Scoped enumerations (which didn&#8217;t exist when <code>Windows.h</code> was created) prohibit implicit integral promotion and therefore don&#8217;t work with built-in bitwise operators at all.</p>
 </li>
 </ul>
 </div>
@@ -838,30 +858,10 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 <p>the binary operators require both arguments to be from the same flag-set</p>
 </li>
 <li>
-<p>all other operators are disabled by default (cf. <a href="#overloading_relational_operators">overloading relational operators</a>)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Even more</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
 <p>the bitwise negation <code>~</code> changes the type from <code>E</code> to <code>complement&lt;E&gt;</code> and vice-versa</p>
-<div class="ulist">
-<ul>
-<li>
-<p><code>operator ~(E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ~(complement&lt;E&gt;) -&gt; E</code></p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>the binary operators require both arguments to be of type <code>E</code> or <code>complement&lt;E&gt;</code> (resp. a reference of it)</p>
+<p>all other operators are disabled by default (cf. <a href="#overloading_relational_operators">overloading relational operators</a>)</p>
 </li>
 </ul>
 </div>
@@ -869,19 +869,6 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </div>
 <div class="sect3">
 <h4 id="complementing_the_complement">Complementing the <code>complement</code></h4>
-<div class="paragraph">
-<p>The bitwise negation <code>~</code> changes the type from <code>E</code> to <code>complement&lt;E&gt;</code> and vice-versa.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>operator ~(E) -&gt; complement&lt;E&gt;</code></p>
-</li>
-<li>
-<p><code>operator ~(complement&lt;E&gt;) -&gt; E</code></p>
-</li>
-</ul>
-</div>
 <div class="paragraph">
 <p>Before going into details, let me tell you a little tale</p>
 </div>
@@ -1227,12 +1214,12 @@ You can enable relational operators using the <code>BOOST_FLAGS_REL_OPS_PARTIAL_
 </div>
 <div class="paragraph">
 <p>If we update existing code with Boost.Flags, then expressions like <code>e1 &amp; e2</code> in boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
-Therefore, Boost.Flags provides a pseudo operator <code>BF_AND</code> with the same precedence and associativity as <code>&amp;</code> but returning a <code>bool</code>:</p>
+Therefore, Boost.Flags provides a pseudo operator <code>BOOST_FLAGS_AND</code> with the same precedence and associativity as <code>&amp;</code> but returning a <code>bool</code>:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>e1 BF_AND e2</code> : equivalent to <code>!!(e1 &amp; e2)</code></p>
+<p><code>e1 BOOST_FLAGS_AND e2</code> : equivalent to <code>!!(e1 &amp; e2)</code></p>
 </li>
 </ul>
 </div>
@@ -1244,7 +1231,7 @@ Therefore, Boost.Flags provides a pseudo operator <code>BF_AND</code> with the s
 </td>
 <td class="content">
 <div class="paragraph">
-<p><code>BF_AND</code> is a macro defined as <code>&amp; boost::flags::impl::pseudo_and_op_tag{} &amp;</code>.<br>
+<p><code>BOOST_FLAGS_AND</code> is a macro defined as <code>&amp; boost::flags::impl::pseudo_and_op_tag{} &amp;</code>.<br>
 The first <code>&amp;</code> stores its left-hand argument in an intermediate type, which the second <code>&amp;</code> evaluates with its right-hand argument.</p>
 </div>
 </td>
@@ -1299,8 +1286,9 @@ The semantics of its built-in versions does two things:</p>
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="utility_functions">Utility functions</h4>
+</div>
+<div class="sect2">
+<h3 id="utility_functions">Utility functions</h3>
 <div class="paragraph">
 <p>Additionally, Boost.Flags provides the following functions for an enabled enumeration <code>E</code>:</p>
 </div>
@@ -1324,8 +1312,8 @@ The semantics of its built-in versions does two things:</p>
 </ul>
 </div>
 </div>
-<div class="sect3">
-<h4 id="summary">Summary</h4>
+<div class="sect2">
+<h3 id="summary">Summary</h3>
 <div class="paragraph">
 <p>Boost.Flags makes bitwise operations type-safe.</p>
 </div>
@@ -1335,7 +1323,135 @@ The semantics of its built-in versions does two things:</p>
 <div class="paragraph">
 <p>For new defined flag-sets, we strongly suggest to use Boost.Flags enabled scoped enumerations as they provide the most type-safety and allow (int-)equality tests against <code>0</code>.</p>
 </div>
+<div class="paragraph">
+<p>And of course zero-overhead</p>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="other_implementations">Other flags-like enum implementations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are several articles and libraries on flag-like enums available. The following is not exhaustive list found on the web in January 2024:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://www.sandordargo.com/blog/2022/06/22/bitwise-enums" class="bare" target="_blank" rel="noopener">https://www.sandordargo.com/blog/2022/06/22/bitwise-enums</a> (SD)</p>
+</li>
+<li>
+<p><a href="https://grisumbras.github.io/enum-flags/" class="bare" target="_blank" rel="noopener">https://grisumbras.github.io/enum-flags/</a> (GR)</p>
+</li>
+<li>
+<p><a href="https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/" class="bare" target="_blank" rel="noopener">https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/</a> (MP)</p>
+</li>
+<li>
+<p><a href="https://doc.qt.io/qt-6/qflags.html" class="bare" target="_blank" rel="noopener">https://doc.qt.io/qt-6/qflags.html</a> (Qt)</p>
+</li>
+<li>
+<p><a href="https://github.com/foonathan/type_safe" class="bare" target="_blank" rel="noopener">https://github.com/foonathan/type_safe</a> (JM)</p>
+</li>
+</ol>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 11.1112%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-center valign-top">Boost.Flags</th>
+<th class="tableblock halign-center valign-top">SD</th>
+<th class="tableblock halign-center valign-top">GR</th>
+<th class="tableblock halign-center valign-top">MP</th>
+<th class="tableblock halign-center valign-top">Qt</th>
+<th class="tableblock halign-center valign-top">JM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">non-intrusive</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">zero-overhead</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">distinguishes complement</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">operators as free functions</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">library available</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="design_rationale">Design rationale</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The design of Boost.Flags was driven by the following principles:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>type-safety: the library shall enforce that binary operators can only be applied to flags from the same enumeration and flag values must be distinguished from bitwise complements</p>
+</li>
+<li>
+<p>non-intrusive: no change to the definition of existing flag-like enumeration shall be required, just a template specialization</p>
+</li>
+<li>
+<p>zero-overhead: for optimized builds operator-calls must produce the same assembly code as built-in calls on the underlying integers</p>
+</li>
+<li>
+<p>no change of semantics for existing code: enabling Boost.Flags for an existing flag-like enumeration shall not produce valid code with different semantics</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The first three principles are met by the library. But the last principle requires some discussion:<br>
+First, let&#8217;s not consider code with already specialized bitwise operators for Boost.Flags enable enumerations, or code that tests for the presence of Boost.Flags.<br>
+Wrapping enumerations into Flags-templates would spoil the whole user-code with new types, which could lead to wrong overload selection or failing <code>is_enum</code> type traits. Thus the decision to use free functions and return the original enumerations.<br>
+A notable exception to this is the <code>complement</code> template, which deliberately is different from the underlying enumeration to prevent and detect usage errors.</p>
 </div>
 </div>
 </div>
@@ -1346,7 +1462,7 @@ The semantics of its built-in versions does two things:</p>
 <p>The contents of the library are in namespace boost::flags.</p>
 </div>
 <div class="paragraph">
-<p>All operators and functions are <code>constexpr</code> and use attribute <code><a id="nodiscard"></a></code> whenever possible.</p>
+<p>All operators and functions are <code>constexpr</code> and use attribute <code>[[nodiscard]]</code> whenever possible.</p>
 </div>
 <div class="sect2">
 <h3 id="types">Types</h3>
@@ -1361,7 +1477,7 @@ The semantics of its built-in versions does two things:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>and inherited from <code>std::true_type</code></p>
+<p>and inherit from <code>std::true_type</code>.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -1742,22 +1858,22 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="pseudo_operator_bf_and">Pseudo operator BF_AND</h4>
+<h4 id="pseudo_operator_boost_flags_and">Pseudo operator BOOST_FLAGS_AND</h4>
 <div class="paragraph">
 <p>Takes the bitwise AND of its arguments and converts the result to <code>bool</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="nf">BF_AND</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="o">!!</span><span class="p">(</span><span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span><span class="p">);</span> <span class="p">}</span></code></pre>
+    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="nf">BOOST_FLAGS_AND</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="o">!!</span><span class="p">(</span><span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span><span class="p">);</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>BF_AND</code> has same precedence and associativity as <code>operator &amp;</code>. It is a macro defined as<br></p>
+<p><code>BOOST_FLAGS_AND</code> has same precedence and associativity as <code>operator &amp;</code>. It is a macro defined as<br></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="cp">#define BF_AND  &amp; boost::flags::impl::pseudo_and_op_tag{} &amp;</span></code></pre>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="cp">#define BOOST_FLAGS_AND  &amp; boost::flags::impl::pseudo_and_op_tag{} &amp;</span></code></pre>
 </div>
 </div>
 </div>
@@ -1794,7 +1910,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Both test for equality with an underlying value of <code>0</code>. The macro <a href="#bf_null"><code>BF_NULL</code></a> defines an instance of <code>impl::null_tag</code>.</p>
+<p>Both test for equality with an underlying value of <code>0</code>. The macro <a href="#boost_flags_null"><code>BOOST_FLAGS_NULL</code></a> defines an instance of <code>impl::null_tag</code>.</p>
 </div>
 <div class="paragraph">
 <p>All other <code>operator ==</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted, especially when the other has integer type.</p>
@@ -1986,12 +2102,12 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="sect2">
 <h3 id="macros">Macros</h3>
 <div class="sect3">
-<h4 id="bf_null">BF_NULL</h4>
+<h4 id="boost_flags_null">BOOST_FLAGS_NULL</h4>
 <div class="paragraph">
-<p>The macro <code>BF_NULL</code> can be used for (in-)equailty testing with a flag-value.</p>
+<p>The macro <code>BOOST_FLAGS_NULL</code> can be used for (in-)equailty testing with a flag-value.</p>
 </div>
 <div class="paragraph">
-<p>For any value <code>e</code> of type flags <code>E</code> the expression <code>e == BF_NULL</code> is equivalent to <code>e == E{}</code>. Similarly for  <code>e != BF_NULL</code>, <code>BF_NULL == e</code> and <code>BF_NULL != e</code>.</p>
+<p>For any value <code>e</code> of type flags <code>E</code> the expression <code>e == BOOST_FLAGS_NULL</code> is equivalent to <code>e == E{}</code>. Similarly for  <code>e != BOOST_FLAGS_NULL</code>, <code>BOOST_FLAGS_NULL == e</code> and <code>BOOST_FLAGS_NULL != e</code>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2067,7 +2183,7 @@ The following semantics apply</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-02-04 14:56:53 +0100
+Last updated 2024-02-06 08:01:10 +0100
 </div>
 </div>
 <script type="text/x-mathjax-config">

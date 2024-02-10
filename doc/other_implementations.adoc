@@ -1,0 +1,112 @@
+////
+Copyright 2023 Tobias Loew
+Distributed under the Boost Software License, Version 1.0.
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:source-highlighter: rouge
+:source-language: cpp
+
+[#other_implementations]
+# Other flags-like enum implementations
+:toc:
+:toc-title: 
+:idprefix:
+:stem: latexmath
+
+
+
+There are several articles and libraries on flag-like enums available. The following is not exhaustive list found on the web in January 2024:
+
+. https://www.sandordargo.com/blog/2022/06/22/bitwise-enums[,window=_blank] (SD)
+. https://grisumbras.github.io/enum-flags/[,window=_blank] (GR)
+. https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/[,window=_blank] (MP)
+. https://doc.qt.io/qt-6/qflags.html[,window=_blank] (Qt)
+. https://github.com/foonathan/type_safe[,window=_blank] (JM)
+
+
+[%header,cols="3,^1,^1,^1,^1,^1,^1"]
+|===
+| | Boost.Flags | SD | GR | MP | Qt | JM
+
+
+| non-intrusive
+// Boost.Flags
+| *+*
+// SD
+| *+*
+//GR
+| *-*
+//MP
+| *-*
+//Qt
+| *-*
+//JM
+| *-*
+
+
+| zero-overhead
+// Boost.Flags
+| *+*
+// SD
+| *+*
+//GR
+| *+*
+//MP
+| *-*
+//Qt
+| *-*
+//JM
+| *+*
+
+
+| distinguishes complement
+// Boost.Flags
+| *+*
+// SD
+| *-*
+//GR
+| *-*
+//MP
+| *-*
+//Qt
+| *-*
+//JM
+| *+*
+
+
+| operators as free functions
+// Boost.Flags
+| *+*
+// SD
+| *+*
+//GR
+| *-*
+//MP
+| *-*
+//Qt
+| *-*
+//JM
+| *-*
+
+
+| library available
+// Boost.Flags
+| *+*
+// SD
+| *-*
+//GR
+| *+*
+//MP
+| *+*
+//Qt
+| *+*
+//JM
+| *+*
+
+
+
+|===
+
+
+

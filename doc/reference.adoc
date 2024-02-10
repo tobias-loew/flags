@@ -16,7 +16,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 The contents of the library are in namespace boost::flags.
 
-All operators and functions are `constexpr` and use attribute `[[nodiscard]]` whenever possible.
+All operators and functions are `constexpr` and use attribute `+[[nodiscard]]+` whenever possible.
 
 ## Types
 
@@ -29,7 +29,7 @@ To enable the Boost.Flags functionality specialize the template for an enumerati
 template<typename T> struct enable<T> : std::false_type {};
 ----
 
-and inherited from `std::true_type`
+and inherit from `std::true_type`.
 
 Example:
 [source]
@@ -262,21 +262,21 @@ Tests if a value is empty.
 ----
 
 
-### Pseudo operator BF_AND
+### Pseudo operator BOOST_FLAGS_AND
 
 Takes the bitwise AND of its arguments and converts the result to `bool`.
 
 [source]
 ----
     // pseudo code
-    constexpr bool operator BF_AND(E e1, E e2) { returns !!(e1 & e2); }
+    constexpr bool operator BOOST_FLAGS_AND(E e1, E e2) { returns !!(e1 & e2); }
 ----
 
-`BF_AND` has same precedence and associativity as `operator &`. It is a macro defined as +
+`BOOST_FLAGS_AND` has same precedence and associativity as `operator &`. It is a macro defined as +
 
 [source]
 ----
-#define BF_AND  & boost::flags::impl::pseudo_and_op_tag{} &
+#define BOOST_FLAGS_AND  & boost::flags::impl::pseudo_and_op_tag{} &
 ----
 
 
@@ -294,7 +294,7 @@ Furthermore the following overloads are defined
 * `operator == (E, std::nullptr_t)`
 * `operator == (E, impl::null_tag)`
 
-Both test for equality with an underlying value of `0`. The macro xref:BF_NULL[`BF_NULL`] defines an instance of `impl::null_tag`.
+Both test for equality with an underlying value of `0`. The macro xref:BOOST_FLAGS_NULL[`BOOST_FLAGS_NULL`] defines an instance of `impl::null_tag`.
 
 All other `operator ==` where one of the arguments is `E` or `complement<E>` are deleted, especially when the other has integer type.
 
@@ -467,11 +467,11 @@ Returns an `unsigned int` with the n-th bit from the right set (zero-based) set.
 
 ## Macros
 
-### BF_NULL
+### BOOST_FLAGS_NULL
 
-The macro `BF_NULL` can be used for (in-)equailty testing with a flag-value.
+The macro `BOOST_FLAGS_NULL` can be used for (in-)equailty testing with a flag-value.
 
-For any value `e` of type flags `E` the expression `e == BF_NULL` is equivalent to `e == E{}`. Similarly for  `e != BF_NULL`, `BF_NULL == e` and `BF_NULL != e`.
+For any value `e` of type flags `E` the expression `e == BOOST_FLAGS_NULL` is equivalent to `e == E{}`. Similarly for  `e != BOOST_FLAGS_NULL`, `BOOST_FLAGS_NULL == e` and `BOOST_FLAGS_NULL != e`.
 
 
 ### BOOST_FLAGS_REL_OPS_DELETE

@@ -190,8 +190,8 @@ void test_null() {
     BOOST_TEST(!(a == 0));
 #endif
 
-    BOOST_TEST((a != BF_NULL));
-    BOOST_TEST(!(a == BF_NULL));
+    BOOST_TEST((a != BOOST_FLAGS_NULL));
+    BOOST_TEST(!(a == BOOST_FLAGS_NULL));
 }
 
 void test_bfand() {
@@ -200,13 +200,13 @@ void test_bfand() {
     flags_enum c = flags_enum::bit_2;
     flags_enum d = flags_enum::bit_3;
 
-    BOOST_TEST(!(a BF_AND b));
-    BOOST_TEST(((a | b) BF_AND b));
-    BOOST_TEST((a | b) BF_AND (b | c));
+    BOOST_TEST(!(a BOOST_FLAGS_AND b));
+    BOOST_TEST(((a | b) BOOST_FLAGS_AND b));
+    BOOST_TEST((a | b) BOOST_FLAGS_AND (b | c));
     
-    BOOST_TEST((a | b) BF_AND (b | c));
-    BOOST_TEST(!((a | b) BF_AND (b & c)));
-    BOOST_TEST(!((a | b) BF_AND (c | d)));
+    BOOST_TEST((a | b) BOOST_FLAGS_AND (b | c));
+    BOOST_TEST(!((a | b) BOOST_FLAGS_AND (b & c)));
+    BOOST_TEST(!((a | b) BOOST_FLAGS_AND (c | d)));
 }
 
 

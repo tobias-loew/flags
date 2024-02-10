@@ -108,10 +108,10 @@
 
 
         // test with boolean result
-        // using pseudo operator BF_AND
-        // BF_AND(x,y) -> bool
-        // BF_AND(x,y) ::= (x != 0) && (y != 0) 
-        if (ab_and_bc BF_AND not_a) {
+        // using pseudo operator BOOST_FLAG_AND
+        // BOOST_FLAG_AND(x,y) -> bool
+        // BOOST_FLAG_AND(x,y) ::= (x != 0) && (y != 0) 
+        if (ab_and_bc BOOST_FLAG_AND not_a) {
             // ...
         }
     }
@@ -255,7 +255,7 @@ namespace boost {
             // NULL constant tag
             struct null_tag {};
 
-            // for pseudo operator BF_AND
+            // for pseudo operator BOOST_FLAG_AND
             struct pseudo_and_op_tag {};
 
             template<typename T>
@@ -831,10 +831,9 @@ std::partial_ordering operator <=> (T1 l, T2 r) {                              \
 
 #define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &
 
-#define BF_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
+#define BOOST_FLAG_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
 
 #define BOOST_FLAGS_NULL boost::flags::impl::null_tag{}
-#define BF_NULL  BOOST_FLAGS_NULL
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED

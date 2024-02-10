@@ -10,15 +10,15 @@
 #include <array>
 #include <compare>
 
-enum class relops_builtin_enum {
+enum class relops_built-in_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
     bit_3 = boost::flags::nth_bit(3), // == 0x08
 };
 
-// enable relops_builtin_enum
-template<> struct boost::flags::enable<relops_builtin_enum> : std::true_type {};
+// enable relops_built-in_enum
+template<> struct boost::flags::enable<relops_built-in_enum> : std::true_type {};
 
 
 
@@ -60,10 +60,10 @@ auto make_off_on(T v) {
     return std::array<T, 2>{T{}, v};
 }
 
-void test_builtin() {
-    using E = relops_builtin_enum;
+void test_built-in() {
+    using E = relops_built-in_enum;
 
-    // builtin relational ops -> compare underlying
+    // built-in relational ops -> compare underlying
 
     for (auto a1 : make_off_on(E::bit_0)) {
         for (auto b1 : make_off_on(E::bit_1)) {
@@ -318,7 +318,7 @@ void test_partial_order() {
 
 
 int main() {
-    test_builtin();
+    test_built-in();
     test_delete();
     test_partial_order();
     return boost::report_errors();

@@ -17,13 +17,13 @@ Tobias Loew
 :docinfo: private-footer
 :source-highlighter: rouge
 :source-language: c++
-
+// :icons: image
 
 :leveloffset: +1
 
 include::description.adoc[]
-// include::examples.adoc[]
-// include::changes.adoc[]
+include::other_implementations.adoc[]
+include::design_rationale.adoc[]
 include::reference.adoc[]
 
 :leveloffset: -1

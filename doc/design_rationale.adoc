@@ -1,0 +1,33 @@
+////
+Copyright 2023 Tobias Loew
+Distributed under the Boost Software License, Version 1.0.
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:source-highlighter: rouge
+:source-language: cpp
+
+[#design_rationale]
+# Design rationale
+:toc:
+:toc-title: 
+:idprefix:
+:stem: latexmath
+
+
+
+The design of Boost.Flags was driven by the following principles:
+
+* type-safety: the library shall enforce that binary operators can only be applied to flags from the same enumeration and flag values must be distinguished from bitwise complements
+
+* non-intrusive: no change to the definition of existing flag-like enumeration shall be required, just a template specialization
+
+* zero-overhead: for optimized builds operator-calls must produce the same assembly code as built-in calls on the underlying integers
+
+* no change of semantics for existing code: enabling Boost.Flags for an existing flag-like enumeration shall not produce valid code with different semantics 
+
+The first three principles are met by the library. But the last principle requires some discussion: +
+First, let's not consider code with already specialized bitwise operators for Boost.Flags enable enumerations, or code that tests for the presence of Boost.Flags. +
+Wrapping enumerations into Flags-templates would spoil the whole user-code with new types, which could lead to wrong overload selection or failing `is_enum` type traits. Thus the decision to use free functions and return the original enumerations. +
+A notable exception to this is the `complement` template, which deliberately is different from the underlying enumeration to prevent and detect usage errors.
+
