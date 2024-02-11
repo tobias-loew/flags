@@ -16,7 +16,12 @@ http://www.boost.org/LICENSE_1_0.txt
 
 The contents of the library are in namespace boost::flags.
 
-All operators and functions are `constexpr` and use attribute `+[[nodiscard]]+` whenever possible.
+All operators and functions in this library
+
+* are `constexpr` and `noexcept` 
+* use attribute `+[[nodiscard]]+` except for assignment operators `&=`, `|=`, `^=` and function `modify_inplace`
+
+Most of the function signature for operators are written with trailing return type but the leading `auto` is left out for readability.
 
 ## Types
 
@@ -72,7 +77,7 @@ Boost.Flags operators and functions will always strip double `complement`s from 
 [#option_disable_complement]
 ### option_disable_complement
 
-If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator ~`]) is disabled.
+If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
 
 Example:
 [source]
@@ -88,177 +93,177 @@ template<> struct boost::flags::enable<E>
 ## Operators
 
 [#negation_operation]
-### operator ~
+### operator~
 
 Reverses all bits of the underlying integer representation of its argument.
 
-The signature of `operator ~` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator~` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator ~(E) \-> complement<E>`
-* `operator ~(complement<E>) \-> E`
+* `operator~(E) \-> complement<E>`
+* `operator~(complement<E>) \-> E`
 
 otherwise
 
-* `operator ~(E) \-> E`
+* `operator~(E) \-> E`
 
 
-If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator ~`]) is disabled.
+If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator~`]) is disabled.
 
 
 
 
 
-### operator &
+### operator&
 
 Applies a bitwise AND operation on the underlying integer representations of its arguments.
 
-The signature of `operator &` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator&` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator & (E, E) \-> E`
-* `operator & (complement<E>, E) \-> E`
-* `operator & (E, complement<E>) \-> E`
-* `operator & (complement<E>, complement<E>) \-> complement<E>`
+* `operator&(E, E) \-> E`
+* `operator&(complement<E>, E) \-> E`
+* `operator&(E, complement<E>) \-> E`
+* `operator&(complement<E>, complement<E>) \-> complement<E>`
 
 otherwise
 
-* `operator & (E, E) \-> E`
+* `operator&(E, E) \-> E`
 
-All other `operator &` where one of the arguments is `E` or `complement<E>` are deleted.
+All other `operator&` where one of the arguments is `E` or `complement<E>` are deleted.
 
 
-### operator |
+### operator|
 
 Applies a bitwise AND operation on the underlying integer representations of its arguments.
 
-The signature of `operator |` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator|` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator | (E, E) \-> E`
-* `operator | (complement<E>, E) \-> complement<E>`
-* `operator | (E, complement<E>) \-> complement<E>`
-* `operator | (complement<E>, complement<E>) \-> complement<E>`
+* `operator|(E, E) \-> E`
+* `operator|(complement<E>, E) \-> complement<E>`
+* `operator|(E, complement<E>) \-> complement<E>`
+* `operator|(complement<E>, complement<E>) \-> complement<E>`
 
 otherwise
 
-* `operator | (E, E) \-> E`
+* `operator|(E, E) \-> E`
 
-All other `operator |` where one of the arguments is `E` or `complement<E>` are deleted.
-
-
+All other `operator|` where one of the arguments is `E` or `complement<E>` are deleted.
 
 
-### operator ^
+
+
+### operator^
 
 Applies a bitwise XOR operation on the underlying integer representations of its arguments.
 
-The signature of `operator ^` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator^` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator ^ (E, E) \-> E`
-* `operator ^ (complement<E>, E) \-> complement<E>`
-* `operator ^ (E, complement<E>) \-> complement<E>`
-* `operator ^ (complement<E>, complement<E>) \-> E`
+* `operator^(E, E) \-> E`
+* `operator^(complement<E>, E) \-> complement<E>`
+* `operator^(E, complement<E>) \-> complement<E>`
+* `operator^(complement<E>, complement<E>) \-> E`
 
 otherwise
 
-* `operator ^ (E, E) \-> E`
+* `operator^(E, E) \-> E`
 
-All other `operator ^` where one of the arguments is `E` or `complement<E>` are deleted.
+All other `operator^` where one of the arguments is `E` or `complement<E>` are deleted.
 
 
-### operator &=
+### operator&=
 
 Performs a bitwise AND assignment on the underlying integer representations of its arguments.
 
-The signature of `operator &=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator&=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator &= (E&, E) \-> E&`
-* `operator &= (E&, complement<E>) \-> E&`
-* `operator &= (complement<E>&, complement<E>) \-> complement<E>&`
+* `operator&=(E&, E) \-> E&`
+* `operator&=(E&, complement<E>) \-> E&`
+* `operator&=(complement<E>&, complement<E>) \-> complement<E>&`
 
 [NOTE]
 ====
-The assignment `operator &= (complement<E>&, E)` is *not* available, as it would change the type of the first argument.
+The assignment `operator&=(complement<E>&, E)` is *not* available, as it would change the type of the first argument.
 ====
 
 otherwise
 
-* `operator &= (E&, E) \-> E&`
+* `operator&=(E&, E) \-> E&`
 
-All other `operator &=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
-
-
+All other `operator&=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
 
 
 
 
-### operator |=
+
+
+### operator|=
 
 Performs a bitwise OR assignment on the underlying integer representations of its arguments.
 
-The signature of `operator |=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator|=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator |= (E&,E) \-> E&`
-* `operator |= (complement<E>&,E) \-> complement<E>&`
-* `operator |= (complement<E>&,complement<E>) \-> complement<E>&`
+* `operator|=(E&,E) \-> E&`
+* `operator|=(complement<E>&,E) \-> complement<E>&`
+* `operator|=(complement<E>&,complement<E>) \-> complement<E>&`
 
 [NOTE]
 ====
-The assignment `operator |= (E&, complement<E>)` is *not* available, as it would change the type of the first argument.
+The assignment `operator|=(E&, complement<E>)` is *not* available, as it would change the type of the first argument.
 ====
 
 otherwise
 
-* `operator |= (E&,E) \-> E&`
+* `operator|=(E&,E) \-> E&`
 
-All other `operator |=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
-
-
+All other `operator|=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
 
 
 
 
-### operator ^=
+
+
+### operator^=
 
 Performs a bitwise XOR assignment on the underlying integer representations of its arguments.
 
-The signature of `operator ^=` depends on whether `complement` is enabled (xref:option_disable_complement[option_disable_complement]):
+The signature of `operator^=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
 
 When `complement` is enabled for flags `E`
 
-* `operator ^= (E&,E) \-> E&`
-* `operator ^= (complement<E>&,E) \-> complement<E>&`
+* `operator^=(E&,E) \-> E&`
+* `operator^=(complement<E>&,E) \-> complement<E>&`
 
 [NOTE]
 ====
-The assignment `operator ^= (E&, complement<E>)` and `operator ^= (complement<E>&, complement<E>)` are *not* available, as they would change the type of the first argument.
+The assignment `operator^=(E&, complement<E>)` and `operator^=(complement<E>&, complement<E>)` are *not* available, as they would change the type of the first argument.
 ====
 
 otherwise
 
-* `operator ^= (E&,E) \-> E&`
+* `operator^=(E&,E) \-> E&`
 
-All other `operator ^=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
+All other `operator^=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
 
 
-### operator !
+### operator!
 
 Tests if a value is empty.
 
 [source]
 ----
     // pseudo code
-    constexpr bool operator !(E e) { returns e == E{}; }
+    [[nodiscard]] constexpr bool operator!(E e) noexcept { return e == E{}; }
 ----
 
 
@@ -269,10 +274,10 @@ Takes the bitwise AND of its arguments and converts the result to `bool`.
 [source]
 ----
     // pseudo code
-    constexpr bool operator BOOST_FLAGS_AND(E e1, E e2) { returns !!(e1 & e2); }
+    [[nodiscard]] constexpr bool operator BOOST_FLAGS_AND(E e1, E e2) noexcept { return !!(e1 & e2); }
 ----
 
-`BOOST_FLAGS_AND` has same precedence and associativity as `operator &`. It is a macro defined as +
+`BOOST_FLAGS_AND` has same precedence and associativity as `operator&`. It is a macro defined as +
 
 [source]
 ----
@@ -280,23 +285,23 @@ Takes the bitwise AND of its arguments and converts the result to `bool`.
 ----
 
 
-## operator == , operator !=
+## operator== , operator!=
 
-The description is only given for `operator ==`. Calls with reversed arguments and to `operator !=` will constructed by rewrite rules.
+The description is only given for `operator==`. Calls with reversed arguments and to `operator!=` will constructed by rewrite rules.
 
-* `operator == (E, E)`
-* `operator == (complement<E>, complement<E>)` 
+* `operator==(E, E) \-> bool`
+* `operator==(complement<E>, complement<E>) \-> bool` 
 
-equality is defined as usual by applying th operator to the underlying integer.
+equality is defined as usual by applying the operator to the underlying integer.
 
 Furthermore the following overloads are defined
 
-* `operator == (E, std::nullptr_t)`
-* `operator == (E, impl::null_tag)`
+* `operator==(E, std::nullptr_t) \-> bool`
+* `operator==(E, impl::null_tag) \-> bool`
 
 Both test for equality with an underlying value of `0`. The macro xref:BOOST_FLAGS_NULL[`BOOST_FLAGS_NULL`] defines an instance of `impl::null_tag`.
 
-All other `operator ==` where one of the arguments is `E` or `complement<E>` are deleted, especially when the other has integer type.
+All other `operator==` where one of the arguments is `E` or `complement<E>` are deleted, especially when the other has integer type.
 
 [NOTE]
 ====
@@ -305,7 +310,7 @@ If `E` is a scoped enumeration then
 ----
     bool foo(E e){
         return e == 0;  // literal 0 converts to nullptr, thus
-                        // operator == (E, std::nullptr_t) will be called
+                        // operator==(E, std::nullptr_t) will be called
     }
 ----
 compiles and returns the expected result.
@@ -328,7 +333,7 @@ There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PART
 ====
 It is strongly recommended to define either `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` or `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
 
-The built-in semantics for relational operators do not coincide with flag entailment!
+The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!
 ====
 
 ## Boolean predicates
@@ -339,7 +344,7 @@ Tests if a value is not empty.
 [source]
 ----
     // pseudo code
-    constexpr bool any(E e) { returns e != E{}; }
+    [[nodiscard]] constexpr bool any(E e) noexcept { return e != E{}; }
 ----
 
 
@@ -350,7 +355,7 @@ Tests if a value is empty.
 [source]
 ----
     // pseudo code
-    constexpr bool none(E e) { returns e == E{}; }
+    [[nodiscard]] constexpr bool none(E e) noexcept { return e == E{}; }
 ----
 
 
@@ -361,7 +366,7 @@ Tests if two values have common bits set.
 [source]
 ----
     // pseudo code
-    constexpr bool intersect(E e1, E e2) { returns e1 & e2 != E{}; }
+    [[nodiscard]] constexpr bool intersect(E e1, E e2) noexcept { return e1 & e2 != E{}; }
 ----
 
 
@@ -371,7 +376,7 @@ Tests if two values do not have a common bits set.
 [source]
 ----
     // pseudo code
-    constexpr bool disjoint(E e1, E e2) { returns e1 & e2 == E{}; }
+    [[nodiscard]] constexpr bool disjoint(E e1, E e2) noexcept { return e1 & e2 == E{}; }
 ----
 
 
@@ -381,7 +386,7 @@ Tests if all bits set in the first argument are also set in the second argument.
 [source]
 ----
     // pseudo code
-    constexpr bool contained(E e1, E e2) { returns e1 & ~e2 == E{}; }
+    [[nodiscard]] constexpr bool contained(E e1, E e2) noexcept { return e1 & ~e2 == E{}; }
 ----
 
 
@@ -396,7 +401,7 @@ Tests if all bits set in the first argument are also set in the second argument.
 [source]
 ----
     // pseudo code
-    constexpr E make_null(E) { returns E{}; }
+    [[nodiscard]] constexpr E make_null(E) noexcept { return E{}; }
 ----
 
 For flags `E` returns an _empty_ instance of type `E` with underlying value of `0`.  
@@ -410,7 +415,7 @@ For flags `E` returns an _empty_ instance of type `E` with underlying value of `
 [source]
 ----
     // pseudo code
-    constexpr E make_if(E e, bool set) { returns set ? e : E{}; }
+    [[nodiscard]] constexpr E make_if(E e, bool set) noexcept { return set ? e : E{}; }
 ----
 
 Depending on `set` returns either the first argument or empty an instance of type `E`.
@@ -425,10 +430,10 @@ Depending on `set` returns either the first argument or empty an instance of typ
 [source]
 ----
     // pseudo code
-    constexpr E modify(E value, E modification, bool set) { returns set ? value | modification : value & ~modification; }
+    [[nodiscard]] constexpr E modify(E e, E mod, bool set) noexcept { return set ? e | mod : e & ~mod; }
 ----
 
-Depending on `set` either adds or removes all bits from modification to value and returns the result.
+Depending on `set` either adds or removes all bits from `mod` to `e` and returns the result.
 
 
 
@@ -440,10 +445,10 @@ Depending on `set` either adds or removes all bits from modification to value an
 [source]
 ----
     // pseudo code
-    constexpr void modify(E& value, E modification, bool set) { value = modify(value, modification, set); }
+    constexpr E& modify(E& e, E mod, bool set) noexcept { value = modify(e, mod, set); return value; }
 ----
 
-Similar to `modify` but applies the modification to the first argument. 
+Similar to `modify` but applies the `mod` to `e` and returns it as reference.
 
 
 
@@ -454,7 +459,7 @@ Similar to `modify` but applies the modification to the first argument.
 [source]
 ----
     // pseudo code
-    constexpr unsigned int nth_bit(unsigned int n) { return 1 << n; }
+    [[nodiscard]] constexpr unsigned int nth_bit(unsigned int n) noexcept { return 1 << n; }
 ----
 
 Returns an `unsigned int` with the n-th bit from the right set (zero-based) set.

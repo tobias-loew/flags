@@ -13,8 +13,9 @@ enum class pizza_toppings {
     cheese       = boost::flags::nth_bit(1), // == 0x02
     salami       = boost::flags::nth_bit(2), // == 0x04
     olives       = boost::flags::nth_bit(3), // == 0x08
+    garlic       = boost::flags::nth_bit(4), // == 0x10
 
-    all_toppings = tomato | cheese | salami | olives,
+    all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
 template<> struct boost::flags::enable<pizza_toppings> : std::true_type {};
@@ -51,6 +52,7 @@ int main() {
 
     // Guest: "Pizza with all toppings but olives!"
     // Waiter: "Ok, got it!"
+    // Waiter takes note: Pizza with tomato, cheese, salami, garlic.
     order_pizza(pizza_toppings::all_toppings & ~pizza_toppings::olives);
 
 #ifdef TEST_COMPILE_FAIL_MIX_INCOMPATIBLE

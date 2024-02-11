@@ -591,18 +591,18 @@ pre.rouge .gs {
 </li>
 <li><a href="#operators">Operators</a>
 <ul class="sectlevel3">
-<li><a href="#negation_operation">operator ~</a></li>
-<li><a href="#operator">operator &amp;</a></li>
-<li><a href="#operator_2">operator |</a></li>
-<li><a href="#operator_3">operator ^</a></li>
-<li><a href="#operator_4">operator &amp;=</a></li>
-<li><a href="#operator_5">operator |=</a></li>
-<li><a href="#operator_6">operator ^=</a></li>
-<li><a href="#operator_7">operator !</a></li>
+<li><a href="#negation_operation">operator~</a></li>
+<li><a href="#operator">operator&amp;</a></li>
+<li><a href="#operator_2">operator|</a></li>
+<li><a href="#operator_3">operator^</a></li>
+<li><a href="#operator_4">operator&amp;=</a></li>
+<li><a href="#operator_5">operator|=</a></li>
+<li><a href="#operator_6">operator^=</a></li>
+<li><a href="#operator_7">operator!</a></li>
 <li><a href="#pseudo_operator_boost_flags_and">Pseudo operator BOOST_FLAGS_AND</a></li>
 </ul>
 </li>
-<li><a href="#operator_operator">operator == , operator !=</a></li>
+<li><a href="#operator_operator">operator== , operator!=</a></li>
 <li><a href="#relational_operators_and">Relational operators &lt;, &lt;=, &gt; and &gt;=</a></li>
 <li><a href="#boolean_predicates">Boolean predicates</a>
 <ul class="sectlevel3">
@@ -668,8 +668,9 @@ pre.rouge .gs {
     <span class="n">cheese</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
     <span class="n">salami</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
     <span class="n">olives</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="c1">// == 0x08</span>
+    <span class="n">garlic</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="c1">// == 0x10</span>
 
-    <span class="n">all_toppings</span> <span class="o">=</span> <span class="n">tomato</span> <span class="o">|</span> <span class="n">cheese</span> <span class="o">|</span> <span class="n">salami</span> <span class="o">|</span> <span class="n">olives</span><span class="p">,</span>
+    <span class="n">all_toppings</span> <span class="o">=</span> <span class="n">tomato</span> <span class="o">|</span> <span class="n">cheese</span> <span class="o">|</span> <span class="n">salami</span> <span class="o">|</span> <span class="n">olives</span> <span class="o">|</span> <span class="n">garlic</span><span class="p">,</span>
 <span class="p">};</span>
 <span class="c1">// enable Boost.Flags for pizza_toppings</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">pizza_toppings</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
@@ -704,6 +705,7 @@ pre.rouge .gs {
 
     <span class="c1">// Guest: "Pizza with all toppings but olives!"</span>
     <span class="c1">// Waiter: "Ok, got it!"</span>
+    <span class="c1">// Waiter takes note: Pizza with tomato, cheese, salami, garlic.</span>
     <span class="n">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">all_toppings</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">olives</span><span class="p">);</span>
 
     <span class="c1">// error: mixing different enumerations</span>
@@ -926,7 +928,21 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </ul>
 </div>
 <div class="paragraph">
-<p>By distinguishing <code>E</code> and <code>complement&lt;E&gt;</code> in the type system, we keep the set of flags of type <code>E</code> apart from the set of negative masks for <code>E</code>.</p>
+<p>In a nutshell: the following two operations on sets of flags return another set of flags</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>conjunction (<code>operator&amp;</code>): taking the flags that appear in <strong>all</strong> sets</p>
+</li>
+<li>
+<p>disjunction (<code>operator|</code>): taking the flags that appear in <strong>any</strong> of the sets</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>but negation (<code>operator~</code>) in general <strong>does not</strong>.<br>
+Thus, sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -937,10 +953,10 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <div class="ulist">
 <ul>
 <li>
-<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional Boolean algebra \((U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&amp;,\mid)\)</p>
+<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> \((U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&amp;,\mid)\)</p>
 </li>
 <li>
-<p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure \((F,\&amp;,\mid)\) of \(U\) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
+<p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure \((F,\&amp;,\mid)\) of \(U\) (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
 </li>
 <li>
 <p>Building the closure \(\overline{F}\) of \(F\) wrt. \({\raise.17ex\hbox{$\scriptstyle\sim$}}\) generates a Boolean algebra which is a subalgebra \(U\).</p>
@@ -956,58 +972,58 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp;</code></p>
+<p><code>operator&amp;</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp; (E, E) -&gt; E</code></p>
+<p><code>operator&amp;(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (complement&lt;E&gt;, E) -&gt; E</code></p>
+<p><code>operator&amp;(complement&lt;E&gt;, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (E, complement&lt;E&gt;) -&gt; E</code></p>
+<p><code>operator&amp;(E, complement&lt;E&gt;) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator&amp;(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p><code>operator |</code></p>
+<p><code>operator|</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator | (E, E) -&gt; E</code></p>
+<p><code>operator|(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator | (complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator | (E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator | (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p><code>operator ^</code></p>
+<p><code>operator^</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ^ (E, E) -&gt; E</code></p>
+<p><code>operator^(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator ^ (complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator^(complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ^ (E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator^(E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ^ (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; E</code></p>
+<p><code>operator^(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; E</code></p>
 </li>
 </ul>
 </div>
@@ -1031,7 +1047,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </ul>
 </div>
 <div class="paragraph">
-<p>there exists the <em>no_complement</em> option which sets <code>complement&lt;E&gt;</code> to <code>E</code>.</p>
+<p>there exists <a href="#option_disable_complement"><em>option_disable_complement</em></a> which disables the usage of <code>complement</code> and sets <code>operator~(E) -&gt; E</code>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1087,9 +1103,9 @@ C++ allows overloading operators when at least one of its arguments is of <code>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">E</span><span class="p">{};</span>
-<span class="kt">bool</span> <span class="k">operator</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">E</span><span class="p">){</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">&lt;</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">E</span><span class="p">){</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
 <span class="kt">bool</span> <span class="nf">test</span><span class="p">(){</span>
-    <span class="k">return</span> <span class="n">E</span><span class="p">{}</span> <span class="o">&lt;</span> <span class="n">E</span><span class="p">{};</span>       <span class="c1">// calls our operator &lt; and returns true</span>
+    <span class="k">return</span> <span class="n">E</span><span class="p">{}</span> <span class="o">&lt;</span> <span class="n">E</span><span class="p">{};</span>       <span class="c1">// calls our operator&lt; and returns true</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -1100,7 +1116,7 @@ When an operator template for a relational operator is invoked with the same enu
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">E</span><span class="p">{};</span>
-<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T1</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">T2</span><span class="p">&gt;</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">T1</span><span class="p">,</span><span class="n">T2</span><span class="p">){</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T1</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">T2</span><span class="p">&gt;</span> <span class="kt">bool</span> <span class="k">operator</span><span class="o">&lt;</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span><span class="n">T2</span><span class="p">){</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
 <span class="kt">bool</span> <span class="nf">test</span><span class="p">(){</span>
     <span class="k">return</span> <span class="n">E</span><span class="p">{}</span> <span class="o">&lt;</span> <span class="n">E</span><span class="p">{};</span>       <span class="c1">// calls built-in &lt; and returns false</span>
 <span class="p">}</span></code></pre>
@@ -1115,7 +1131,7 @@ When an operator template for a relational operator is invoked with the same enu
 <td class="content">
 <div class="paragraph">
 <p>There is a Defect Report pending
-<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730" class="bare">https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730</a>
+<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730" class="bare" target="_blank" rel="noopener">https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730</a>
  which would make the latter also call the user defined operator template.</p>
 </div>
 </td>
@@ -1269,7 +1285,7 @@ The semantics of its built-in versions does two things:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Since operators <code>&amp;</code> and <code>&amp;&amp;</code> can easily get confused (which again is not detectable by a compiler), Boost.Flags disables operator <code>&amp;&amp;</code> and to keep symmetry also operator <code>||</code>.</p>
+<p>Since operators <code>&amp;</code> and <code>&amp;&amp;</code> can easily get confused (which again is not detectable by a compiler), Boost.Flags disables <code>operator&amp;&amp;</code> and to keep symmetry also <code>operator||</code>.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1279,7 +1295,8 @@ The semantics of its built-in versions does two things:</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>There are no overloads for operators <code>&amp;&amp;</code> and <code>||</code> on purpose! Those overloads would loose <em>short-circuit</em> evaluation, which could lead to runtime errors in existing code.</p>
+<p>Deliberately, there are no overloads for <code>operator&amp;&amp;</code> and <code>operator||</code>.<br>
+Those overloads would loose <em>short-circuit</em> evaluation, which could lead to runtime errors in existing code.</p>
 </div>
 </td>
 </tr>
@@ -1295,19 +1312,19 @@ The semantics of its built-in versions does two things:</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>make_null(E) -&gt; E</code> : returns <code>E{}</code></p>
+<p><code>make_null(E) -&gt; E { return E{}; }</code></p>
 </li>
 <li>
-<p><code>make_if(E e, bool set) -&gt; E</code> : returns <code>set ? e : E{}</code></p>
+<p><code>make_if(E e, bool set) -&gt; E { return set ? e : E{}; }</code></p>
 </li>
 <li>
-<p><code>modify(E value, E modification, bool set)  -&gt; E</code> : returns <code>set ? value | modification : value &amp; ~modification</code></p>
+<p><code>modify(E e, E mod, bool set)  -&gt; E { return set ? e | mod : e &amp; ~mod; }</code></p>
 </li>
 <li>
-<p><code>modify_inplace(E&amp; value, E modification, bool set)  -&gt; E&amp;</code> : equivalent to <code>value = modify(value, modification, set)</code></p>
+<p><code>modify_inplace(E&amp; e, E mod, bool set)  -&gt; E&amp;</code>   equivalent to   <code>e = modify(e, mod, set)</code></p>
 </li>
 <li>
-<p><code>nth_bit(unsigned int n) -&gt; unsigned int</code> : returns <code>1 &lt;&lt; n</code></p>
+<p>`nth_bit(unsigned int n) -&gt; unsigned int { return 1 &lt;&lt; n; }</p>
 </li>
 </ul>
 </div>
@@ -1462,7 +1479,20 @@ A notable exception to this is the <code>complement</code> template, which delib
 <p>The contents of the library are in namespace boost::flags.</p>
 </div>
 <div class="paragraph">
-<p>All operators and functions are <code>constexpr</code> and use attribute <code>[[nodiscard]]</code> whenever possible.</p>
+<p>All operators and functions in this library</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>are <code>constexpr</code> and <code>noexcept</code></p>
+</li>
+<li>
+<p>use attribute <code>[[nodiscard]]</code> except for assignment operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> and function <code>modify_inplace</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Most of the function signature for operators are written with trailing return type but the leading <code>auto</code> is left out for readability.</p>
 </div>
 <div class="sect2">
 <h3 id="types">Types</h3>
@@ -1517,7 +1547,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="sect3">
 <h4 id="option_disable_complement">option_disable_complement</h4>
 <div class="paragraph">
-<p>If the specialization of <code>enable</code> additionally inherits from <code>option_disable_complement</code> then the usage of the <code>complement</code> template (<a href="#negation_operation"><code>operator ~</code></a>) is disabled.</p>
+<p>If the specialization of <code>enable</code> additionally inherits from <code>option_disable_complement</code> then the usage of the <code>complement</code> template (cf. <a href="#negation_operation"><code>operator~</code></a>) is disabled.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -1535,12 +1565,12 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="sect2">
 <h3 id="operators">Operators</h3>
 <div class="sect3">
-<h4 id="negation_operation">operator ~</h4>
+<h4 id="negation_operation">operator~</h4>
 <div class="paragraph">
 <p>Reverses all bits of the underlying integer representation of its argument.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator ~</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator~</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1548,10 +1578,10 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ~(E) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator~(E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ~(complement&lt;E&gt;) -&gt; E</code></p>
+<p><code>operator~(complement&lt;E&gt;) -&gt; E</code></p>
 </li>
 </ul>
 </div>
@@ -1561,21 +1591,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ~(E) -&gt; E</code></p>
+<p><code>operator~(E) -&gt; E</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>If the specialization of <code>enable</code> additionally inherits from <code>option_disable_complement</code> then the usage of the <code>complement</code> template (<a href="#negation_operation"><code>operator ~</code></a>) is disabled.</p>
+<p>If the specialization of <code>enable</code> additionally inherits from <code>option_disable_complement</code> then the usage of the <code>complement</code> template (<a href="#negation_operation"><code>operator~</code></a>) is disabled.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator">operator &amp;</h4>
+<h4 id="operator">operator&amp;</h4>
 <div class="paragraph">
 <p>Applies a bitwise AND operation on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator &amp;</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator&amp;</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1583,16 +1613,16 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp; (E, E) -&gt; E</code></p>
+<p><code>operator&amp;(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (complement&lt;E&gt;, E) -&gt; E</code></p>
+<p><code>operator&amp;(complement&lt;E&gt;, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (E, complement&lt;E&gt;) -&gt; E</code></p>
+<p><code>operator&amp;(E, complement&lt;E&gt;) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator &amp; (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator&amp;(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 </ul>
 </div>
@@ -1602,21 +1632,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp; (E, E) -&gt; E</code></p>
+<p><code>operator&amp;(E, E) -&gt; E</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator &amp;</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator&amp;</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_2">operator |</h4>
+<h4 id="operator_2">operator|</h4>
 <div class="paragraph">
 <p>Applies a bitwise AND operation on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator |</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator|</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1624,16 +1654,16 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator | (E, E) -&gt; E</code></p>
+<p><code>operator|(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator | (complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator | (E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator | (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator|(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 </ul>
 </div>
@@ -1643,21 +1673,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator | (E, E) -&gt; E</code></p>
+<p><code>operator|(E, E) -&gt; E</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator |</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator|</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_3">operator ^</h4>
+<h4 id="operator_3">operator^</h4>
 <div class="paragraph">
 <p>Applies a bitwise XOR operation on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator ^</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator^</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1665,16 +1695,16 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ^ (E, E) -&gt; E</code></p>
+<p><code>operator^(E, E) -&gt; E</code></p>
 </li>
 <li>
-<p><code>operator ^ (complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator^(complement&lt;E&gt;, E) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ^ (E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
+<p><code>operator^(E, complement&lt;E&gt;) -&gt; complement&lt;E&gt;</code></p>
 </li>
 <li>
-<p><code>operator ^ (complement&lt;E&gt;, complement&lt;E&gt;) -&gt; E</code></p>
+<p><code>operator^(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; E</code></p>
 </li>
 </ul>
 </div>
@@ -1684,21 +1714,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ^ (E, E) -&gt; E</code></p>
+<p><code>operator^(E, E) -&gt; E</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator ^</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator^</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_4">operator &amp;=</h4>
+<h4 id="operator_4">operator&amp;=</h4>
 <div class="paragraph">
 <p>Performs a bitwise AND assignment on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator &amp;=</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator&amp;=</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1706,13 +1736,13 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp;= (E&amp;, E) -&gt; E&amp;</code></p>
+<p><code>operator&amp;=(E&amp;, E) -&gt; E&amp;</code></p>
 </li>
 <li>
-<p><code>operator &amp;= (E&amp;, complement&lt;E&gt;) -&gt; E&amp;</code></p>
+<p><code>operator&amp;=(E&amp;, complement&lt;E&gt;) -&gt; E&amp;</code></p>
 </li>
 <li>
-<p><code>operator &amp;= (complement&lt;E&gt;&amp;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;&amp;</code></p>
+<p><code>operator&amp;=(complement&lt;E&gt;&amp;, complement&lt;E&gt;) -&gt; complement&lt;E&gt;&amp;</code></p>
 </li>
 </ul>
 </div>
@@ -1724,7 +1754,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>The assignment <code>operator &amp;= (complement&lt;E&gt;&amp;, E)</code> is <strong>not</strong> available, as it would change the type of the first argument.</p>
+<p>The assignment <code>operator&amp;=(complement&lt;E&gt;&amp;, E)</code> is <strong>not</strong> available, as it would change the type of the first argument.</p>
 </div>
 </td>
 </tr>
@@ -1736,21 +1766,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator &amp;= (E&amp;, E) -&gt; E&amp;</code></p>
+<p><code>operator&amp;=(E&amp;, E) -&gt; E&amp;</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator &amp;=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator&amp;=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_5">operator |=</h4>
+<h4 id="operator_5">operator|=</h4>
 <div class="paragraph">
 <p>Performs a bitwise OR assignment on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator |=</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator|=</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1758,13 +1788,13 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator |= (E&amp;,E) -&gt; E&amp;</code></p>
+<p><code>operator|=(E&amp;,E) -&gt; E&amp;</code></p>
 </li>
 <li>
-<p><code>operator |= (complement&lt;E&gt;&amp;,E) -&gt; complement&lt;E&gt;&amp;</code></p>
+<p><code>operator|=(complement&lt;E&gt;&amp;,E) -&gt; complement&lt;E&gt;&amp;</code></p>
 </li>
 <li>
-<p><code>operator |= (complement&lt;E&gt;&amp;,complement&lt;E&gt;) -&gt; complement&lt;E&gt;&amp;</code></p>
+<p><code>operator|=(complement&lt;E&gt;&amp;,complement&lt;E&gt;) -&gt; complement&lt;E&gt;&amp;</code></p>
 </li>
 </ul>
 </div>
@@ -1776,7 +1806,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>The assignment <code>operator |= (E&amp;, complement&lt;E&gt;)</code> is <strong>not</strong> available, as it would change the type of the first argument.</p>
+<p>The assignment <code>operator|=(E&amp;, complement&lt;E&gt;)</code> is <strong>not</strong> available, as it would change the type of the first argument.</p>
 </div>
 </td>
 </tr>
@@ -1788,21 +1818,21 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator |= (E&amp;,E) -&gt; E&amp;</code></p>
+<p><code>operator|=(E&amp;,E) -&gt; E&amp;</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator |=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator|=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_6">operator ^=</h4>
+<h4 id="operator_6">operator^=</h4>
 <div class="paragraph">
 <p>Performs a bitwise XOR assignment on the underlying integer representations of its arguments.</p>
 </div>
 <div class="paragraph">
-<p>The signature of <code>operator ^=</code> depends on whether <code>complement</code> is enabled (<a href="#option_disable_complement">option_disable_complement</a>):</p>
+<p>The signature of <code>operator^=</code> depends on whether <code>complement</code> is enabled (cf. <a href="#option_disable_complement">option_disable_complement</a>).</p>
 </div>
 <div class="paragraph">
 <p>When <code>complement</code> is enabled for flags <code>E</code></p>
@@ -1810,10 +1840,10 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ^= (E&amp;,E) -&gt; E&amp;</code></p>
+<p><code>operator^=(E&amp;,E) -&gt; E&amp;</code></p>
 </li>
 <li>
-<p><code>operator ^= (complement&lt;E&gt;&amp;,E) -&gt; complement&lt;E&gt;&amp;</code></p>
+<p><code>operator^=(complement&lt;E&gt;&amp;,E) -&gt; complement&lt;E&gt;&amp;</code></p>
 </li>
 </ul>
 </div>
@@ -1825,7 +1855,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>The assignment <code>operator ^= (E&amp;, complement&lt;E&gt;)</code> and <code>operator ^= (complement&lt;E&gt;&amp;, complement&lt;E&gt;)</code> are <strong>not</strong> available, as they would change the type of the first argument.</p>
+<p>The assignment <code>operator^=(E&amp;, complement&lt;E&gt;)</code> and <code>operator^=(complement&lt;E&gt;&amp;, complement&lt;E&gt;)</code> are <strong>not</strong> available, as they would change the type of the first argument.</p>
 </div>
 </td>
 </tr>
@@ -1837,23 +1867,23 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator ^= (E&amp;,E) -&gt; E&amp;</code></p>
+<p><code>operator^=(E&amp;,E) -&gt; E&amp;</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>All other <code>operator ^=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
+<p>All other <code>operator^=</code> where one of the arguments is <code>E</code>, <code>E&amp;</code>, <code>complement&lt;E&gt;&amp;</code> or <code>complement&lt;E&gt;</code> are deleted.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="operator_7">operator !</h4>
+<h4 id="operator_7">operator!</h4>
 <div class="paragraph">
 <p>Tests if a value is empty.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="o">!</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span><span class="o">!</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1865,11 +1895,11 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="nf">BOOST_FLAGS_AND</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="o">!!</span><span class="p">(</span><span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span><span class="p">);</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="nf">BOOST_FLAGS_AND</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span><span class="p">);</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>BOOST_FLAGS_AND</code> has same precedence and associativity as <code>operator &amp;</code>. It is a macro defined as<br></p>
+<p><code>BOOST_FLAGS_AND</code> has same precedence and associativity as <code>operator&amp;</code>. It is a macro defined as<br></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1879,22 +1909,22 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="operator_operator">operator == , operator !=</h3>
+<h3 id="operator_operator">operator== , operator!=</h3>
 <div class="paragraph">
-<p>The description is only given for <code>operator ==</code>. Calls with reversed arguments and to <code>operator !=</code> will constructed by rewrite rules.</p>
+<p>The description is only given for <code>operator==</code>. Calls with reversed arguments and to <code>operator!=</code> will constructed by rewrite rules.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator == (E, E)</code></p>
+<p><code>operator==(E, E) -&gt; bool</code></p>
 </li>
 <li>
-<p><code>operator == (complement&lt;E&gt;, complement&lt;E&gt;)</code></p>
+<p><code>operator==(complement&lt;E&gt;, complement&lt;E&gt;) -&gt; bool</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>equality is defined as usual by applying th operator to the underlying integer.</p>
+<p>equality is defined as usual by applying the operator to the underlying integer.</p>
 </div>
 <div class="paragraph">
 <p>Furthermore the following overloads are defined</p>
@@ -1902,10 +1932,10 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>operator == (E, std::nullptr_t)</code></p>
+<p><code>operator==(E, std::nullptr_t) -&gt; bool</code></p>
 </li>
 <li>
-<p><code>operator == (E, impl::null_tag)</code></p>
+<p><code>operator==(E, impl::null_tag) -&gt; bool</code></p>
 </li>
 </ul>
 </div>
@@ -1913,7 +1943,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <p>Both test for equality with an underlying value of <code>0</code>. The macro <a href="#boost_flags_null"><code>BOOST_FLAGS_NULL</code></a> defines an instance of <code>impl::null_tag</code>.</p>
 </div>
 <div class="paragraph">
-<p>All other <code>operator ==</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted, especially when the other has integer type.</p>
+<p>All other <code>operator==</code> where one of the arguments is <code>E</code> or <code>complement&lt;E&gt;</code> are deleted, especially when the other has integer type.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1929,7 +1959,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="kt">bool</span> <span class="nf">foo</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">){</span>
         <span class="k">return</span> <span class="n">e</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// literal 0 converts to nullptr, thus</span>
-                        <span class="c1">// operator == (E, std::nullptr_t) will be called</span>
+                        <span class="c1">// operator==(E, std::nullptr_t) will be called</span>
     <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -1966,7 +1996,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <p>It is strongly recommended to define either <code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</code> or <code>BOOST_FLAGS_REL_OPS_DELETE</code> for flag-like enumerations.</p>
 </div>
 <div class="paragraph">
-<p>The built-in semantics for relational operators do not coincide with flag entailment!</p>
+<p>The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!</p>
 </div>
 </td>
 </tr>
@@ -1983,7 +2013,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="nf">any</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e</span> <span class="o">!=</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">any</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e</span> <span class="o">!=</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1995,7 +2025,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="nf">none</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">none</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -2007,7 +2037,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="nf">intersect</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span> <span class="o">!=</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">intersect</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span> <span class="o">!=</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -2019,7 +2049,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="nf">disjoint</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">disjoint</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="n">e2</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -2031,7 +2061,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">bool</span> <span class="nf">contained</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">e2</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">contained</span><span class="p">(</span><span class="n">E</span> <span class="n">e1</span><span class="p">,</span> <span class="n">E</span> <span class="n">e2</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">e2</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -2043,7 +2073,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="n">E</span> <span class="nf">make_null</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">make_null</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2055,7 +2085,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="n">E</span> <span class="nf">make_if</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">set</span> <span class="o">?</span> <span class="n">e</span> <span class="o">:</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">make_if</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">set</span> <span class="o">?</span> <span class="n">e</span> <span class="o">:</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2067,11 +2097,11 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="n">E</span> <span class="nf">modify</span><span class="p">(</span><span class="n">E</span> <span class="n">value</span><span class="p">,</span> <span class="n">E</span> <span class="n">modification</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="p">{</span> <span class="n">returns</span> <span class="n">set</span> <span class="o">?</span> <span class="n">value</span> <span class="o">|</span> <span class="n">modification</span> <span class="o">:</span> <span class="n">value</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">modification</span><span class="p">;</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">modify</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">set</span> <span class="o">?</span> <span class="n">e</span> <span class="o">|</span> <span class="n">mod</span> <span class="o">:</span> <span class="n">e</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">mod</span><span class="p">;</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Depending on <code>set</code> either adds or removes all bits from modification to value and returns the result.</p>
+<p>Depending on <code>set</code> either adds or removes all bits from <code>mod</code> to <code>e</code> and returns the result.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2079,11 +2109,11 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">void</span> <span class="nf">modify</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">,</span> <span class="n">E</span> <span class="n">modification</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="p">{</span> <span class="n">value</span> <span class="o">=</span> <span class="n">modify</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">modification</span><span class="p">,</span> <span class="n">set</span><span class="p">);</span> <span class="p">}</span></code></pre>
+    <span class="k">constexpr</span> <span class="n">E</span><span class="o">&amp;</span> <span class="n">modify</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="n">value</span> <span class="o">=</span> <span class="n">modify</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">set</span><span class="p">);</span> <span class="k">return</span> <span class="n">value</span><span class="p">;</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Similar to <code>modify</code> but applies the modification to the first argument.</p>
+<p>Similar to <code>modify</code> but applies the <code>mod</code> to <code>e</code> and returns it as reference.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2091,7 +2121,7 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">nth_bit</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="p">}</span></code></pre>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">nth_bit</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">

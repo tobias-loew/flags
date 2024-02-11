@@ -34,8 +34,9 @@ enum class pizza_toppings {
     cheese       = boost::flags::nth_bit(1), // == 0x02
     salami       = boost::flags::nth_bit(2), // == 0x04
     olives       = boost::flags::nth_bit(3), // == 0x08
+    garlic       = boost::flags::nth_bit(4), // == 0x10
 
-    all_toppings = tomato | cheese | salami | olives,
+    all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
 template<> struct boost::flags::enable<pizza_toppings> : std::true_type {};
@@ -70,6 +71,7 @@ int main() {
 
     // Guest: "Pizza with all toppings but olives!"
     // Waiter: "Ok, got it!"
+    // Waiter takes note: Pizza with tomato, cheese, salami, garlic.
     order_pizza(pizza_toppings::all_toppings & ~pizza_toppings::olives);
 
     // error: mixing different enumerations
@@ -163,8 +165,8 @@ template<> struct boost::flags::enable<E> : std::true_type {};
 // Even more
 // 
 // * the bitwise negation `~` changes the type from `E` to `complement<E>` and vice-versa
-// ** `operator ~(E) \-> complement<E>`
-// ** `operator ~(complement<E>) \-> E`
+// ** `operator~(E) \-> complement<E>`
+// ** `operator~(complement<E>) \-> E`
 // * the binary operators require both arguments to be of type `E` or `complement<E>` (resp. a reference of it)
 
 
@@ -209,37 +211,57 @@ There are two morals of this tale:
 
 // '
 
-By distinguishing `E` and `complement<E>` in the type system, we keep the set of flags of type `E` apart from the set of negative masks for `E`.
+// By distinguishing `E` and `complement<E>` in the type system, we keep the set of flags of type `E` apart from the set of negative masks for `E`.
+// 
+// Here's a bit more realistic example: Imagine the following set of options for starting a process
+// 
+// [source]
+// ----
+// enum process_start_options {
+//     run_in_background = 0x1,
+//     start_with_elevated_privileges = 0x2,
+//     enable_logging = 0x4
+// };
+// ----
+
+In a nutshell: the following two operations on sets of flags return another set of flags 
+// the semantics of a set of flags supports
+
+* conjunction (`operator&`): taking the flags that appear in *all* sets
+* disjunction (`operator|`): taking the flags that appear in *any* of the sets
+
+but negation (`operator~`) in general *does not*. +
+Thus, sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank].
 
 ### Mathematical justification for `complement`
 
 This section provides a mathematical explanation, why `complement` is required. It can easily be xref:from_flags_to_bool[skipped].
 
-* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional Boolean algebra latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
-* The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] which in general *is not closed under bitwise negation `~`*.
+* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
+* The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
 * Building the closure latexmath:[\overline{F}] of latexmath:[F] wrt. latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}] generates a Boolean algebra which is a subalgebra latexmath:[U].
 
 Semantically the elements of latexmath:[\overline{F}\setminus F] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
 
 Finally, for the binary operators we have
 
-* `operator &`
-** `operator & (E, E) \-> E`
-** `operator & (complement<E>, E) \-> E`
-** `operator & (E, complement<E>) \-> E`
-** `operator & (complement<E>, complement<E>) \-> complement<E>`
+* `operator&`
+** `operator&(E, E) \-> E`
+** `operator&(complement<E>, E) \-> E`
+** `operator&(E, complement<E>) \-> E`
+** `operator&(complement<E>, complement<E>) \-> complement<E>`
 
-* `operator |`
-** `operator | (E, E) \-> E`
-** `operator | (complement<E>, E) \-> complement<E>`
-** `operator | (E, complement<E>) \-> complement<E>`
-** `operator | (complement<E>, complement<E>) \-> complement<E>`
+* `operator|`
+** `operator|(E, E) \-> E`
+** `operator|(complement<E>, E) \-> complement<E>`
+** `operator|(E, complement<E>) \-> complement<E>`
+** `operator|(complement<E>, complement<E>) \-> complement<E>`
 
-* `operator ^`
-** `operator ^ (E, E) \-> E`
-** `operator ^ (complement<E>, E) \-> complement<E>`
-** `operator ^ (E, complement<E>) \-> complement<E>`
-** `operator ^ (complement<E>, complement<E>) \-> E`
+* `operator^`
+** `operator^(E, E) \-> E`
+** `operator^(complement<E>, E) \-> complement<E>`
+** `operator^(E, complement<E>) \-> complement<E>`
+** `operator^(complement<E>, complement<E>) \-> E`
 
 
 Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a Boolean algebra.
@@ -249,7 +271,7 @@ For the rare case where
 * the set of flags semantically forms a Boolean algebra and additionally
 * all bits of the underlying type correspond to flags
 
-there exists the _no_complement_ option which sets `complement<E>` to `E`. 
+there exists xref:option_disable_complement[_option_disable_complement_] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
 ### From flags to `bool`
@@ -277,9 +299,9 @@ C++ allows overloading operators when at least one of its arguments is of `class
 [source]
 ----
 enum E{};
-bool operator < (E,E){ return true; }
+bool operator<(E,E){ return true; }
 bool test(){
-    return E{} < E{};       // calls our operator < and returns true
+    return E{} < E{};       // calls our operator< and returns true
 }
 ----
 This also works for operator templates with one exception: +
@@ -287,7 +309,7 @@ When an operator template for a relational operator is invoked with the same enu
 [source]
 ----
 enum E{};
-template<typename T1, typename T2> bool operator < (T1,T2){ return true; }
+template<typename T1, typename T2> bool operator<(T1,T2){ return true; }
 bool test(){
     return E{} < E{};       // calls built-in < and returns false
 }
@@ -295,7 +317,7 @@ bool test(){
 [NOTE]
 ====
 There is a Defect Report pending
-https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730
+https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]
  which would make the latter also call the user defined operator template.
 ====
 
@@ -365,11 +387,12 @@ This is different from the semantics of the built-in bitwise `&` operator in a b
 * first do a bitwise AND of the arguments
 * then convert the result to `bool` 
 
-Since operators `&` and `&&` can easily get confused (which again is not detectable by a compiler), Boost.Flags disables operator `&&` and to keep symmetry also operator `||`.
+Since operators `&` and `&&` can easily get confused (which again is not detectable by a compiler), Boost.Flags disables `operator&&` and to keep symmetry also `operator||`.
 
 [NOTE]
 ====
-There are no overloads for operators `&&` and `||` on purpose! Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
+Deliberately, there are no overloads for `operator&&` and `operator||`. +
+Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
 ====
 
 
@@ -377,11 +400,11 @@ There are no overloads for operators `&&` and `||` on purpose! Those overloads w
 
 Additionally, Boost.Flags provides the following functions for an enabled enumeration `E`:
 
-* `make_null(E) \-> E` : returns `E{}`
-* `make_if(E e, bool set) \-> E` : returns `set ? e : E{}`
-* `modify(E value, E modification, bool set)  \-> E` : returns `set ? value | modification : value & ~modification`
-* `modify_inplace(E& value, E modification, bool set)  \-> E&` : equivalent to `value = modify(value, modification, set)`
-* `nth_bit(unsigned int n) \-> unsigned int` : returns `1 << n`
+* `make_null(E) \-> E { return E{}; }`
+* `make_if(E e, bool set) \-> E { return set ? e : E{}; }`
+* `modify(E e, E mod, bool set)  \-> E { return set ? e | mod : e & ~mod; }`
+* `modify_inplace(E& e, E mod, bool set)  \-> E&`   equivalent to   `e = modify(e, mod, set)`
+* `nth_bit(unsigned int n) \-> unsigned int { return 1 << n; }
 
 ## Summary
 

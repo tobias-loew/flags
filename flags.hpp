@@ -356,13 +356,15 @@ namespace boost {
 
 
             template<typename T>
-            constexpr auto get_underlying(T value) {
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr auto get_underlying(T value) noexcept {
                 using underlying = typename boost::underlying_type<T>::type;
                 return static_cast<underlying>(value);
             }
 
             template<typename T>
-            constexpr auto get_underlying(complement<T> value) {
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr auto get_underlying(complement<T> value) noexcept {
                 return get_underlying(value.value);
             }
 
@@ -384,13 +386,15 @@ namespace boost {
 
 
             template<typename T>
-            constexpr auto&& get_normalized(T&& value) {
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr auto&& get_normalized(T&& value) noexcept {
                 return std::forward<T>(value);
             }
 
             template<typename T>
             requires IsDoubleOuterComplement<T>
-            constexpr decltype(auto) get_normalized(T&& value) {
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr decltype(auto) get_normalized(T&& value) noexcept {
                 return get_normalized(std::forward<T>(value).value.value);
             }
 
@@ -419,7 +423,7 @@ namespace boost {
             requires BinaryOperationEnabled<T1, T2, std::conjunction>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            operator&(T1 lhs, T2 rhs) {
+            operator&(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, std::conjunction>::type;
 
             return result_t{
@@ -431,7 +435,7 @@ namespace boost {
             requires BinaryOperationEnabled<T1, T2, std::disjunction>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            operator|(T1 lhs, T2 rhs) {
+            operator|(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, std::disjunction>::type;
 
             return result_t{
@@ -443,7 +447,7 @@ namespace boost {
             requires BinaryOperationEnabled<T1, T2, impl::not_equal>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            operator^(T1 lhs, T2 rhs) {
+            operator^(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::not_equal>::type;
 
             return result_t{
@@ -456,7 +460,7 @@ namespace boost {
             requires UnaryOperationEnabled<T, std::negation>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            operator~(T value) {
+            operator~(T value) noexcept {
             using result_t = typename impl::unary_operation_result<T, std::negation>::type;
 
             return result_t{
@@ -468,7 +472,7 @@ namespace boost {
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, std::conjunction>
         constexpr T1&
-            operator&=(T1& lhs, T2 rhs) {
+            operator&=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs & rhs;
             return lhs;
         }
@@ -476,7 +480,7 @@ namespace boost {
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, std::disjunction>
         constexpr T1&
-            operator|=(T1& lhs, T2 rhs) {
+            operator|=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs | rhs;
             return lhs;
         }
@@ -484,7 +488,7 @@ namespace boost {
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, impl::not_equal>
         constexpr T1&
-            operator^=(T1& lhs, T2 rhs) {
+            operator^=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs ^ rhs;
             return lhs;
         }
@@ -494,7 +498,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!(T e) {
+            operator!(T e) noexcept {
             return !impl::get_underlying(e);
         }
 
@@ -503,7 +507,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(T value, std::nullptr_t) {
+            operator==(T value, std::nullptr_t) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
@@ -514,7 +518,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(nullptr_t, T value) {
+            operator==(nullptr_t, T value) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
@@ -522,7 +526,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(T value, nullptr_t) {
+            operator!=(T value, nullptr_t) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 
@@ -530,7 +534,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(nullptr_t, T value) {
+            operator!=(nullptr_t, T value) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 #endif
@@ -541,7 +545,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(T value, impl::null_tag) {
+            operator==(T value, impl::null_tag) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
@@ -552,7 +556,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(impl::null_tag, T value) {
+            operator==(impl::null_tag, T value) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
@@ -560,7 +564,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(T value, impl::null_tag) {
+            operator!=(T value, impl::null_tag) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 
@@ -568,7 +572,7 @@ namespace boost {
             requires IsFlags<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(impl::null_tag, T value) {
+            operator!=(impl::null_tag, T value) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 #endif
@@ -581,7 +585,7 @@ namespace boost {
             requires IsEnabled<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            get_underlying(T value) {
+            get_underlying(T value) noexcept {
             return impl::get_underlying(value);
         }
 
@@ -589,7 +593,7 @@ namespace boost {
             requires IsEnabled<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr auto
-            from_underlying(typename boost::underlying_type<enum_type_t<T>>::type value) {
+            from_underlying(typename boost::underlying_type<enum_type_t<T>>::type value) noexcept {
             if constexpr (IsComplement<T>) {
                 return complement{ static_cast<enum_type_t<T>>(value) };
             }
@@ -599,21 +603,20 @@ namespace boost {
         }
 
 
-        // delete operator == (and also !=) for comparison of incompatible types
+        // delete operator== (and also !=) for comparison of incompatible types
         // only deleted for non-class enums
         template<typename T1, typename T2>
             requires ((IsEnabled<T1> && !impl::is_scoped_enum<enum_type_t<T1>>::value)
                       ||
                       (IsEnabled<T2> && !impl::is_scoped_enum<enum_type_t<T2>>::value))
                       && (!IsCompatibleFlagsOrComplement<T1, T2>)
-        BOOST_ATTRIBUTE_NODISCARD
-            constexpr bool operator == (T1, T2) = delete;
+        constexpr bool operator== (T1, T2) = delete;
 
-        // delete operator == (and also !=) for comparison of incompatible types
+        // delete operator== (and also !=) for comparison of incompatible types
         template<typename T1, typename T2>
             requires IsCompatibleFlagsOrComplement<T1, T2>
         BOOST_ATTRIBUTE_NODISCARD
-            constexpr bool operator == (T1 e1, T2 e2) {
+            constexpr bool operator== (T1 e1, T2 e2) noexcept {
             return get_underlying(e1) == get_underlying(e2);
         }
 
@@ -621,26 +624,23 @@ namespace boost {
         // 
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) // && (!IsCompatibleFlags<T1, T2>)
-        BOOST_ATTRIBUTE_NODISCARD
-            constexpr bool operator && (T1, T2) = delete;
+        constexpr bool operator&& (T1, T2) = delete;
 
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) // && (!IsCompatibleFlags<T1, T2>)
-        BOOST_ATTRIBUTE_NODISCARD
-            constexpr bool operator || (T1, T2) = delete;
+        constexpr bool operator|| (T1, T2) = delete;
 
 
         // disabling relational operators
         // 
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) && (!IsCompatibleFlagsOrComplement<T1, T2>)
-        BOOST_ATTRIBUTE_NODISCARD
-            constexpr std::partial_ordering operator <=> (T1, T2) = delete;
+        constexpr std::partial_ordering operator<=> (T1, T2) = delete;
 
         namespace impl {
             template<typename T1, typename T2>
             BOOST_ATTRIBUTE_NODISCARD
-                std::partial_ordering normalized_contained_induced_compare(T1 l, T2 r) {
+                std::partial_ordering normalized_contained_induced_compare(T1 l, T2 r) noexcept {
                 return l == r
                     ? std::partial_ordering::equivalent
                     : (l & r) == l
@@ -653,7 +653,7 @@ namespace boost {
 
             template<typename T1, typename T2>
             BOOST_ATTRIBUTE_NODISCARD
-                std::partial_ordering contained_induced_compare(T1 l, T2 r) {
+                std::partial_ordering contained_induced_compare(T1 l, T2 r) noexcept {
                 return normalized_contained_induced_compare(
                     get_normalized(l),
                     get_normalized(r)
@@ -671,7 +671,7 @@ namespace boost {
             requires IsFlags<T>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            any(T e) {
+            any(T e) noexcept {
             return impl::get_underlying(e) != 0;
         }
 
@@ -680,7 +680,7 @@ namespace boost {
             requires IsFlags<T>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            none(T e) {
+            none(T e) noexcept {
             return !e;
         }
 
@@ -690,27 +690,27 @@ namespace boost {
             requires IsCompatibleFlags<T1, T2>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            contains(T1 superset, T2 test_subset) {
+            contains(T1 superset, T2 test_subset) noexcept {
             return (superset & test_subset) == test_subset;
         }
 
 
-        // test if test_subset is completly contained in superset
+        // test if lhs and rhs have non-empty intersection (have at least one common flag)
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            intersect(T1 lhs, T2 rhs) {
+            intersect(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) != 0;
         }
 
 
-        // test if test_subset is completly contained in superset
+        // test if lhs and rhs are disjoint (have no common flag)
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            disjoint(T1 lhs, T2 rhs) {
+            disjoint(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) == 0;
         }
 
@@ -720,7 +720,7 @@ namespace boost {
             requires IsFlags<T>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
-            make_null(T) {
+            make_null(T) noexcept {
             return static_cast<enum_type_t<T>>(0);
         }
 
@@ -731,7 +731,7 @@ namespace boost {
             requires IsFlags<T>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
-            make_if(T e, bool set) {
+            make_if(T e, bool set) noexcept {
             return static_cast<enum_type_t<T>>(set ? impl::get_underlying(e) : 0);
         }
 
@@ -741,7 +741,7 @@ namespace boost {
             requires IsCompatibleFlags<T1, T2>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T1>
-            modify(T1 value, T2 modification, bool set) {
+            modify(T1 value, T2 modification, bool set) noexcept {
             return set ? (value | modification) : (value & ~modification);
         }
 
@@ -750,7 +750,7 @@ namespace boost {
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2> 
             constexpr T1&
-            modify_inplace(T1& value, T2 modification, bool set) {
+            modify_inplace(T1& value, T2 modification, bool set) noexcept {
             value = set ? (value | modification) : (value & ~modification);
             return value;
         }
@@ -761,7 +761,7 @@ namespace boost {
             requires IsEnabled<T>
         BOOST_ATTRIBUTE_NODISCARD
             constexpr impl::pseudo_and_op_intermediate_t<T>
-            operator&(T lhs, impl::pseudo_and_op_tag) {
+            operator&(T lhs, impl::pseudo_and_op_tag) noexcept {
             return { lhs };
         }
 
@@ -769,63 +769,75 @@ namespace boost {
             requires LogicalOperationEnabled<T1, T2, std::conjunction>
             BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) {
+            operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs.value) & impl::get_underlying(rhs)) != 0;
         }
 
 
         // returns a value with the n-th (zero-indexed) bit set
         BOOST_ATTRIBUTE_NODISCARD
-            inline constexpr auto nth_bit(unsigned int n) { return 1 << n; }
+            inline constexpr auto nth_bit(unsigned int n) noexcept { return 1 << n; }
     }
 }
 
 
-using boost::flags::operator |;
-using boost::flags::operator &;
-using boost::flags::operator ^;
-using boost::flags::operator ~;
-using boost::flags::operator |=;
-using boost::flags::operator &=;
-using boost::flags::operator ^=;
-using boost::flags::operator !;
-using boost::flags::operator ==;
+using boost::flags::operator|;
+using boost::flags::operator&;
+using boost::flags::operator^;
+using boost::flags::operator~;
+using boost::flags::operator|=;
+using boost::flags::operator&=;
+using boost::flags::operator^=;
+using boost::flags::operator!;
+using boost::flags::operator==;
 #if __cplusplus < 202002
-using boost::flags::operator !=;
+using boost::flags::operator!=;
 #endif
 
-using boost::flags::operator <=>;
+using boost::flags::operator<=>;
 
-using boost::flags::operator &&;
-using boost::flags::operator ||;
+using boost::flags::operator&&;
+using boost::flags::operator||;
+
+using boost::flags::any;
+using boost::flags::none;
+using boost::flags::contains;
+using boost::flags::intersect;
+using boost::flags::disjoint;
+using boost::flags::make_null;
+using boost::flags::make_if;
+using boost::flags::modify;
+using boost::flags::modify_inplace;
 
 
 
-#define BOOST_FLAGS_REL_OPS_DELETE(E)                                   \
-/* needed to match better than built-in relational operators */            \
-std::partial_ordering operator <=> (E l, E r) = delete;                 \
+#define BOOST_FLAGS_REL_OPS_DELETE(E)                                          \
+/* needed to match better than built-in relational operators */                \
+std::partial_ordering operator<=> (E l, E r) = delete;                         \
                                                                                \
-/* needed to match all other E, complement<E> arguments */            \
+/* needed to match all other E, complement<E> arguments */                     \
 template<typename T1, typename T2>                                             \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                            \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> )           \
-std::partial_ordering operator <=> (T1 l, T2 r) = delete;                 \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&              \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> )               \
+std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                   \
-/* needed to match better than built-in relational operators */            \
-std::partial_ordering operator <=> (E l, E r) {                                \
-    return boost::flags::impl::normalized_contained_induced_compare(l, r); \
+/* needed to match better than built-in relational operators */                \
+BOOST_ATTRIBUTE_NODISCARD                                                      \
+std::partial_ordering operator<=> (E l, E r) noexcept {                        \
+    return boost::flags::impl::normalized_contained_induced_compare(l, r);     \
 }                                                                              \
                                                                                \
-/* needed to match all other E, complement<E> arguments */            \
+/* needed to match all other E, complement<E> arguments */                     \
 template<typename T1, typename T2>                                             \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                            \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                            \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&              \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&              \
                 boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)           \
-std::partial_ordering operator <=> (T1 l, T2 r) {                              \
-    return boost::flags::impl::contained_induced_compare(l, r);            \
-}                                                                              \
+BOOST_ATTRIBUTE_NODISCARD                                                      \
+std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                      \
+    return boost::flags::impl::contained_induced_compare(l, r);                \
+}
 
 
 
