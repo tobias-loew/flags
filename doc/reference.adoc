@@ -325,7 +325,7 @@ If it wasn't then comparison with arbitrary integer values would be possible, as
 ## Relational operators <, \<=, > and >=
 The relational operators for enumerations (scoped and unscoped) are provided by the language (by applying the resp. operator to the underlying value).
 Furthermore, the current wording doesn't allow overloading or deleting those operators by a templated operator (there is a pending Defect Report on this topic: 
-https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730).
+https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]).
 
 There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER] to overload and xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE] to delete relational operators.
 
