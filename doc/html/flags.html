@@ -684,11 +684,11 @@ pre.rouge .gs {
 <span class="c1">// enable Boost.Flags for ice_cream_flavours</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">ice_cream_flavours</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
-<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> <span class="cm">/<strong>toppings</strong>/</span><span class="p">)</span> <span class="p">{</span>
+<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> /*<span class="n">toppings</span>*/<span class="p">)</span> <span class="p">{</span>
     <span class="c1">// order selected pizza</span>
  <span class="p">}</span>
 
-<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> <span class="cm">/<strong>flavours</strong>/</span><span class="p">)</span> <span class="p">{</span>
+<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> /*<span class="n">flavours</span>*/<span class="p">)</span> <span class="p">{</span>
     <span class="c1">// order selected dessert</span>
  <span class="p">}</span>
 
