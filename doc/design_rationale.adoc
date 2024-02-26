@@ -26,8 +26,6 @@ The design of Boost.Flags was driven by the following principles:
 
 * no change of semantics for existing code: enabling Boost.Flags for an existing flag-like enumeration shall not produce valid code with different semantics 
 
-The first three principles are met by the library. But the last principle requires some discussion: +
-First, let's not consider code with already specialized bitwise operators for Boost.Flags enable enumerations, or code that tests for the presence of Boost.Flags. +
-Wrapping enumerations into Flags-templates would spoil the whole user-code with new types, which could lead to wrong overload selection or failing `is_enum` type traits. Thus the decision to use free functions and return the original enumerations. +
-A notable exception to this is the `complement` template, which deliberately is different from the underlying enumeration to prevent and detect usage errors.
+The first three principles are met by the library. The last principle of course has a notable exception:
+ the `complement` template, which deliberately is different from the underlying enumeration to prevent and detect usage errors.
 

@@ -661,6 +661,33 @@ namespace boost {
             }
         }
 
+        struct partial_order_t {
+            template<typename T1, typename T2>
+                requires IsCompatibleFlagsOrComplement<T1, T2>
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr auto operator()(T1 e1, T2 e2) const noexcept {
+                return impl::contained_induced_compare(e1, e2);
+            }
+
+            using is_transparent = int;
+        };
+        static constexpr partial_order_t partial_order{};
+
+
+        // explicit total order for using enabled flags as (part of) keys in ordered associative containers
+
+        struct total_order_t {
+            template<typename T1, typename T2>
+                requires IsCompatibleFlagsOrComplement<T1, T2>
+            BOOST_ATTRIBUTE_NODISCARD
+                constexpr auto operator()(T1 e1, T2 e2) const noexcept {
+                return get_underlying(e1) < get_underlying(e2);
+            }
+
+            using is_transparent = int;
+        };
+        static constexpr total_order_t total_order{};
+
         // end of core part
         //
         ///////////////////////////////////////////////////////////////////////////////////////
@@ -685,13 +712,22 @@ namespace boost {
         }
 
 
-        // test if test_subset is completly contained in superset
+        // test if subset is contained in superset
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+        BOOST_ATTRIBUTE_NODISCARD
             constexpr bool
-            contains(T1 superset, T2 test_subset) noexcept {
-            return (superset & test_subset) == test_subset;
+            subseteq(T1 subset, T2 superset) noexcept {
+            return (subset & superset) == subset;
+        }
+
+        // test if subset is a proper subset of superset
+        template<typename T1, typename T2>
+            requires IsCompatibleFlags<T1, T2>
+        BOOST_ATTRIBUTE_NODISCARD
+            constexpr bool
+            subset(T1 subset, T2 superset) noexcept {
+            return subseteq(subset, superset) && (subset != superset);
         }
 
 
@@ -801,7 +837,8 @@ using boost::flags::operator||;
 
 using boost::flags::any;
 using boost::flags::none;
-using boost::flags::contains;
+using boost::flags::subseteq;
+using boost::flags::subset;
 using boost::flags::intersect;
 using boost::flags::disjoint;
 using boost::flags::make_null;
@@ -811,32 +848,53 @@ using boost::flags::modify_inplace;
 
 
 
-#define BOOST_FLAGS_REL_OPS_DELETE(E)                                          \
-/* needed to match better than built-in relational operators */                \
-std::partial_ordering operator<=> (E l, E r) = delete;                         \
-                                                                               \
-/* needed to match all other E, complement<E> arguments */                     \
-template<typename T1, typename T2>                                             \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&              \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> )               \
+ #define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                          \
+ /* specialize std::less for E and complement<E> */                                  \
+ template<>                                                                          \
+ struct std::less<E> {                                                               \
+     BOOST_ATTRIBUTE_NODISCARD                                                       \
+         constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {      \
+         return boost::flags::total_order(rhs, lhs);                                 \
+     }                                                                               \
+ };                                                                                  \
+ template<>                                                                          \
+ struct std::less<boost::flags::complement<E>> {                                     \
+     BOOST_ATTRIBUTE_NODISCARD                                                       \
+         constexpr bool operator()(                                                  \
+             boost::flags::complement<E> const& lhs,                                 \
+             boost::flags::complement<E> const& rhs                                  \
+             ) const noexcept {                                                      \
+         return boost::flags::total_order(rhs, lhs);                                 \
+     }                                                                               \
+ };                                                                                  \
+
+
+#define BOOST_FLAGS_REL_OPS_DELETE(E)                                               \
+/* matches better than built-in relational operators */                             \
+std::partial_ordering operator<=> (E l, E r) = delete;                              \
+                                                                                    \
+/* matches all other E, complement<E> arguments */                                  \
+template<typename T1, typename T2>                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> )                    \
 std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                   \
-/* needed to match better than built-in relational operators */                \
-BOOST_ATTRIBUTE_NODISCARD                                                      \
-std::partial_ordering operator<=> (E l, E r) noexcept {                        \
-    return boost::flags::impl::normalized_contained_induced_compare(l, r);     \
-}                                                                              \
-                                                                               \
-/* needed to match all other E, complement<E> arguments */                     \
-template<typename T1, typename T2>                                             \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&              \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&              \
-                boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)           \
-BOOST_ATTRIBUTE_NODISCARD                                                      \
-std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                      \
-    return boost::flags::impl::contained_induced_compare(l, r);                \
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                        \
+/* matches better than built-in relational operators */                             \
+BOOST_ATTRIBUTE_NODISCARD                                                           \
+std::partial_ordering operator<=> (E l, E r) noexcept {                             \
+    return boost::flags::impl::normalized_contained_induced_compare(l, r);          \
+}                                                                                   \
+                                                                                    \
+/* matches all other E, complement<E> arguments */                                  \
+template<typename T1, typename T2>                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                   \
+                boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                \
+BOOST_ATTRIBUTE_NODISCARD                                                           \
+std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                           \
+    return boost::flags::impl::contained_induced_compare(l, r);                     \
 }
 
 

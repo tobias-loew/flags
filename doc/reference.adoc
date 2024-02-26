@@ -89,6 +89,27 @@ template<> struct boost::flags::enable<E>
 ----
 
 
+### total_order_t
+
+The type `boost::flags::total_order_t` defines a call-operator which accepts two compatible flag-arguments and compares their underlying values.
+(cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[BOOST_FLAGS_SPECIALIZE_STD_LESS]).
+
+There is also a functions object
+
+`static constexpr boost::flags::total_order_t total_order;`
+
+
+
+### partial_order_t
+
+The type `boost::flags::partial_order_t` defines a call-operator which accepts two compatible flag-arguments and compares them base on flag entailment.
+(cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER]).
+
+There is also a functions object
+
+`static constexpr boost::flags::partial_order_t partial_order;`
+
+
 
 ## Operators
 
@@ -380,13 +401,23 @@ Tests if two values do not have a common bits set.
 ----
 
 
-### contained
+### subseteq
 Tests if all bits set in the first argument are also set in the second argument.
 
 [source]
 ----
     // pseudo code
-    [[nodiscard]] constexpr bool contained(E e1, E e2) noexcept { return e1 & ~e2 == E{}; }
+    [[nodiscard]] constexpr bool subseteq(E e1, E e2) noexcept { return e1 & e2 == e1; }
+----
+
+
+### subset
+Tests if the bits set in the first argument are a proper subset of the bits in the second argument.
+
+[source]
+----
+    // pseudo code
+    [[nodiscard]] constexpr bool subset(E e1, E e2) noexcept { return subseteq(e1, e2) && (e1 != e2); }
 ----
 
 
@@ -514,3 +545,15 @@ The following semantics apply
 
 
 The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` has to be defined at global namespace.
+
+
+
+
+
+
+### BOOST_FLAGS_SPECIALIZE_STD_LESS
+
+The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` specializes `std::less` for `E` to use `boost::flags::total_order`.
+
+
+The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global namespace.
