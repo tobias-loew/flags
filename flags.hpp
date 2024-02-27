@@ -17,8 +17,30 @@
 
 #include <type_traits>
 #include <utility>
-#include <boost/config.hpp>
-#include <boost/core/underlying_type.hpp>
+#include <compare>
+
+
+// adapted from boost/config/detail/suffix.hpp
+//
+// [[nodiscard]]:
+//
+#if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
+#if __has_attribute(nodiscard)
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+#endif
+#if __has_attribute(no_unique_address)
+# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+#elif defined(__has_cpp_attribute)
+// clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
+#if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+#endif
+#endif
+#ifndef BOOST_FLAGS_ATTRIBUTE_NODISCARD
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD
+#endif
+
 
 /////////////////////////////////////////////////////////////////
 //
@@ -356,14 +378,14 @@ namespace boost {
 
 
             template<typename T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto get_underlying(T value) noexcept {
-                using underlying = typename boost::underlying_type<T>::type;
+                using underlying = typename std::underlying_type_t<T>;
                 return static_cast<underlying>(value);
             }
 
             template<typename T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto get_underlying(complement<T> value) noexcept {
                 return get_underlying(value.value);
             }
@@ -386,14 +408,14 @@ namespace boost {
 
 
             template<typename T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto&& get_normalized(T&& value) noexcept {
                 return std::forward<T>(value);
             }
 
             template<typename T>
             requires IsDoubleOuterComplement<T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr decltype(auto) get_normalized(T&& value) noexcept {
                 return get_normalized(std::forward<T>(value).value.value);
             }
@@ -421,7 +443,7 @@ namespace boost {
 
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1,T2>>
             requires BinaryOperationEnabled<T1, T2, std::conjunction>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator&(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, std::conjunction>::type;
@@ -433,7 +455,7 @@ namespace boost {
 
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryOperationEnabled<T1, T2, std::disjunction>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator|(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, std::disjunction>::type;
@@ -445,7 +467,7 @@ namespace boost {
 
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryOperationEnabled<T1, T2, impl::not_equal>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator^(T1 lhs, T2 rhs) noexcept {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::not_equal>::type;
@@ -458,7 +480,7 @@ namespace boost {
 
         template<typename T> 
             requires UnaryOperationEnabled<T, std::negation>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator~(T value) noexcept {
             using result_t = typename impl::unary_operation_result<T, std::negation>::type;
@@ -496,7 +518,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!(T e) noexcept {
             return !impl::get_underlying(e);
@@ -505,7 +527,7 @@ namespace boost {
         // test for == 0 / != 0
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, std::nullptr_t) noexcept {
             return impl::get_underlying(value) == 0;
@@ -516,7 +538,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(nullptr_t, T value) noexcept {
             return impl::get_underlying(value) == 0;
@@ -524,7 +546,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(T value, nullptr_t) noexcept {
             return !(impl::get_underlying(value) == 0);
@@ -532,7 +554,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(nullptr_t, T value) noexcept {
             return !(impl::get_underlying(value) == 0);
@@ -543,7 +565,7 @@ namespace boost {
         // test for == 0 / != 0
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, impl::null_tag) noexcept {
             return impl::get_underlying(value) == 0;
@@ -554,7 +576,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(impl::null_tag, T value) noexcept {
             return impl::get_underlying(value) == 0;
@@ -562,7 +584,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(T value, impl::null_tag) noexcept {
             return !(impl::get_underlying(value) == 0);
@@ -570,7 +592,7 @@ namespace boost {
 
         template<typename T>
             requires IsFlags<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(impl::null_tag, T value) noexcept {
             return !(impl::get_underlying(value) == 0);
@@ -583,7 +605,7 @@ namespace boost {
         // conversion to / from underlying type
         template<typename T>
             requires IsEnabled<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             get_underlying(T value) noexcept {
             return impl::get_underlying(value);
@@ -591,9 +613,9 @@ namespace boost {
 
         template<typename T>
             requires IsEnabled<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
-            from_underlying(typename boost::underlying_type<enum_type_t<T>>::type value) noexcept {
+            from_underlying(typename std::underlying_type_t<enum_type_t<T>> value) noexcept {
             if constexpr (IsComplement<T>) {
                 return complement{ static_cast<enum_type_t<T>>(value) };
             }
@@ -615,7 +637,7 @@ namespace boost {
         // delete operator== (and also !=) for comparison of incompatible types
         template<typename T1, typename T2>
             requires IsCompatibleFlagsOrComplement<T1, T2>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool operator== (T1 e1, T2 e2) noexcept {
             return get_underlying(e1) == get_underlying(e2);
         }
@@ -639,7 +661,7 @@ namespace boost {
 
         namespace impl {
             template<typename T1, typename T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 std::partial_ordering normalized_contained_induced_compare(T1 l, T2 r) noexcept {
                 return l == r
                     ? std::partial_ordering::equivalent
@@ -652,7 +674,7 @@ namespace boost {
             }
 
             template<typename T1, typename T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 std::partial_ordering contained_induced_compare(T1 l, T2 r) noexcept {
                 return normalized_contained_induced_compare(
                     get_normalized(l),
@@ -664,7 +686,7 @@ namespace boost {
         struct partial_order_t {
             template<typename T1, typename T2>
                 requires IsCompatibleFlagsOrComplement<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto operator()(T1 e1, T2 e2) const noexcept {
                 return impl::contained_induced_compare(e1, e2);
             }
@@ -679,7 +701,7 @@ namespace boost {
         struct total_order_t {
             template<typename T1, typename T2>
                 requires IsCompatibleFlagsOrComplement<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto operator()(T1 e1, T2 e2) const noexcept {
                 return get_underlying(e1) < get_underlying(e2);
             }
@@ -696,7 +718,7 @@ namespace boost {
         // test if any bit is set
         template<typename T>
             requires IsFlags<T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             any(T e) noexcept {
             return impl::get_underlying(e) != 0;
@@ -705,7 +727,7 @@ namespace boost {
         // test if no bit is set
         template<typename T>
             requires IsFlags<T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             none(T e) noexcept {
             return !e;
@@ -715,7 +737,7 @@ namespace boost {
         // test if subset is contained in superset
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             subseteq(T1 subset, T2 superset) noexcept {
             return (subset & superset) == subset;
@@ -724,7 +746,7 @@ namespace boost {
         // test if subset is a proper subset of superset
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             subset(T1 subset, T2 superset) noexcept {
             return subseteq(subset, superset) && (subset != superset);
@@ -734,7 +756,7 @@ namespace boost {
         // test if lhs and rhs have non-empty intersection (have at least one common flag)
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             intersect(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) != 0;
@@ -744,7 +766,7 @@ namespace boost {
         // test if lhs and rhs are disjoint (have no common flag)
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             disjoint(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) == 0;
@@ -754,7 +776,7 @@ namespace boost {
         // returns an empty instance of T
         template<typename T>
             requires IsFlags<T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
             make_null(T) noexcept {
             return static_cast<enum_type_t<T>>(0);
@@ -765,7 +787,7 @@ namespace boost {
         // returns e or an empty instance of T
         template<typename T>
             requires IsFlags<T>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
             make_if(T e, bool set) noexcept {
             return static_cast<enum_type_t<T>>(set ? impl::get_underlying(e) : 0);
@@ -775,7 +797,7 @@ namespace boost {
         // bits of modification set resp. cleared
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T1>
             modify(T1 value, T2 modification, bool set) noexcept {
             return set ? (value | modification) : (value & ~modification);
@@ -795,7 +817,7 @@ namespace boost {
 
         template<typename T>
             requires IsEnabled<T>
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr impl::pseudo_and_op_intermediate_t<T>
             operator&(T lhs, impl::pseudo_and_op_tag) noexcept {
             return { lhs };
@@ -803,7 +825,7 @@ namespace boost {
 
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires LogicalOperationEnabled<T1, T2, std::conjunction>
-            BOOST_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs.value) & impl::get_underlying(rhs)) != 0;
@@ -811,7 +833,7 @@ namespace boost {
 
 
         // returns a value with the n-th (zero-indexed) bit set
-        BOOST_ATTRIBUTE_NODISCARD
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             inline constexpr auto nth_bit(unsigned int n) noexcept { return 1 << n; }
     }
 }
@@ -852,14 +874,14 @@ using boost::flags::modify_inplace;
  /* specialize std::less for E and complement<E> */                                  \
  template<>                                                                          \
  struct std::less<E> {                                                               \
-     BOOST_ATTRIBUTE_NODISCARD                                                       \
+     BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                       \
          constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {      \
          return boost::flags::total_order(rhs, lhs);                                 \
      }                                                                               \
  };                                                                                  \
  template<>                                                                          \
  struct std::less<boost::flags::complement<E>> {                                     \
-     BOOST_ATTRIBUTE_NODISCARD                                                       \
+     BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                       \
          constexpr bool operator()(                                                  \
              boost::flags::complement<E> const& lhs,                                 \
              boost::flags::complement<E> const& rhs                                  \
@@ -882,7 +904,7 @@ std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                        \
 /* matches better than built-in relational operators */                             \
-BOOST_ATTRIBUTE_NODISCARD                                                           \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
 std::partial_ordering operator<=> (E l, E r) noexcept {                             \
     return boost::flags::impl::normalized_contained_induced_compare(l, r);          \
 }                                                                                   \
@@ -892,7 +914,7 @@ template<typename T1, typename T2>                                              
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
               std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                   \
                 boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                \
-BOOST_ATTRIBUTE_NODISCARD                                                           \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
 std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                           \
     return boost::flags::impl::contained_induced_compare(l, r);                     \
 }

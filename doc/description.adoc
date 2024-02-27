@@ -89,7 +89,9 @@ int main() {
 * turns undetected logical errors into type errors
 // ** when applying bitwise operators to incompatible enumerations
 // ** when accidentally converting bitmasks (negation of flags) to `bool`
-* is non-intrusive - only requires a template specialization
+* is non-intrusive - only template specializations required
+* single header-file library
+* no dependencies (only standard-library includes)
 * zero-overhead in optimized builds
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
@@ -174,6 +176,7 @@ template<> struct boost::flags::enable<E> : std::true_type {};
 
 Before going into details, let me tell you a little tale
 
+[#queen_of_hearts_tale]
 ====
 +++<span style="font-family:'Times New Roman'">
 Once, there was a kingdom, where the Queen of Hearts reigned with iron fist.<br/>She had her own newspaper for proclamations, where they used a set of flags for font-styles</span>+++
