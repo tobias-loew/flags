@@ -41,6 +41,22 @@
 # define BOOST_FLAGS_ATTRIBUTE_NODISCARD
 #endif
 
+// adapted from boost/asio/detail/config.hpp
+// Support concepts on compilers known to allow them.
+#if !defined(BOOST_FLAGS_HAS_CONCEPTS)
+# if !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#  if defined(__cpp_concepts)
+#   define BOOST_FLAGS_HAS_CONCEPTS 1
+#   if (__cpp_concepts >= 201707)
+#    define BOOST_FLAGS_CONCEPT concept
+#   else // (__cpp_concepts >= 201707)
+#    define BOOST_FLAGS_CONCEPT concept bool
+#   endif // (__cpp_concepts >= 201707)
+#  endif // defined(__cpp_concepts)
+# endif // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#endif // !defined(BOOST_FLAGS_HAS_CONCEPTS)
+
+
 
 /////////////////////////////////////////////////////////////////
 //
