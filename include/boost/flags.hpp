@@ -17,10 +17,22 @@
 
 #include <type_traits>
 #include <utility>
-#include <compare>
-
 
 // adapted from boost/config/detail/suffix.hpp
+// 
+// header <compare>
+//
+#ifdef __has_include                           // Check if __has_include is present
+#if (!__has_include(<compare>) || !defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)) && !defined(BOOST_NO_CXX20_HDR_COMPARE)
+#  define BOOST_FLAGS_NO_CXX20_HDR_COMPARE
+#endif
+#else
+#if (!defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)) && !defined(BOOST_NO_CXX20_HDR_COMPARE)
+#  define BOOST_FLAGS_NO_CXX20_HDR_COMPARE
+#endif
+#endif
+
+
 //
 // [[nodiscard]]:
 //
@@ -41,6 +53,14 @@
 # define BOOST_FLAGS_ATTRIBUTE_NODISCARD
 #endif
 
+//
+// decltype(auto)
+//
+#if !defined(__cpp_decltype_auto) || (__cpp_decltype_auto < 201304)
+#  define BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#endif
+
+
 // adapted from boost/asio/detail/config.hpp
 // Support concepts on compilers known to allow them.
 #if !defined(BOOST_FLAGS_HAS_CONCEPTS)
@@ -52,9 +72,31 @@
 #   else // (__cpp_concepts >= 201707)
 #    define BOOST_FLAGS_CONCEPT concept bool
 #   endif // (__cpp_concepts >= 201707)
+#  else // defined(__cpp_concepts)
+#   define BOOST_FLAGS_HAS_CONCEPTS 0
 #  endif // defined(__cpp_concepts)
+# else // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#  define BOOST_FLAGS_HAS_CONCEPTS 0
 # endif // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
 #endif // !defined(BOOST_FLAGS_HAS_CONCEPTS)
+
+
+// check if std::is_scoped_enum is available
+#if !defined(BOOST_FLAGS_HAS_IS_SCOPED_ENUM)
+# if defined(__cpp_lib_is_scoped_enum)
+#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 1
+# else // (__cpp_concepts >= 201707)
+#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 0
+# endif // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#endif // !defined(BOOST_FLAGS_HAS_CONCEPTS)
+
+
+
+
+#if not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#include <compare>
+#endif
+
 
 
 
@@ -160,10 +202,11 @@ namespace boost {
     namespace flags {
         namespace impl {
 
-#ifdef __cpp_lib_is_scoped_enum
+#if BOOST_FLAGS_HAS_IS_SCOPED_ENUM
             template<typename E>
             using is_scoped_enum = std::is_scoped_enum<E>;
 #else
+# if BOOST_FLAGS_HAS_CONCEPTS
             template<typename E>
             struct is_scoped_enum : std::bool_constant < requires
             {
@@ -171,6 +214,27 @@ namespace boost {
                 requires !std::is_convertible_v<E, std::underlying_type_t<E>>;
             } >
             {};
+# else // BOOST_FLAGS_HAS_CONCEPTS
+
+            // need to jump through some hoops to work around SFINAE unfriendly old std::underlying_type
+
+            template <typename T, bool = std::is_enum<T>::value>
+            struct sfinae_friendly_underlying_type {
+                using type = typename std::underlying_type<T>::type;
+            };
+
+            template <typename T>
+            struct sfinae_friendly_underlying_type<T, false> {
+                using type = T;
+            };
+
+            template<typename E>
+            struct is_scoped_enum : std::bool_constant <
+                std::is_enum<E>::value && !std::is_convertible < E, typename sfinae_friendly_underlying_type<E>::type> ::value
+            >
+            {};
+
+# endif // BOOST_FLAGS_HAS_CONCEPTS
 #endif
         }
 
@@ -203,7 +267,7 @@ namespace boost {
 
 
         // get enum-type from E
-// strip off `complement`-templates
+        // strip off `complement`-templates
         template<typename E>
         struct enum_type {
             using type = E;
@@ -220,9 +284,16 @@ namespace boost {
         template<typename E>
         struct is_enabled;
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         concept IsComplementDisabled =
             std::is_base_of_v<option_disable_complement, enable<enum_type_t<T>>>;
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
+        struct IsComplementDisabled : std::integral_constant<bool, 
+            std::is_base_of<option_disable_complement, enable<typename enum_type<T>::type>>::value
+        > {};
+#endif // BOOST_FLAGS_HAS_CONCEPTS
 
         // test if E is a flags-enum:
         // detects double-negation
@@ -262,6 +333,7 @@ namespace boost {
             > {};
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename E>
         concept IsFlags = is_flags<E>::value;
 
@@ -286,7 +358,46 @@ namespace boost {
         template<typename T1, typename T2>
         concept IsCompatibleFlagsOrComplement = IsCompatible<T1, T2>&&
             ((IsFlags<T1>&& IsFlags<T2>) || (IsComplement<T1>&& IsComplement<T2>));
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename E>
+        struct IsFlags : std::integral_constant<bool,
+            is_flags<E>::value
+        > {};
 
+        template<typename E>
+        struct IsComplement : std::integral_constant<bool,
+            is_complement<E>::value
+        > {};
+
+        template<typename E>
+        struct IsEnabled : std::integral_constant<bool,
+            is_enabled<E>::value
+        > {};
+
+
+        template<typename T1, typename T2>
+        struct IsCompatible : std::integral_constant<bool,
+            std::is_same<enum_type_t<T1>, enum_type_t<T2>>::value
+        > {};
+
+        template<typename T1, typename T2>
+        struct IsCompatibleFlags : std::integral_constant<bool,
+            IsCompatible<T1, T2>::value &&
+            IsFlags<T1>::value && IsFlags<T2>::value
+        > {};
+
+        template<typename T1, typename T2>
+        struct IsCompatibleComplement : std::integral_constant<bool,
+            IsCompatible<T1, T2>::value &&
+            IsComplement<T1>::value && IsComplement<T2>::value
+        > {};
+
+        template<typename T1, typename T2>
+        struct IsCompatibleFlagsOrComplement : std::integral_constant<bool,
+            IsCompatible<T1, T2>::value &&
+            ((IsFlags<T1>::value && IsFlags<T2>::value) || (IsComplement<T1>::value && IsComplement<T2>::value))
+        > {};
+#endif // BOOST_FLAGS_HAS_CONCEPTS
 
         namespace impl {
 
@@ -312,8 +423,8 @@ namespace boost {
             template<typename E>
             struct is_pseudo_and_op_type :
                     std::disjunction<
-                    std::is_same<std::remove_cvref_t<E>, pseudo_and_op_tag>,
-                    is_pseudo_and_op_intermediate<std::remove_cvref_t<E>>
+                    std::is_same<typename std::remove_cv<typename std::remove_reference<E>::type>::type, pseudo_and_op_tag>,
+                    is_pseudo_and_op_intermediate<typename std::remove_cv<typename std::remove_reference<E>::type>::type>
                     > {};
 
             template<typename T>
@@ -327,15 +438,19 @@ namespace boost {
 
                 using type = typename std::conditional<
                     enable<E1>::value,        // check if undelying enum is enabled
-                    typename std::conditional_t<
-                        IsComplementDisabled<T1>,
+                    typename std::conditional<
+#if BOOST_FLAGS_HAS_CONCEPTS
+                    IsComplementDisabled<T1>,
+#else // BOOST_FLAGS_HAS_CONCEPTS
+                    IsComplementDisabled<T1>::value,
+#endif // BOOST_FLAGS_HAS_CONCEPTS
                         T1,
-                        typename std::conditional_t<
+                        typename std::conditional<
                             UnOp<is_complement<T1>>::value,
                             complement<E1>,
                             E1
-                        >
-                    >,
+                        >::type
+                    >::type,
                     error_tag
                 >::type;
             };
@@ -380,12 +495,12 @@ namespace boost {
                         || is_pseudo_and_op_type_v<E1>
                         || is_pseudo_and_op_type_v<E2>
                         )
-                    );
+                    , "calling bitwise operator with incompatible enumerations");
                 using type = void;
             };
 
             template<typename T1, typename T2>
-            using compatibility_check_t = compatibility_check<T1, T2>::type;
+            using compatibility_check_t = typename compatibility_check<T1, T2>::type;
 
 
             // the standard doesn't provide a not_equal trait, so lets use our own
@@ -419,8 +534,16 @@ namespace boost {
             {};
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
             template<typename E>
-            concept IsDoubleOuterComplement = is_double_outer_complement<std::remove_cvref_t<E>>::value;
+            concept IsDoubleOuterComplement = 
+                is_double_outer_complement<std::remove_cvref_t<E>>::value;
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename E>
+            struct IsDoubleOuterComplement : std::integral_constant<bool,
+                is_double_outer_complement<typename std::remove_cv<typename std::remove_reference<E>::type>::type>::value
+            > {};
+#endif // BOOST_FLAGS_HAS_CONCEPTS
 
 
             template<typename T>
@@ -429,16 +552,27 @@ namespace boost {
                 return std::forward<T>(value);
             }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
             template<typename T>
-            requires IsDoubleOuterComplement<T>
+                requires IsDoubleOuterComplement<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T, typename std::enable_if<IsDoubleOuterComplement<T>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr decltype(auto) get_normalized(T&& value) noexcept {
+                constexpr 
+#if BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+                auto&&
+#else // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+                decltype(auto)
+#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+                get_normalized(T&& value) noexcept {
                 return get_normalized(std::forward<T>(value).value.value);
             }
 
         } // namespace impl
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         // concept checking if arguments is enabled
         template<typename T1, template<typename> class UnOp>
         concept UnaryOperationEnabled = is_enabled<typename impl::unary_operation_result<T1, UnOp>::type>::value;
@@ -456,9 +590,41 @@ namespace boost {
         template<typename T1, typename T2, template<typename...> class BinOp>
         concept LogicalOperationEnabled = BinaryOperationEnabled<T1, T2, BinOp>&&
             is_flags<typename impl::binary_operation_result<T1, T2, BinOp>::type>::value;
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        // concept checking if arguments is enabled
+        template<typename T1, template<typename> class UnOp>
+        struct UnaryOperationEnabled : std::integral_constant<bool,
+            is_enabled<typename impl::unary_operation_result<T1, UnOp>::type>::value
+        > {};
 
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1,T2>>
+        // concept checking both arguments are compatible and enabled
+        template<typename T1, typename T2, template<typename...> class BinOp>
+        struct BinaryOperationEnabled : std::integral_constant<bool,
+            is_enabled<typename impl::binary_operation_result<T1, T2, BinOp>::type>::value
+        > {};
+
+        // concept checking both arguments are compatible, enabled and the result is assignable to T1
+        template<typename T1, typename T2, template<typename...> class BinOp>
+        struct BinaryAssignmentEnabled : std::integral_constant<bool,
+            BinaryOperationEnabled<T1, T2, BinOp>::value &&
+            std::is_same<T1, typename impl::binary_operation_result<T1, T2, BinOp>::type>::value
+        > {};
+
+        // concept checking both arguments are compatible, enabled and the result is not a complement
+        template<typename T1, typename T2, template<typename...> class BinOp>
+        struct LogicalOperationEnabled : std::integral_constant<bool,
+            BinaryOperationEnabled<T1, T2, BinOp>::value &&
+            is_flags<typename impl::binary_operation_result<T1, T2, BinOp>::type>::value
+        > {};
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryOperationEnabled<T1, T2, std::conjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<BinaryOperationEnabled<T1, T2, std::conjunction>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator&(T1 lhs, T2 rhs) noexcept {
@@ -469,8 +635,13 @@ namespace boost {
             };
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryOperationEnabled<T1, T2, std::disjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        typename std::enable_if<BinaryOperationEnabled<T1, T2, std::disjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator|(T1 lhs, T2 rhs) noexcept {
@@ -481,8 +652,13 @@ namespace boost {
             };
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryOperationEnabled<T1, T2, impl::not_equal>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<BinaryOperationEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator^(T1 lhs, T2 rhs) noexcept {
@@ -494,8 +670,13 @@ namespace boost {
         }
 
 
-        template<typename T> 
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
             requires UnaryOperationEnabled<T, std::negation>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<UnaryOperationEnabled<T, std::negation>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             operator~(T value) noexcept {
@@ -507,24 +688,39 @@ namespace boost {
         }
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, std::conjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<BinaryAssignmentEnabled<T1, T2, std::conjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator&=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs & rhs;
             return lhs;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, std::disjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<BinaryAssignmentEnabled<T1, T2, std::disjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator|=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs | rhs;
             return lhs;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires BinaryAssignmentEnabled<T1, T2, impl::not_equal>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator^=(T1& lhs, T2 rhs) noexcept {
             lhs = lhs ^ rhs;
@@ -532,8 +728,13 @@ namespace boost {
         }
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!(T e) noexcept {
@@ -541,8 +742,13 @@ namespace boost {
         }
 
         // test for == 0 / != 0
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, std::nullptr_t) noexcept {
@@ -552,35 +758,55 @@ namespace boost {
 #if __cplusplus < 202002
         // no rewritten candidates
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(nullptr_t, T value) noexcept {
+            operator==(std::nullptr_t, T value) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(T value, nullptr_t) noexcept {
+            operator!=(T value, std::nullptr_t) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(nullptr_t, T value) noexcept {
+            operator!=(std::nullptr_t, T value) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 #endif
 
 
         // test for == 0 / != 0
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, impl::null_tag) noexcept {
@@ -590,24 +816,39 @@ namespace boost {
 #if __cplusplus < 202002
         // no rewritten candidates
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(impl::null_tag, T value) noexcept {
             return impl::get_underlying(value) == 0;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(T value, impl::null_tag) noexcept {
             return !(impl::get_underlying(value) == 0);
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(impl::null_tag, T value) noexcept {
@@ -619,13 +860,20 @@ namespace boost {
 
 
         // conversion to / from underlying type
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsEnabled<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsEnabled<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
             get_underlying(T value) noexcept {
             return impl::get_underlying(value);
         }
+
+#if BOOST_FLAGS_HAS_CONCEPTS
 
         template<typename T>
             requires IsEnabled<T>
@@ -640,19 +888,61 @@ namespace boost {
             }
         }
 
+#else // BOOST_FLAGS_HAS_CONCEPTS
+
+        namespace impl {
+            template<typename T,
+                typename std::enable_if<!IsComplement<T>::value, int*>::type = nullptr >
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr auto
+                from_underlying_impl(typename std::underlying_type_t<enum_type_t<T>> value) noexcept {
+                return static_cast<enum_type_t<T>>(value);
+            }
+
+            template<typename T,
+                typename std::enable_if<IsComplement<T>::value, int*>::type = nullptr >
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr auto
+                from_underlying_impl(typename std::underlying_type_t<enum_type_t<T>> value) noexcept {
+                return complement<T>{ static_cast<enum_type_t<T>>(value) };
+            }
+        }
+
+        template<typename T,
+            typename std::enable_if<IsEnabled<T>::value, int*>::type = nullptr >
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            constexpr auto
+            from_underlying(typename std::underlying_type_t<enum_type_t<T>> value) noexcept {
+            return impl::from_underlying_impl(value);
+        }
+
+#endif // BOOST_FLAGS_HAS_CONCEPTS
 
         // delete operator== (and also !=) for comparison of incompatible types
         // only deleted for non-class enums
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires ((IsEnabled<T1> && !impl::is_scoped_enum<enum_type_t<T1>>::value)
-                      ||
-                      (IsEnabled<T2> && !impl::is_scoped_enum<enum_type_t<T2>>::value))
-                      && (!IsCompatibleFlagsOrComplement<T1, T2>)
+        ||
+            (IsEnabled<T2> && !impl::is_scoped_enum<enum_type_t<T2>>::value))
+            && (!IsCompatibleFlagsOrComplement<T1, T2>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<((IsEnabled<T1>::value && !impl::is_scoped_enum<enum_type_t<T1>>::value)
+        ||
+            (IsEnabled<T2>::value && !impl::is_scoped_enum<enum_type_t<T2>>::value))
+            && (!IsCompatibleFlagsOrComplement<T1, T2>::value), int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator== (T1, T2) = delete;
 
         // delete operator== (and also !=) for comparison of incompatible types
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires IsCompatibleFlagsOrComplement<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool operator== (T1 e1, T2 e2) noexcept {
             return get_underlying(e1) == get_underlying(e2);
@@ -660,15 +950,25 @@ namespace boost {
 
         // disabling logical operators
         // 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) // && (!IsCompatibleFlags<T1, T2>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator&& (T1, T2) = delete;
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) // && (!IsCompatibleFlags<T1, T2>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
-
+#if defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
         // disabling relational operators
         // 
         template<typename T1, typename T2>
@@ -711,12 +1011,142 @@ namespace boost {
         };
         static constexpr partial_order_t partial_order{};
 
+#else
+        namespace impl {
+            // implementation of partial order
+            using compare_underlying_t = signed char;
+
+            enum class compare_equal_enum : compare_underlying_t { 
+                equal = 0, 
+                equivalent = equal 
+            };
+
+            enum class compare_ordered_enum : compare_underlying_t {
+                less = -1, 
+                greater = 1 
+            };
+
+            enum class compare_incomparable : compare_underlying_t { 
+                unordered = -2
+//                unordered = -128
+            };
+
+            struct zero_t
+            {
+                constexpr zero_t(zero_t*) noexcept { }
+            };
+
+            struct partial_ordering {
+                //static constexpr partial_ordering equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
+                //static constexpr partial_ordering less{static_cast<compare_underlying_t>(compare_ordered_enum::less)};
+                //static constexpr partial_ordering greater{static_cast<compare_underlying_t>(compare_ordered_enum::greater)};
+                //static constexpr partial_ordering unordered{static_cast<compare_underlying_t>()};
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator==(const partial_ordering lhs, zero_t) noexcept {
+                    return lhs.value == 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator==(partial_ordering lhs, partial_ordering rhs) noexcept {
+                    return lhs.value = rhs.value;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator<(const partial_ordering lhs, zero_t) noexcept {
+                    return lhs.value == static_cast<compare_underlying_t>(compare_ordered_enum::less);
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator>(const partial_ordering lhs, zero_t) noexcept {
+                    return lhs.value > 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator<=(const partial_ordering lhs, zero_t) noexcept {
+                    return (lhs < 0) || (lhs == 0);
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator>=(const partial_ordering lhs, zero_t) noexcept {
+                    return lhs.value >= 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator<(zero_t, const partial_ordering rhs) noexcept {
+                    return rhs > 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator>(zero_t, const partial_ordering rhs) noexcept {
+                    return rhs < 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator<=(zero_t, const partial_ordering rhs) noexcept {
+                    return rhs >= 0;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD friend constexpr bool operator>=(zero_t, const partial_ordering rhs) noexcept {
+                    return rhs <= 0;
+                }
+
+
+                compare_underlying_t value;
+            };
+
+            static constexpr partial_ordering equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
+            static constexpr partial_ordering less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
+            static constexpr partial_ordering greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
+            static constexpr partial_ordering unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
+
+            //inline constexpr partial_ordering partial_ordering::less{ static_cast<_Compare_t>(_Compare_ord::less) };
+            //inline constexpr partial_ordering partial_ordering::equivalent{ static_cast<_Compare_t>(_Compare_eq::equivalent) };
+            //inline constexpr partial_ordering partial_ordering::greater{ static_cast<_Compare_t>(_Compare_ord::greater) };
+            //inline constexpr partial_ordering partial_ordering::unordered{ static_cast<_Compare_t>(_Compare_ncmp::unordered) };
+        }
+
+
+        //namespace impl {
+        //    template<typename T1, typename T2>
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD
+        //        std::partial_ordering normalized_contained_induced_compare(T1 l, T2 r) noexcept {
+        //        return l == r
+        //            ? std::partial_ordering::equivalent
+        //            : (l & r) == l
+        //            ? std::partial_ordering::less
+        //            : (l & r) == r
+        //            ? std::partial_ordering::greater
+        //            : std::partial_ordering::unordered
+        //            ;
+        //    }
+
+        //    template<typename T1, typename T2>
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD
+        //        std::partial_ordering contained_induced_compare(T1 l, T2 r) noexcept {
+        //        return normalized_contained_induced_compare(
+        //            get_normalized(l),
+        //            get_normalized(r)
+        //        );
+        //    }
+        //}
+
+        //struct partial_order_t {
+        //    template<typename T1, typename T2>
+        //        requires IsCompatibleFlagsOrComplement<T1, T2>
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD
+        //        constexpr auto operator()(T1 e1, T2 e2) const noexcept {
+        //        return impl::contained_induced_compare(e1, e2);
+        //    }
+
+        //    using is_transparent = int;
+        //};
+        //static constexpr partial_order_t partial_order{};
+#endif // defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+
+
 
         // explicit total order for using enabled flags as (part of) keys in ordered associative containers
 
         struct total_order_t {
+#if BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2>
                 requires IsCompatibleFlagsOrComplement<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto operator()(T1 e1, T2 e2) const noexcept {
                 return get_underlying(e1) < get_underlying(e2);
@@ -732,8 +1162,13 @@ namespace boost {
         
 
         // test if any bit is set
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             any(T e) noexcept {
@@ -741,8 +1176,13 @@ namespace boost {
         }
 
         // test if no bit is set
-        template<typename T>
-            requires IsFlags<T>
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T>
+                requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T,
+                typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             none(T e) noexcept {
@@ -751,8 +1191,13 @@ namespace boost {
 
 
         // test if subset is contained in superset
-        template<typename T1, typename T2>
-            requires IsCompatibleFlags<T1, T2>
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires IsCompatibleFlags<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             subseteq(T1 subset, T2 superset) noexcept {
@@ -760,8 +1205,13 @@ namespace boost {
         }
 
         // test if subset is a proper subset of superset
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             subset(T1 subset, T2 superset) noexcept {
@@ -770,9 +1220,14 @@ namespace boost {
 
 
         // test if lhs and rhs have non-empty intersection (have at least one common flag)
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             intersect(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) != 0;
@@ -780,9 +1235,14 @@ namespace boost {
 
 
         // test if lhs and rhs are disjoint (have no common flag)
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires IsCompatibleFlags<T1, T2>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             disjoint(T1 lhs, T2 rhs) noexcept {
             return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) == 0;
@@ -790,8 +1250,13 @@ namespace boost {
 
 
         // returns an empty instance of T
-        template<typename T>
-            requires IsFlags<T>
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T>
+                requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T,
+                typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
             make_null(T) noexcept {
@@ -801,8 +1266,13 @@ namespace boost {
 
         // depending on set
         // returns e or an empty instance of T
-        template<typename T>
-            requires IsFlags<T>
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T>
+                requires IsFlags<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T,
+                typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
             make_if(T e, bool set) noexcept {
@@ -811,8 +1281,13 @@ namespace boost {
 
         // return a copy of value with all
         // bits of modification set resp. cleared
-        template<typename T1, typename T2>
-            requires IsCompatibleFlags<T1, T2>
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires IsCompatibleFlags<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T1>
             modify(T1 value, T2 modification, bool set) noexcept {
@@ -821,8 +1296,13 @@ namespace boost {
 
         // sets resp. clears the bits of modification
         // in value in-place
-        template<typename T1, typename T2>
-            requires IsCompatibleFlags<T1, T2> 
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires IsCompatibleFlags<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             constexpr T1&
             modify_inplace(T1& value, T2 modification, bool set) noexcept {
             value = set ? (value | modification) : (value & ~modification);
@@ -831,16 +1311,26 @@ namespace boost {
 
 
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
             requires IsEnabled<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsEnabled<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr impl::pseudo_and_op_intermediate_t<T>
             operator&(T lhs, impl::pseudo_and_op_tag) noexcept {
             return { lhs };
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
             requires LogicalOperationEnabled<T1, T2, std::conjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+            typename std::enable_if<LogicalOperationEnabled<T1, T2, std::conjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
@@ -868,7 +1358,9 @@ using boost::flags::operator==;
 using boost::flags::operator!=;
 #endif
 
+#if defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
 using boost::flags::operator<=>;
+#endif
 
 using boost::flags::operator&&;
 using boost::flags::operator||;
@@ -906,6 +1398,7 @@ using boost::flags::modify_inplace;
      }                                                                               \
  };                                                                                  \
 
+#if defined(__cpp_impl_three_way_comparison)
 
 #define BOOST_FLAGS_REL_OPS_DELETE(E)                                               \
 /* matches better than built-in relational operators */                             \
@@ -917,6 +1410,19 @@ template<typename T1, typename T2>                                              
               std::is_same_v<E, boost::flags::enum_type_t<T2>> )                    \
 std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
+#else // defined(__cpp_impl_three_way_comparison)
+
+#define BOOST_FLAGS_REL_OPS_DELETE(E)                                               \
+/* matches better than built-in relational operators */                             \
+bool operator< (E l, E r) = delete;                                                 \
+                                                                                    \
+/* matches all other E, complement<E> arguments */                                  \
+template<typename T1, typename T2,                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&     \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr> \
+bool operator< (T1 l, T2 r) = delete;
+
+#endif // defined(__cpp_impl_three_way_comparison)
 
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                        \
 /* matches better than built-in relational operators */                             \
