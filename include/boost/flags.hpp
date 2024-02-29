@@ -1162,7 +1162,7 @@ namespace boost {
             template<typename T1, typename T2,
                 typename std::enable_if<IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr auto operator()(T1 e1, T2 e2) const noexcept {
+                constexpr auto operator()(T1 e1, T2 e2) const noexcept -> decltype(impl::subset_induced_compare(e1, e2)) {
                 return impl::subset_induced_compare(e1, e2);
             }
 
@@ -1417,24 +1417,28 @@ using boost::flags::modify_inplace;
 
 
 #define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                          \
- /* specialize std::less for E and complement<E> */                                  \
- template<>                                                                          \
- struct std::less<E> {                                                               \
-     BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                       \
-         constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {      \
-         return boost::flags::total_order(rhs, lhs);                                 \
-     }                                                                               \
- };                                                                                  \
- template<>                                                                          \
- struct std::less<boost::flags::complement<E>> {                                     \
-     BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                       \
-         constexpr bool operator()(                                                  \
-             boost::flags::complement<E> const& lhs,                                 \
-             boost::flags::complement<E> const& rhs                                  \
-             ) const noexcept {                                                      \
-         return boost::flags::total_order(rhs, lhs);                                 \
-     }                                                                               \
- };                                                                                  \
+ /* specialize std::less for E and complement<E> */                                 \
+ /* at least gcc < version 7 is not conforming with template specialization */      \
+ /* put it explicitly into namespace std to make them all happy */                  \
+namespace std {                                                                     \
+    template<>                                                                      \
+    struct less<E> {                                                                \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                             \
+            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {  \
+            return boost::flags::total_order(rhs, lhs);                             \
+        }                                                                           \
+    };                                                                              \
+    template<>                                                                      \
+    struct less<boost::flags::complement<E>> {                                      \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                             \
+            constexpr bool operator()(                                              \
+                boost::flags::complement<E> const& lhs,                             \
+                boost::flags::complement<E> const& rhs                              \
+                ) const noexcept {                                                  \
+            return boost::flags::total_order(rhs, lhs);                             \
+        }                                                                           \
+    };                                                                              \
+} /* namespace std */                                                               
 
 #if defined(__cpp_impl_three_way_comparison)
 
@@ -1507,6 +1511,21 @@ bool operator< (E l, E r) noexcept {                                            
     return boost::flags::impl::normalized_subset_induced_compare(l, r) < 0;             \
 }                                                                                       \
                                                                                         \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator<= (E l, E r) noexcept {                                                   \
+    return boost::flags::impl::normalized_subset_induced_compare(l, r) <= 0;            \
+}                                                                                       \
+                                                                                        \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator> (E l, E r) noexcept {                                                    \
+    return boost::flags::impl::normalized_subset_induced_compare(l, r) > 0;             \
+}                                                                                       \
+                                                                                        \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator>= (E l, E r) noexcept {                                                   \
+    return boost::flags::impl::normalized_subset_induced_compare(l, r) >= 0;            \
+}                                                                                       \
+                                                                                        \
 /* matches all other E, complement<E> arguments */                                      \
 template<typename T1, typename T2,                                                      \
     typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
@@ -1515,7 +1534,35 @@ template<typename T1, typename T2,                                              
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
 bool operator< (T1 l, T2 r) noexcept {                                                  \
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                        \
-}
+}                                                                                       \
+                                                                                        \
+template<typename T1, typename T2,                                                      \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator<= (T1 l, T2 r) noexcept {                                                 \
+    return boost::flags::impl::subset_induced_compare(l, r) <= 0;                       \
+}                                                                                       \
+                                                                                        \
+template<typename T1, typename T2,                                                      \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator> (T1 l, T2 r) noexcept {                                                  \
+    return boost::flags::impl::subset_induced_compare(l, r) > 0;                        \
+}                                                                                       \
+                                                                                        \
+template<typename T1, typename T2,                                                      \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+bool operator>= (T1 l, T2 r) noexcept {                                                 \
+    return boost::flags::impl::subset_induced_compare(l, r) >= 0;                       \
+}                                                                                       \
+                                                                                        \
 
 
 
