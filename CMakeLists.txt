@@ -16,7 +16,7 @@ message("-- Using -std=c++${CXX_STD}")
 # set(Boost_USE_STATIC_LIBS OFF)
 # set(Boost_MULTITHREADED OFF)
 # set(Boost_USE_STATIC_RUNTIME OFF)
-# set( Boost_ADDITIONAL_VERSIONS 1.84.0 1.84)
+set( Boost_ADDITIONAL_VERSIONS 1.84.0 1.84)
 # find_package(Boost)
 # list(APPEND CMAKE_MODULE_PATH "C:\\proj")
 
