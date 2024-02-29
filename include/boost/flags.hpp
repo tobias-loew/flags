@@ -731,6 +731,20 @@ namespace boost {
             };
         }
 
+//
+// Note to the assignment operators:
+// Even though it's tempting to delegate to the built-in assignment operators, writing
+// 
+// E& operator&=(E& lhs, E rhs) { 
+//      return static_cast<E&>(
+//              static_cast<underlying_t<E>&>(lhs) &= static_cast<underlying_t<E>>(rhs)
+//              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//      );
+//  }
+// 
+//  is illegal! There is simply no way to legally get a reference to the underlying value.
+//  (cf. https://en.cppreference.com/w/cpp/language/static_cast) 
+//
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
@@ -741,7 +755,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator&=(T1& lhs, T2 rhs) noexcept {
-            // lhs = lhs & rhs;
+            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
             return (lhs = lhs & rhs), lhs;
         }
 
@@ -754,7 +768,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator|=(T1& lhs, T2 rhs) noexcept {
-            // lhs = lhs | rhs;
+            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
             return (lhs = lhs | rhs), lhs;
         }
 
@@ -767,7 +781,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator^=(T1& lhs, T2 rhs) noexcept {
-            // lhs = lhs ^ rhs;
+            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
             return (lhs = lhs ^ rhs), lhs;
         }
 
