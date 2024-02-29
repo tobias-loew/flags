@@ -39,8 +39,12 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -j4 -C ${CMAKE_CFG_INTDIR
 
 macro(add_test_executable name)
     add_executable(${name} ${name}.cpp)
+    target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})
+	target_include_directories(${name} INTERFACE ${CMAKE_SOURCE_DIR}/include)
+	if (Boost_FOUND)
+	   target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})
+	endif()
     set_property(TARGET ${name} PROPERTY CXX_STANDARD ${CXX_STD})
-    target_link_libraries(${name} parser gtest gtest_main ${link_flags})
     add_test(NAME ${name} COMMAND ${name} --gtest_catch_exceptions=1)
 endmacro()
 
