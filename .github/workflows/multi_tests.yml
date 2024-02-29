@@ -54,6 +54,17 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    - name: Install Boost Test
+      run: |
+        if [ "${{ matrix.os }}" == "windows-latest" ]; then
+           vcpkg install boost-test --triplet x64-windows
+           echo "BUILD_TYPE=Release" >> $GITHUB_ENV
+        else
+           vcpkg install boost-test
+           echo "BUILD_TYPE=Debug" >> $GITHUB_ENV
+        fi
+        vcpkg integrate install
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
