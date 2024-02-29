@@ -189,7 +189,7 @@ jobs:
           REF=${GITHUB_BASE_REF:-$GITHUB_REF}
           REF=${REF#refs/heads/}
           echo REF: $REF
-          BOOST_BRANCH=develop && [ "$REF" == "master" ] && BOOST_BRANCH=master || true
+          BOOST_BRANCH=develop && [ "$REF" == "main" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
@@ -197,7 +197,7 @@ jobs:
           mkdir -p libs/$LIBRARY
           cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
           git submodule update --init tools/boostdep
-          python3 tools/boostdep/depinst/depinst.py --git_args "--jobs 3" $LIBRARY
+          python3 tools/boostdep/depinst/depinst.py --git_args "--jobs 3"
           ./bootstrap.sh
           ./b2 -d0 headers
 
@@ -209,7 +209,7 @@ jobs:
       - name: Run tests
         run: |
           cd ../boost-root
-          ./b2 -j3 ${{ steps.strings.outputs.build-output-dir }}/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
+          ./b2 -j3 ${{ github.workspace }}/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
 
   windows:
     strategy:
@@ -313,7 +313,7 @@ jobs:
           REF=${GITHUB_BASE_REF:-$GITHUB_REF}
           REF=${REF#refs/heads/}
           echo REF: $REF
-          BOOST_BRANCH=develop && [ "$REF" == "master" ] && BOOST_BRANCH=master || true
+          BOOST_BRANCH=develop && [ "$REF" == "main" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
@@ -325,7 +325,7 @@ jobs:
 
       - name: Use library with add_subdirectory
         run: |
-          cd ../boost-root/${{ steps.strings.outputs.build-output-dir }}/test/cmake_subdir_test
+          cd ../boost-root/${{ github.workspace }}/test/cmake_subdir_test
           mkdir __build__ && cd __build__
           cmake ..
           cmake --build .
@@ -369,7 +369,7 @@ jobs:
           REF=${GITHUB_BASE_REF:-$GITHUB_REF}
           REF=${REF#refs/heads/}
           echo REF: $REF
-          BOOST_BRANCH=develop && [ "$REF" == "master" ] && BOOST_BRANCH=master || true
+          BOOST_BRANCH=develop && [ "$REF" == "main" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
@@ -392,7 +392,7 @@ jobs:
 
       - name: Use the installed library
         run: |
-          cd ../boost-root/${{ steps.strings.outputs.build-output-dir }}/test/cmake_install_test && mkdir __build__ && cd __build__
+          cd ../boost-root/${{ github.workspace }}/test/cmake_install_test && mkdir __build__ && cd __build__
           cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
           cmake --build .
           ctest --output-on-failure --no-tests=error
@@ -435,7 +435,7 @@ jobs:
           REF=${GITHUB_BASE_REF:-$GITHUB_REF}
           REF=${REF#refs/heads/}
           echo REF: $REF
-          BOOST_BRANCH=develop && [ "$REF" == "master" ] && BOOST_BRANCH=master || true
+          BOOST_BRANCH=develop && [ "$REF" == "main" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
