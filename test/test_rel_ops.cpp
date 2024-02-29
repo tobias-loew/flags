@@ -10,15 +10,15 @@
 #include <array>
 #include <compare>
 
-enum class relops_built-in_enum {
+enum class relops_builtin_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
     bit_3 = boost::flags::nth_bit(3), // == 0x08
 };
 
-// enable relops_built-in_enum
-template<> struct boost::flags::enable<relops_built-in_enum> : std::true_type {};
+// enable relops_builtin_enum
+template<> struct boost::flags::enable<relops_builtin_enum> : std::true_type {};
 
 
 
@@ -49,6 +49,20 @@ template<> struct boost::flags::enable<relops_partial_order_enum> : std::true_ty
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
 
 
+
+enum class relops_std_less_enum {
+    bit_0 = boost::flags::nth_bit(0), // == 0x01
+    bit_1 = boost::flags::nth_bit(1), // == 0x02
+    bit_2 = boost::flags::nth_bit(2), // == 0x04
+    bit_3 = boost::flags::nth_bit(3), // == 0x08
+};
+
+// enable relops_delete_enum
+template<> struct boost::flags::enable<relops_std_less_enum> : std::true_type {};
+
+BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
+
+
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value) {
@@ -60,8 +74,8 @@ auto make_off_on(T v) {
     return std::array<T, 2>{T{}, v};
 }
 
-void test_built-in() {
-    using E = relops_built-in_enum;
+void test_builtin() {
+    using E = relops_builtin_enum;
 
     // built-in relational ops -> compare underlying
 
@@ -316,10 +330,78 @@ void test_partial_order() {
 }
 
 
+void test_std_less() {
+    using E = relops_std_less_enum;
+
+    // built-in relational ops -> compare underlying
+
+    for (auto a1 : make_off_on(E::bit_0)) {
+        for (auto b1 : make_off_on(E::bit_1)) {
+            for (auto c1 : make_off_on(E::bit_2)) {
+                for (auto d1 : make_off_on(E::bit_3)) {
+
+                    for (auto a2 : make_off_on(E::bit_0)) {
+                        for (auto b2 : make_off_on(E::bit_1)) {
+                            for (auto c2 : make_off_on(E::bit_2)) {
+                                for (auto d2 : make_off_on(E::bit_3)) {
+
+                                    auto v1 = a1 | b1 | c1 | d1;
+                                    auto v2 = a2 | b2 | c2 | d2;
+
+                                    {
+#define OP <
+                                        bool bf = v1 OP v2;
+                                        bool bu = to_underlying(v1) OP to_underlying(v2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+
+                                    {
+#define OP <=
+                                        bool bf = v1 OP v2;
+                                        bool bu = to_underlying(v1) OP to_underlying(v2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+
+                                    {
+#define OP >
+                                        bool bf = v1 OP v2;
+                                        bool bu = to_underlying(v1) OP to_underlying(v2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+
+                                    {
+#define OP >=
+                                        bool bf = v1 OP v2;
+                                        bool bu = to_underlying(v1) OP to_underlying(v2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+
+                                    {
+#define OP <=>
+                                        auto bf = v1 OP v2;
+                                        auto bu = to_underlying(v1) OP to_underlying(v2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 int main() {
-    test_built-in();
+    test_builtin();
     test_delete();
     test_partial_order();
+    test_std_less();
     return boost::report_errors();
 }

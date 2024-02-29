@@ -1572,7 +1572,7 @@ bool operator>= (T1 l, T2 r) noexcept {                                         
 
 #define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &
 
-#define BOOST_FLAG_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
+#define BOOST_FLAGS_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
 
 #define BOOST_FLAGS_NULL boost::flags::impl::null_tag{}
 

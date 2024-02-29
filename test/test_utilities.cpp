@@ -58,18 +58,32 @@ void test_none() {
 #endif
 }
 
-void test_contains() {
+void test_subset() {
     using namespace boost::flags;
 
     flags_enum a = flags_enum::bit_0;
     flags_enum b = flags_enum::bit_1;
 
-    BOOST_TEST(contains(a, flags_enum{}));
-    BOOST_TEST(!contains(flags_enum{}, a));
-    BOOST_TEST(!contains(a, a | b));
-    BOOST_TEST(contains(a | b, a | b));
-    BOOST_TEST(contains(a | b, a));
-    BOOST_TEST(!contains(b, a));
+    BOOST_TEST(subset(flags_enum{}, a));
+    BOOST_TEST(!subset(a, flags_enum{}));
+    BOOST_TEST(subset(a, a | b));
+    BOOST_TEST(!subset(a | b, a | b));
+    BOOST_TEST(!subset(a | b, a));
+    BOOST_TEST(!subset(b, a));
+}
+
+void test_subseteq() {
+    using namespace boost::flags;
+
+    flags_enum a = flags_enum::bit_0;
+    flags_enum b = flags_enum::bit_1;
+
+    BOOST_TEST(subseteq(flags_enum{}, a));
+    BOOST_TEST(!subseteq(a, flags_enum{}));
+    BOOST_TEST(subseteq(a, a | b));
+    BOOST_TEST(subseteq(a | b, a | b));
+    BOOST_TEST(!subseteq(a | b, a));
+    BOOST_TEST(!subseteq(b, a));
 }
 
 void test_intersect() {
@@ -154,7 +168,8 @@ void test_modify_inplace() {
 int main() {
     test_any();
     test_none();
-    test_contains();
+    test_subset();
+    test_subseteq();
     test_intersect();
     test_disjoint();
     test_make_null();
