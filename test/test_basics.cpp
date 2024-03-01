@@ -8,6 +8,9 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test.hpp"
+
+
 #define TEST_NAMESPACE test_basics
 #include "gcc_ns_error_workaround.hpp"
 
@@ -32,12 +35,13 @@ template<> struct boost_flags_enable<flags_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
+
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value) 
-#ifdef BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
 -> typename std::underlying_type<E>::type
-#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#endif // TEST_NO_CXX14_DECLTYPE_AUTO
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }

@@ -18,26 +18,21 @@
 #include <type_traits>
 #include <utility>
 
-// adapted from boost/config/detail/suffix.hpp
-// 
-// header <compare>
-//
-#if !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
-# if !defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)
-#   define BOOST_FLAGS_NO_CXX20_HDR_COMPARE
-# else
-#  ifdef __has_include                               // Check if __has_include is present
-#   if !__has_include(<compare>)                     // additional check for the header
-#    define BOOST_FLAGS_NO_CXX20_HDR_COMPARE
-#   endif
-#  endif
+
+#if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+// g++ does not allow overwriting rel. operators with spaceship for enums 
+// cf. https://cplusplus.github.io/CWG/issues/2673.html
+// cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
+// hopefully g++ 14 will have fixed it
+# if (defined(__GNUC__) && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
 # endif
 #endif
 
 
-#if !defined(BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO)
-# if !defined(__cpp_decltype_auto) || (__cpp_decltype_auto < 201304)
-#  define BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#if !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# if !defined(__has_include) || !__has_include(<compare>) || !defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)
+#  define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
 # endif
 #endif
 
@@ -63,12 +58,6 @@
 # define BOOST_FLAGS_ATTRIBUTE_NODISCARD
 #endif
 
-//
-// decltype(auto)
-//
-#if !defined(__cpp_decltype_auto) || (__cpp_decltype_auto < 201304)
-#  define BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
-#endif
 
 
 // adapted from boost/asio/detail/config.hpp
@@ -112,29 +101,20 @@
 #if !defined(BOOST_FLAGS_DLL_SELECTANY)
 
 // only required for definition of partial_ordering
-# if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
-
+# if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 // BOOST_FLAGS_DLL_SELECTANY is not used
-
-# else // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
-
+# else // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 // adapted from boost/dll/alias.hpp
 #  if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
-
 #define BOOST_FLAGS_DLL_SELECTANY __declspec(selectany)
-
 #  else // defined(_MSC_VER)
-
 #define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
-
 #  endif // defined(_MSC_VER)
-
-# endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
-
+# endif // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 #endif // !defined(BOOST_FLAGS_DLL_SELECTANY)
 
 
-#if !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 #include <compare>
 #endif
 
@@ -641,11 +621,6 @@ namespace boost {
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr
                 auto
-                // #if defined(BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO)
-                //                 auto&&
-                // #else // defined(BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO)
-                //                 decltype(auto)
-                // #endif // defined(BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO)
                 get_normalized(T&& value) noexcept -> decltype(get_normalized(std::forward<T>(value).value.value)) {
                 return get_normalized(std::forward<T>(value).value.value);
             }
@@ -1063,54 +1038,8 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
 
-        // alias to partial_ordering
-        using partial_ordering = std::partial_ordering;
-
-        // disabling relational operators
-        // 
-        template<typename T1, typename T2>
-            requires (IsEnabled<T1> || IsEnabled<T2>) && (!IsCompatibleFlagsOrComplement<T1, T2>)
-        constexpr partial_ordering operator<=> (T1, T2) = delete;
-
-        namespace impl {
-            template<typename T1, typename T2>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
-                return l == r
-                    ? partial_ordering::equivalent
-                    : (l & r) == l
-                    ? partial_ordering::less
-                    : (l & r) == r
-                    ? partial_ordering::greater
-                    : partial_ordering::unordered
-                    ;
-            }
-
-            template<typename T1, typename T2>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
-                return normalized_subset_induced_compare(
-                    get_normalized(l),
-                    get_normalized(r)
-                );
-            }
-        }
-
-        struct partial_order_t {
-            template<typename T1, typename T2>
-                requires IsCompatibleFlagsOrComplement<T1, T2>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr auto operator()(T1 e1, T2 e2) const noexcept {
-                return impl::subset_induced_compare(e1, e2);
-            }
-
-            using is_transparent = int;
-        };
-        static constexpr partial_order_t partial_order{};
-
-#else
         namespace impl {
             // implementation of partial order
             using compare_underlying_t = signed char;
@@ -1232,7 +1161,54 @@ namespace boost {
             using is_transparent = int;
         };
         static constexpr partial_order_t partial_order{};
-#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+
+#else // BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+
+        // alias to partial_ordering
+        using partial_ordering = std::partial_ordering;
+
+        // disabling relational operators
+        // 
+        template<typename T1, typename T2>
+            requires (IsEnabled<T1> || IsEnabled<T2>) && (!IsCompatibleFlagsOrComplement<T1, T2>)
+        constexpr partial_ordering operator<=> (T1, T2) = delete;
+
+        namespace impl {
+            template<typename T1, typename T2>
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
+                return l == r
+                    ? partial_ordering::equivalent
+                    : (l & r) == l
+                    ? partial_ordering::less
+                    : (l & r) == r
+                    ? partial_ordering::greater
+                    : partial_ordering::unordered
+                    ;
+            }
+
+            template<typename T1, typename T2>
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
+                return normalized_subset_induced_compare(
+                    get_normalized(l),
+                    get_normalized(r)
+                );
+            }
+        }
+
+        struct partial_order_t {
+            template<typename T1, typename T2>
+                requires IsCompatibleFlagsOrComplement<T1, T2>
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr auto operator()(T1 e1, T2 e2) const noexcept {
+                return impl::subset_induced_compare(e1, e2);
+            }
+
+            using is_transparent = int;
+        };
+        static constexpr partial_order_t partial_order{};
+#endif // BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
 
 
 
@@ -1459,7 +1435,7 @@ using boost::flags::operator==;
 using boost::flags::operator!=;
 #endif
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 using boost::flags::operator<=>;
 #endif
 

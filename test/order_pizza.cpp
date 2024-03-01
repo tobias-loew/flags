@@ -8,6 +8,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test.hpp"
+
 #define TEST_NAMESPACE order_pizza
 #include "gcc_ns_error_workaround.hpp"
 

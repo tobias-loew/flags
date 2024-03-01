@@ -9,6 +9,8 @@
 #include <boost/flags.hpp>
 #include <array>
 
+#include "include_test.hpp"
+
 #define TEST_NAMESPACE test_rel_ops
 #include "gcc_ns_error_workaround.hpp"
 
@@ -92,18 +94,18 @@ BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value)
-#ifdef BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
 -> typename std::underlying_type<E>::type
-#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#endif // TEST_NO_CXX14_DECLTYPE_AUTO
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
 
 template<typename T>
 auto make_off_on(T v) 
-#ifdef BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
 -> typename std::array<T, 2>
-#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+#endif // TEST_NO_CXX14_DECLTYPE_AUTO
 {
     return std::array<T, 2>{{T{}, v}};  // use double braces to prevent C++11 clang warning "suggest braces around initialization of subobject"
 }
