@@ -19,7 +19,12 @@
 #include <utility>
 
 
-#define BOOST_FLAGS_IS_GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
+#if defined(__GNUC__) && !defined(__clang__)
+#define BOOST_FLAGS_IS_GCC_COMPILER 1
+#else
+#define BOOST_FLAGS_IS_GCC_COMPILER 0
+#endif
+
 
 #if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 // g++ does not allow overwriting rel. operators with spaceship for enums 
