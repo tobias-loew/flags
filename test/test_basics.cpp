@@ -107,19 +107,19 @@ void test_normalize_complements() {
 
     boost::flags::complement <
         flags_enum
-    > c1{};
+    > c1{ c0 };
 
     boost::flags::complement<boost::flags::complement<
         flags_enum
-        >> c2{};
+        >> c2{ c1 };
 
     boost::flags::complement<boost::flags::complement<boost::flags::complement<
         flags_enum
-        >>> c3{};
+        >>> c3{ c2 };
 
     boost::flags::complement<boost::flags::complement<boost::flags::complement<boost::flags::complement<
         flags_enum
-        >>>> c4{};
+        >>>> c4{ c3 };
 
     BOOST_TEST(c0 == c2);
     BOOST_TEST(c2 == c4);
