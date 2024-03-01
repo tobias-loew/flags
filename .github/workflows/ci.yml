@@ -210,7 +210,7 @@ jobs:
       - name: Run tests
         run: |
           cd ../boost-root
-          ./b2 -j3 ${{ github.workspace }}/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
+          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
 
   windows:
     strategy:
