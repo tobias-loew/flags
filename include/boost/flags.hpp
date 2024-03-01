@@ -19,12 +19,14 @@
 #include <utility>
 
 
+#define BOOST_FLAGS_IS_GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
+
 #if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 // g++ does not allow overwriting rel. operators with spaceship for enums 
 // cf. https://cplusplus.github.io/CWG/issues/2673.html
 // cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
 // hopefully g++ 14 will have fixed it
-# if (defined(__GNUC__) && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+# if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
 #  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
 # endif
 #endif
