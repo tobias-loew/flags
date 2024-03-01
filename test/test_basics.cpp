@@ -31,7 +31,7 @@ enum
 
 // enable flags_enum
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<flags_enum> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE flags_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 

@@ -31,7 +31,7 @@ enum class pizza_toppings {
 
 // enable Boost.Flags for pizza_toppings
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE pizza_toppings> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
@@ -42,7 +42,7 @@ enum class ice_cream_flavours {
 };
 // enable Boost.Flags for ice_cream_flavours
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<ice_cream_flavours> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE ice_cream_flavours> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 

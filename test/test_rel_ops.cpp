@@ -27,7 +27,7 @@ enum class relops_builtin_enum {
 
 // enable relops_builtin_enum
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<relops_builtin_enum> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_builtin_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
@@ -41,7 +41,7 @@ enum class relops_delete_enum {
 
 // enable relops_delete_enum
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<relops_delete_enum> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_delete_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
@@ -56,7 +56,7 @@ enum class relops_partial_order_enum {
 
 // enable relops_delete_enum
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<relops_partial_order_enum> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_partial_order_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
@@ -71,7 +71,7 @@ enum class relops_std_less_enum {
 
 // enable relops_delete_enum
 TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<relops_std_less_enum> : std::true_type {};
+template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_std_less_enum> : std::true_type {};
 TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
