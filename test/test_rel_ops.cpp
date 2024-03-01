@@ -8,7 +8,6 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 #include <array>
-#include <compare>
 
 enum class relops_builtin_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
