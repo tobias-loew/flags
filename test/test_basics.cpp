@@ -40,7 +40,7 @@ void test_nth_bit() {
     BOOST_TEST_EQ(to_underlying(flags_enum::bit_3), 8);
 
     // test whole range of int
-    for (int i = 0; i < sizeof(int) * 8; ++i) {
+    for (int i = 0; i < static_cast<int>(sizeof(int) * 8); ++i) {
         BOOST_TEST_EQ(boost::flags::nth_bit(i), 1 << i);
     }
 }
