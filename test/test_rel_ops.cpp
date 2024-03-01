@@ -158,7 +158,7 @@ void test_builtin() {
 #undef OP
                                     }
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -166,7 +166,7 @@ void test_builtin() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                 }
                             }
                         }
@@ -241,7 +241,7 @@ void test_delete() {
 
 #ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -249,11 +249,11 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#else // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#else // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 
-#error Spaceship has not yet landed! Cannot test for fail-on-delete.
+#error Spaceship has not yet landed or is destroyed be builtin operator! Cannot test for fail-on-delete.
 
-#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 
 
 #endif
@@ -357,7 +357,7 @@ void test_partial_order() {
 #undef OP
                                     }
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -365,7 +365,7 @@ void test_partial_order() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                 }
                             }
                         }
@@ -427,7 +427,7 @@ void test_std_less() {
 #undef OP
                                     }
 
-#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -435,7 +435,7 @@ void test_std_less() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                 }
                             }
                         }
