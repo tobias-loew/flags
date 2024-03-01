@@ -61,7 +61,7 @@ void test_complement_types() {
     auto c4 = ~c3;
     auto c5 = ~c4;
 
-    static_assert(!std::is_samev<decltype(c1), boost::flags::complement<decltype(c0)>>::value, "error in complement type");
+    static_assert(!std::is_same<decltype(c1), boost::flags::complement<decltype(c0)>>::value, "error in complement type");
 
     static_assert(std::is_same<decltype(c0), decltype(c1)>::value, "error in complement type");
     static_assert(std::is_same<decltype(c1), decltype(c2)>::value, "error in complement type");
