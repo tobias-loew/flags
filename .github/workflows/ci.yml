@@ -197,8 +197,7 @@ jobs:
           mkdir -p libs/$LIBRARY
           cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
           git submodule update --init tools/boostdep
-          git submodule update --init tools/core
-          git submodule update --init core
+          git submodule update --init libs/core
           python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           ./bootstrap.sh
           ./b2 -d0 headers
