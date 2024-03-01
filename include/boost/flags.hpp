@@ -20,10 +20,10 @@
 
 
 #if defined(__GNUC__) && !defined(__clang__)
-#define BOOST_FLAGS_IS_GCC_COMPILER 1
-#else
-#define BOOST_FLAGS_IS_GCC_COMPILER 0
-#endif
+# define BOOST_FLAGS_IS_GCC_COMPILER 1
+#else // defined(__GNUC__) && !defined(__clang__)
+# define BOOST_FLAGS_IS_GCC_COMPILER 0
+#endif // defined(__GNUC__) && !defined(__clang__)
 
 
 #if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
@@ -33,15 +33,23 @@
 // hopefully g++ 14 will have fixed it
 # if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
 #  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
-# endif
-#endif
+# else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 0
+# endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#endif // !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 
 
 #if !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-# if !defined(__has_include) || !__has_include(<compare>) || !defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)
+# if defined(__has_include)
+#  if __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
+#  else // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
+#  endif // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+# else // defined(__has_include)
 #  define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
-# endif
-#endif
+# endif // defined(__has_include)
+#endif // !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 
 
 
