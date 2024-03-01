@@ -106,7 +106,7 @@ auto make_off_on(T v)
 -> typename std::array<T, 2>
 #endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
 {
-    return std::array<T, 2>{T{}, v};
+    return std::array<T, 2>{{T{}, v}};  // use double braces to prevent C++11 clang warning "suggest braces around initialization of subobject"
 }
 
 void test_builtin() {
