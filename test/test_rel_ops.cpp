@@ -230,7 +230,7 @@ std::partial_ordering check_bit_incusion(T l, T r) {
     // start with equivalent
     std::partial_ordering result = std::partial_ordering::equivalent;
 
-    for (int i = 0; i < sizeof(T) * 8; ++i) {
+    for (int i = 0; i < static_cast<int>(sizeof(T) * 8); ++i) {
         auto val = 1 << i;
         bool sl = l & val;
         bool sr = r & val;
