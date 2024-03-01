@@ -19,7 +19,7 @@
 #include <utility>
 
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && (!defined(__clang__) || defined(__MINGW32__))
 # define BOOST_FLAGS_IS_GCC_COMPILER 1
 #else // defined(__GNUC__) && !defined(__clang__)
 # define BOOST_FLAGS_IS_GCC_COMPILER 0
