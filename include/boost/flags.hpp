@@ -34,12 +34,13 @@
 # endif
 #endif
 
-#ifdef __has_include                           // Check if __has_include is present
-#if (!__has_include(<compare>) || !defined(__cpp_lib_three_way_comparison) || (__cpp_lib_three_way_comparison < 201907L)) && !defined(BOOST_NO_CXX20_HDR_COMPARE)
-#  define BOOST_FLAGS_NO_CXX20_HDR_COMPARE
+
+#if !defined(BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO)
+# if !defined(__cpp_decltype_auto) || (__cpp_decltype_auto < 201304)
+#  define BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+# endif
 #endif
-#else
-#endif
+
 
 
 //
@@ -111,7 +112,7 @@
 
 
 
-#if not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
 #include <compare>
 #endif
 

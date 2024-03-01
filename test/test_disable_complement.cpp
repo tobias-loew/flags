@@ -21,8 +21,12 @@ template<> struct boost::flags::enable<flags_enum> : std::true_type, boost::flag
 
 // helpers
 template<typename E>
-constexpr auto to_underlying(E value) {
-    return static_cast<std::underlying_type_t<E>>(value);
+constexpr auto to_underlying(E value)
+#ifdef BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+-> typename std::underlying_type<E>::type
+#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+{
+    return static_cast<typename std::underlying_type<E>::type>(value);
 }
 
 
@@ -57,13 +61,13 @@ void test_complement_types() {
     auto c4 = ~c3;
     auto c5 = ~c4;
 
-    static_assert(!std::is_same_v<decltype(c1), boost::flags::complement<decltype(c0)>>, "error in complement type");
+    static_assert(!std::is_samev<decltype(c1), boost::flags::complement<decltype(c0)>>::value, "error in complement type");
 
-    static_assert(std::is_same_v<decltype(c0), decltype(c1)>, "error in complement type");
-    static_assert(std::is_same_v<decltype(c1), decltype(c2)>, "error in complement type");
-    static_assert(std::is_same_v<decltype(c2), decltype(c3)>, "error in complement type");
-    static_assert(std::is_same_v<decltype(c3), decltype(c4)>, "error in complement type");
-    static_assert(std::is_same_v<decltype(c4), decltype(c5)>, "error in complement type");
+    static_assert(std::is_same<decltype(c0), decltype(c1)>::value, "error in complement type");
+    static_assert(std::is_same<decltype(c1), decltype(c2)>::value, "error in complement type");
+    static_assert(std::is_same<decltype(c2), decltype(c3)>::value, "error in complement type");
+    static_assert(std::is_same<decltype(c3), decltype(c4)>::value, "error in complement type");
+    static_assert(std::is_same<decltype(c4), decltype(c5)>::value, "error in complement type");
 }
 
 

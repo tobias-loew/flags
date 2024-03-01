@@ -31,8 +31,12 @@ enum class not_enabled_enum {};
 
 // helpers
 template<typename E>
-constexpr auto to_underlying(E value) {
-    return static_cast<std::underlying_type_t<E>>(value);
+constexpr auto to_underlying(E value)
+#ifdef BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+-> typename std::underlying_type<E>::type
+#endif // BOOST_FLAGS_NO_CXX14_DECLTYPE_AUTO
+{
+    return static_cast<typename std::underlying_type<E>::type>(value);
 }
 
 
