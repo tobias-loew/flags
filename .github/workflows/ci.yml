@@ -196,16 +196,13 @@ jobs:
           cd boost-root
           git submodule update --init tools/boostdep
           git submodule update --init libs/core
+          git submodule update --init libs/assert
           python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           echo GITHUB_WORKSPACE: $GITHUB_WORKSPACE
           mkdir -p libs/$LIBRARY
-          pwd
-          ls $GITHUB_WORKSPACE
           cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
-          ls libs/$LIBRARY
           ./bootstrap.sh
           ./b2 -d0 headers
-          pwd
 
       - name: Create user-config.jam
         if: matrix.compiler
@@ -214,7 +211,6 @@ jobs:
 
       - name: Run tests
         run: |
-          pwd
           cd ../boost-root
           ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
 
