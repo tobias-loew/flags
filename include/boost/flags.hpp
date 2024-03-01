@@ -1166,8 +1166,13 @@ namespace boost {
         }
 
         struct partial_order_t {
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires IsCompatibleFlagsOrComplement<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2,
                 typename std::enable_if<IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto operator()(T1 e1, T2 e2) const noexcept -> decltype(impl::subset_induced_compare(e1, e2)) {
                 return impl::subset_induced_compare(e1, e2);
