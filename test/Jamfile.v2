@@ -1,6 +1,7 @@
-#  Boost.Mp11 Library Test Jamfile
+#  Boost.Flags Library Test Jamfile
 #
 #  Copyright 2015-2019 Peter Dimov
+#  Copyright 2024 Tobias Loew
 #
 #  Distributed under the Boost Software License, Version 1.0.
 #  See accompanying file LICENSE_1_0.txt or copy at
@@ -13,7 +14,7 @@ project
   : requirements
 
 #    [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_hdr_tuple ]
-    <cxxstd>20
+#    <cxxstd>20
     <warnings>extra
 
     <toolset>msvc:<warnings-as-errors>on
