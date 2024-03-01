@@ -1455,60 +1455,31 @@ using boost::flags::modify_inplace;
 
 
 
-#define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                          \
- /* specialize std::less for E and complement<E> */                                 \
- /* at least gcc < version 7 is not conforming with template specialization */      \
- /* put it explicitly into namespace std to make them all happy */                  \
-namespace std {                                                                     \
-    template<>                                                                      \
-    struct less<E> {                                                                \
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                             \
-            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {  \
-            return boost::flags::total_order(rhs, lhs);                             \
-        }                                                                           \
-    };                                                                              \
-    template<>                                                                      \
-    struct less<boost::flags::complement<E>> {                                      \
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                             \
-            constexpr bool operator()(                                              \
-                boost::flags::complement<E> const& lhs,                             \
-                boost::flags::complement<E> const& rhs                              \
-                ) const noexcept {                                                  \
-            return boost::flags::total_order(rhs, lhs);                             \
-        }                                                                           \
-    };                                                                              \
+#define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                              \
+ /* specialize std::less for E and complement<E> */                                     \
+ /* at least gcc < version 7 is not conforming with template specialization */          \
+ /* put it explicitly into namespace std to make them all happy */                      \
+namespace std {                                                                         \
+    template<>                                                                          \
+    struct less<E> {                                                                    \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                 \
+            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {      \
+            return boost::flags::total_order(rhs, lhs);                                 \
+        }                                                                               \
+    };                                                                                  \
+    template<>                                                                          \
+    struct less<boost::flags::complement<E>> {                                          \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                 \
+            constexpr bool operator()(                                                  \
+                boost::flags::complement<E> const& lhs,                                 \
+                boost::flags::complement<E> const& rhs                                  \
+                ) const noexcept {                                                      \
+            return boost::flags::total_order(rhs, lhs);                                 \
+        }                                                                               \
+    };                                                                                  \
 } /* namespace std */                                                               
 
-#if defined(__cpp_impl_three_way_comparison)
-
-#define BOOST_FLAGS_REL_OPS_DELETE(E)                                               \
-/* matches better than built-in relational operators */                             \
-std::partial_ordering operator<=> (E l, E r) = delete;                              \
-                                                                                    \
-/* matches all other E, complement<E> arguments */                                  \
-template<typename T1, typename T2>                                                  \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> )                    \
-std::partial_ordering operator<=> (T1 l, T2 r) = delete;
-
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                        \
-/* matches better than built-in relational operators */                             \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                     \
-std::partial_ordering operator<=> (E l, E r) noexcept {                             \
-    return boost::flags::impl::normalized_subset_induced_compare(l, r);             \
-}                                                                                   \
-                                                                                    \
-/* matches all other E, complement<E> arguments */                                  \
-template<typename T1, typename T2>                                                  \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                   \
-                boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                     \
-std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                           \
-    return boost::flags::impl::subset_induced_compare(l, r);                        \
-}
-
-#else // defined(__cpp_impl_three_way_comparison)
+#if BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
 
 #define BOOST_FLAGS_REL_OPS_DELETE(E)                                                   \
 /* matches better than built-in relational operators */                                 \
@@ -1604,9 +1575,38 @@ bool operator>= (T1 l, T2 r) noexcept {                                         
                                                                                         \
 
 
+#else // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
+
+#define BOOST_FLAGS_REL_OPS_DELETE(E)                                                   \
+/* matches better than built-in relational operators */                                 \
+std::partial_ordering operator<=> (E l, E r) = delete;                                  \
+                                                                                        \
+/* matches all other E, complement<E> arguments */                                      \
+template<typename T1, typename T2>                                                      \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> )                        \
+std::partial_ordering operator<=> (T1 l, T2 r) = delete;
+
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
+/* matches better than built-in relational operators */                                 \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+std::partial_ordering operator<=> (E l, E r) noexcept {                                 \
+    return boost::flags::impl::normalized_subset_induced_compare(l, r);                 \
+}                                                                                       \
+                                                                                        \
+/* matches all other E, complement<E> arguments */                                      \
+template<typename T1, typename T2>                                                      \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                       \
+                boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                    \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
+std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                               \
+    return boost::flags::impl::subset_induced_compare(l, r);                            \
+}
 
 
-#endif // defined(__cpp_impl_three_way_comparison)
+
+#endif // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
 
 
 #define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &
