@@ -17,8 +17,8 @@
 //
 // The following macros are used to keep the "enable"-specialization compact
 // 
-//#if 0
-#if defined(__GNUC__) && (__GNUC__ <= 6)
+
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 10)
 
 # ifdef TEST_FLAGS_LINKING
 #  define TEST_GNU_ERROR_WORKAROUND_PREAMBLE }
@@ -27,14 +27,13 @@
 # else // TEST_FLAGS_LINKING
 #  define TEST_GNU_ERROR_WORKAROUND_PREAMBLE 
 #  define TEST_GNU_ERROR_WORKAROUND_EPILOGUE
-#  define TEST_GNU_ERROR_WORKAROUND_NAMESPACE
+#  define   
 # endif // TEST_FLAGS_LINKING
 
-#else // defined(__GNUC__) && (__GNUC__ <= 6)
+#else
 
 # define TEST_GNU_ERROR_WORKAROUND_PREAMBLE
 # define TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 # define TEST_GNU_ERROR_WORKAROUND_NAMESPACE
 
-#endif // defined(__GNUC__) && (__GNUC__ <= 6)
-
+#endif

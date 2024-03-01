@@ -1554,7 +1554,7 @@ bool operator>= (E l, E r) noexcept {                                           
 }                                                                                       \
                                                                                         \
 /* matches all other E, complement<E> arguments */                                      \
-template<typename T1, typename T2,                                                      \
+template<typename T1, typename T2>                                                      \
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
@@ -1563,7 +1563,7 @@ bool operator< (T1 l, T2 r) noexcept {                                          
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                        \
 }                                                                                       \
                                                                                         \
-template<typename T1, typename T2,                                                      \
+template<typename T1, typename T2>                                                      \
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
@@ -1572,7 +1572,7 @@ bool operator<= (T1 l, T2 r) noexcept {                                         
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                       \
 }                                                                                       \
                                                                                         \
-template<typename T1, typename T2,                                                      \
+template<typename T1, typename T2>                                                      \
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
@@ -1581,7 +1581,7 @@ bool operator> (T1 l, T2 r) noexcept {                                          
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                        \
 }                                                                                       \
                                                                                         \
-template<typename T1, typename T2,                                                      \
+template<typename T1, typename T2>                                                      \
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                       \
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
