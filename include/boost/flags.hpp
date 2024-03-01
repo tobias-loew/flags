@@ -1364,8 +1364,8 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             modify_inplace(T1& value, T2 modification, bool set) noexcept {
-            value = set ? (value | modification) : (value & ~modification);
-            return value;
+            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            return (value = set ? (value | modification) : (value & ~modification)), value;
         }
 
 
@@ -1477,9 +1477,9 @@ std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                        \
 /* matches better than built-in relational operators */                             \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                     \
 std::partial_ordering operator<=> (E l, E r) noexcept {                             \
-    return boost::flags::impl::normalized_subset_induced_compare(l, r);          \
+    return boost::flags::impl::normalized_subset_induced_compare(l, r);             \
 }                                                                                   \
                                                                                     \
 /* matches all other E, complement<E> arguments */                                  \
@@ -1487,9 +1487,9 @@ template<typename T1, typename T2>                                              
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> &&                   \
               std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                   \
                 boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                     \
 std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                           \
-    return boost::flags::impl::subset_induced_compare(l, r);                     \
+    return boost::flags::impl::subset_induced_compare(l, r);                        \
 }
 
 #else // defined(__cpp_impl_three_way_comparison)
