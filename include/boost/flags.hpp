@@ -260,7 +260,7 @@ namespace boost {
 // cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 // g++ bug: Explicit specialization in a namespace enclosing the specialized template
 template<>
-struct boost_flags_enable<error_tag> : std::false_type {};
+struct boost_flags_enable<boost::flags::error_tag> : std::false_type {};
 
 
 namespace boost {
