@@ -8,8 +8,12 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#define TEST_NAMESPACE order_pizza
+#include "gcc_ns_error_workaround.hpp"
+
+
 #ifdef TEST_FLAGS_LINKING
-namespace order_pizza {
+namespace TEST_NAMESPACE {
 #endif // TEST_FLAGS_LINKING
 
 enum class pizza_toppings {
@@ -21,8 +25,13 @@ enum class pizza_toppings {
 
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
+
+
 // enable Boost.Flags for pizza_toppings
-template<> struct boost::flags::enable<pizza_toppings> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+
 
 enum class ice_cream_flavours {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -30,7 +39,10 @@ enum class ice_cream_flavours {
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
 // enable Boost.Flags for ice_cream_flavours
-template<> struct boost::flags::enable<ice_cream_flavours> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<ice_cream_flavours> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+
 
 void order_pizza(pizza_toppings /*toppings*/) { 
     // order selected pizza
@@ -74,5 +86,5 @@ int main() {
 }
 
 #ifdef TEST_FLAGS_LINKING
-} // namespace order_pizza
+} // namespace TEST_NAMESPACE
 #endif // TEST_FLAGS_LINKING

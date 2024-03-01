@@ -13,7 +13,9 @@
 enum class flags_enum {};
 
 // enable flags_enum
-template<> struct boost::flags::enable<flags_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<flags_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
 
@@ -21,7 +23,9 @@ template<> struct boost::flags::enable<flags_enum> : std::true_type {};
 enum class flags2_enum {};
 
 // enable flags_enum
-template<> struct boost::flags::enable<flags2_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<flags2_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
 

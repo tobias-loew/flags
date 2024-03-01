@@ -9,8 +9,11 @@
 #include <boost/flags.hpp>
 #include <array>
 
+#define TEST_NAMESPACE test_rel_ops
+#include "gcc_ns_error_workaround.hpp"
+
 #ifdef TEST_FLAGS_LINKING
-namespace test_rel_ops {
+namespace TEST_NAMESPACE {
 #endif // TEST_FLAGS_LINKING
 
 enum class relops_builtin_enum {
@@ -21,7 +24,9 @@ enum class relops_builtin_enum {
 };
 
 // enable relops_builtin_enum
-template<> struct boost::flags::enable<relops_builtin_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<relops_builtin_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 
 
@@ -33,18 +38,11 @@ enum class relops_delete_enum {
 };
 
 // enable relops_delete_enum
-template<> struct boost::flags::enable<relops_delete_enum> : std::true_type {};
-
-
-#ifdef TEST_FLAGS_LINKING
-} // namespace test_rel_ops
-#endif // TEST_FLAGS_LINKING
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<relops_delete_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
-
-#ifdef TEST_FLAGS_LINKING
-namespace test_rel_ops {
-#endif // TEST_FLAGS_LINKING
 
 
 enum class relops_partial_order_enum {
@@ -55,18 +53,11 @@ enum class relops_partial_order_enum {
 };
 
 // enable relops_delete_enum
-template<> struct boost::flags::enable<relops_partial_order_enum> : std::true_type {};
-
-#ifdef TEST_FLAGS_LINKING
-} // namespace test_rel_ops
-#endif // TEST_FLAGS_LINKING
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<relops_partial_order_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
-
-#ifdef TEST_FLAGS_LINKING
-namespace test_rel_ops {
-#endif // TEST_FLAGS_LINKING
-
 
 
 enum class relops_std_less_enum {
@@ -77,17 +68,25 @@ enum class relops_std_less_enum {
 };
 
 // enable relops_delete_enum
-template<> struct boost::flags::enable<relops_std_less_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_PREAMBLE
+template<> struct boost_flags_enable<relops_std_less_enum> : std::true_type {};
+TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+
 
 #ifdef TEST_FLAGS_LINKING
-} // namespace test_rel_ops
-#endif // TEST_FLAGS_LINKING
+
+} // namespace TEST_NAMESPACE
+
+BOOST_FLAGS_SPECIALIZE_STD_LESS(TEST_NAMESPACE::relops_std_less_enum)
+
+namespace TEST_NAMESPACE {
+
+#else  // TEST_FLAGS_LINKING
 
 BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 
-#ifdef TEST_FLAGS_LINKING
-namespace test_rel_ops {
 #endif // TEST_FLAGS_LINKING
+
 
 
 // helpers
@@ -457,5 +456,5 @@ int main() {
 }
 
 #ifdef TEST_FLAGS_LINKING
-} // namespace test_rel_ops
+} // namespace TEST_NAMESPACE
 #endif // TEST_FLAGS_LINKING
