@@ -8,6 +8,10 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#ifdef TEST_FLAGS_LINKING
+namespace test_utilities {
+#endif // TEST_FLAGS_LINKING
+
 enum class flags_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
@@ -183,3 +187,7 @@ int main() {
 
     return boost::report_errors();
 }
+
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_utilities
+#endif // TEST_FLAGS_LINKING

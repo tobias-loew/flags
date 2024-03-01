@@ -9,6 +9,10 @@
 #include <boost/flags.hpp>
 #include <array>
 
+#ifdef TEST_FLAGS_LINKING
+namespace test_rel_ops {
+#endif // TEST_FLAGS_LINKING
+
 enum class relops_builtin_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
@@ -31,8 +35,16 @@ enum class relops_delete_enum {
 // enable relops_delete_enum
 template<> struct boost::flags::enable<relops_delete_enum> : std::true_type {};
 
+
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_rel_ops
+#endif // TEST_FLAGS_LINKING
+
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
+#ifdef TEST_FLAGS_LINKING
+namespace test_rel_ops {
+#endif // TEST_FLAGS_LINKING
 
 
 enum class relops_partial_order_enum {
@@ -45,7 +57,15 @@ enum class relops_partial_order_enum {
 // enable relops_delete_enum
 template<> struct boost::flags::enable<relops_partial_order_enum> : std::true_type {};
 
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_rel_ops
+#endif // TEST_FLAGS_LINKING
+
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
+
+#ifdef TEST_FLAGS_LINKING
+namespace test_rel_ops {
+#endif // TEST_FLAGS_LINKING
 
 
 
@@ -59,7 +79,15 @@ enum class relops_std_less_enum {
 // enable relops_delete_enum
 template<> struct boost::flags::enable<relops_std_less_enum> : std::true_type {};
 
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_rel_ops
+#endif // TEST_FLAGS_LINKING
+
 BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
+
+#ifdef TEST_FLAGS_LINKING
+namespace test_rel_ops {
+#endif // TEST_FLAGS_LINKING
 
 
 // helpers
@@ -131,6 +159,7 @@ void test_builtin() {
 #undef OP
                                     }
 
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -138,6 +167,7 @@ void test_builtin() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
+#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                 }
                             }
                         }
@@ -211,6 +241,8 @@ void test_delete() {
 #endif
 
 #ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP
+
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -218,6 +250,13 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
+#else // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+
+#error Spaceship has not yet landed! Cannot test for fail-on-delete.
+
+#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+
+
 #endif
                                 }
                             }
@@ -232,10 +271,10 @@ void test_delete() {
 // calculates bit inclusion bit for bit
 // deliberatly NOT using binary operators
 template<typename T>
-std::partial_ordering check_bit_incusion(T l, T r) {
+boost::flags::partial_ordering check_bit_incusion(T l, T r) {
 
     // start with equivalent
-    std::partial_ordering result = std::partial_ordering::equivalent;
+    boost::flags::partial_ordering result = boost::flags::partial_ordering::equivalent;
 
     for (int i = 0; i < static_cast<int>(sizeof(T) * 8); ++i) {
         auto val = 1 << i;
@@ -247,21 +286,21 @@ std::partial_ordering check_bit_incusion(T l, T r) {
         }
         else if (sr) {
             // less
-            if (result == std::partial_ordering::greater) {
+            if (result == boost::flags::partial_ordering::greater) {
                 // incompatible with previous result
-                return std::partial_ordering::unordered;
+                return boost::flags::partial_ordering::unordered;
             }
             // set result to less
-            result = std::partial_ordering::less;
+            result = boost::flags::partial_ordering::less;
         }
         else if (sl) {
             // greater
-            if (result == std::partial_ordering::less) {
+            if (result == boost::flags::partial_ordering::less) {
                 // incompatible with previous result
-                return std::partial_ordering::unordered;
+                return boost::flags::partial_ordering::unordered;
             }
             // set result to greater
-            result = std::partial_ordering::greater;
+            result = boost::flags::partial_ordering::greater;
         }
     }
 
@@ -319,6 +358,7 @@ void test_partial_order() {
 #undef OP
                                     }
 
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -326,6 +366,7 @@ void test_partial_order() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
+#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                 }
                             }
                         }
@@ -387,6 +428,7 @@ void test_std_less() {
 #undef OP
                                     }
 
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -394,6 +436,7 @@ void test_std_less() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
+#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
                                 }
                             }
                         }
@@ -412,3 +455,7 @@ int main() {
     test_std_less();
     return boost::report_errors();
 }
+
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_rel_ops
+#endif // TEST_FLAGS_LINKING

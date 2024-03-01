@@ -8,6 +8,10 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#ifdef TEST_FLAGS_LINKING
+namespace test_basic {
+#endif // TEST_FLAGS_LINKING
+
 enum 
 #ifndef TEST_COMPILE_UNSCOPED
     class
@@ -214,7 +218,6 @@ void test_bfand() {
 }
 
 
-
 int main() {
     test_nth_bit();
     test_negation_operators();
@@ -227,3 +230,8 @@ int main() {
 
     return boost::report_errors();
 }
+
+#ifdef TEST_FLAGS_LINKING
+} // namespace test_basic
+#endif // TEST_FLAGS_LINKING
+

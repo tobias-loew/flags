@@ -8,6 +8,10 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#ifdef TEST_FLAGS_LINKING
+namespace order_pizza {
+#endif // TEST_FLAGS_LINKING
+
 enum class pizza_toppings {
     tomato       = boost::flags::nth_bit(0), // == 0x01
     cheese       = boost::flags::nth_bit(1), // == 0x02
@@ -68,3 +72,7 @@ int main() {
 
     return boost::report_errors();
 }
+
+#ifdef TEST_FLAGS_LINKING
+} // namespace order_pizza
+#endif // TEST_FLAGS_LINKING

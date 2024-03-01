@@ -48,6 +48,10 @@ compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : tes
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
 
 
+run test_linking.cpp test_basics.cpp test_disable_complement.cpp test_rel_ops.cpp test_utilities.cpp order_pizza.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_basics_UNSCOPED ;
+    
+
+
 # text example
 run order_pizza.cpp ;
 compile-fail order_pizza.cpp : <define>TEST_COMPILE_FAIL_ORDER_WITH_COMPLEMENT : order_pizza_FAIL_ORDER_WITH_COMPLEMENT ;

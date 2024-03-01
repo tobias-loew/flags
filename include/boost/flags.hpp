@@ -741,20 +741,20 @@ namespace boost {
             };
         }
 
-//
-// Note to the assignment operators:
-// Even though it's tempting to delegate to the built-in assignment operators, writing
-// 
-// E& operator&=(E& lhs, E rhs) { 
-//      return static_cast<E&>(
-//              static_cast<underlying_t<E>&>(lhs) &= static_cast<underlying_t<E>>(rhs)
-//              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//      );
-//  }
-// 
-//  is illegal! There is simply no way to legally get a reference to the underlying value.
-//  (cf. https://en.cppreference.com/w/cpp/language/static_cast) 
-//
+        //
+        // Note to the assignment operators:
+        // Even though it's tempting to delegate to the built-in assignment operators, writing
+        // 
+        // E& operator&=(E& lhs, E rhs) { 
+        //      return static_cast<E&>(
+        //              static_cast<underlying_t<E>&>(lhs) &= static_cast<underlying_t<E>>(rhs)
+        //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        //      );
+        //  }
+        // 
+        //  is illegal! There is simply no way to legally get a reference to the underlying value.
+        //  (cf. https://en.cppreference.com/w/cpp/language/static_cast) 
+        //
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
@@ -1036,30 +1036,34 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
-#if defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+
+        // alias to partial_ordering
+        using partial_ordering = std::partial_ordering;
+
         // disabling relational operators
         // 
         template<typename T1, typename T2>
             requires (IsEnabled<T1> || IsEnabled<T2>) && (!IsCompatibleFlagsOrComplement<T1, T2>)
-        constexpr std::partial_ordering operator<=> (T1, T2) = delete;
+        constexpr partial_ordering operator<=> (T1, T2) = delete;
 
         namespace impl {
             template<typename T1, typename T2>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr std::partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
+                constexpr partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
                 return l == r
-                    ? std::partial_ordering::equivalent
+                    ? partial_ordering::equivalent
                     : (l & r) == l
-                    ? std::partial_ordering::less
+                    ? partial_ordering::less
                     : (l & r) == r
-                    ? std::partial_ordering::greater
-                    : std::partial_ordering::unordered
+                    ? partial_ordering::greater
+                    : partial_ordering::unordered
                     ;
             }
 
             template<typename T1, typename T2>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr std::partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
+                constexpr partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
                 return normalized_subset_induced_compare(
                     get_normalized(l),
                     get_normalized(r)
@@ -1148,27 +1152,34 @@ namespace boost {
 
 
                 compare_underlying_t value;
+
+                static const partial_ordering equivalent;
+                static const partial_ordering less;
+                static const partial_ordering greater;
+                static const partial_ordering unordered;
             };
 
-            static constexpr partial_ordering equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
-            static constexpr partial_ordering less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
-            static constexpr partial_ordering greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
-            static constexpr partial_ordering unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
+            const partial_ordering partial_ordering::equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
+            const partial_ordering partial_ordering::less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
+            const partial_ordering partial_ordering::greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
+            const partial_ordering partial_ordering::unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
 
         }
 
+        // alias to partial_ordering
+        using partial_ordering = impl::partial_ordering;
 
         namespace impl {
             template<typename T1, typename T2>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
                 return l == r
-                    ? equivalent
+                    ? partial_ordering::equivalent
                     : (l & r) == l
-                    ? less
+                    ? partial_ordering::less
                     : (l & r) == r
-                    ? greater
-                    : unordered
+                    ? partial_ordering::greater
+                    : partial_ordering::unordered
                     ;
             }
 
@@ -1193,7 +1204,7 @@ namespace boost {
             using is_transparent = int;
         };
         static constexpr partial_order_t partial_order{};
-#endif // defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#endif // defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
 
 
 
@@ -1420,7 +1431,7 @@ using boost::flags::operator==;
 using boost::flags::operator!=;
 #endif
 
-#if defined(__cpp_impl_three_way_comparison) && not defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
+#if defined(__cpp_impl_three_way_comparison) && !defined(BOOST_FLAGS_NO_CXX20_HDR_COMPARE)
 using boost::flags::operator<=>;
 #endif
 
@@ -1602,3 +1613,4 @@ bool operator>= (T1 l, T2 r) noexcept {                                         
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
+
