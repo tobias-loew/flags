@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#define TEST_NAMESPACE 
 #include "include_test.hpp"
 
 // only testing for unscoped enums
@@ -15,9 +16,9 @@
 enum class flags_enum {};
 
 // enable flags_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE flags_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE flags_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 
 
@@ -25,9 +26,9 @@ TEST_GNU_ERROR_WORKAROUND_EPILOGUE
 enum class flags2_enum {};
 
 // enable flags_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE flags2_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE flags2_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 
 

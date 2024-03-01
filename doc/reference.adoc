@@ -51,8 +51,8 @@ A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped
 
 [NOTE]
 ====
-The class template `boost_flags_enable` is defined at global namespace to allow specialization
-of it in arbitrary namespaces.
+The class template `boost_flags_enable` is defined at global namespace, which allows specialization 
+of it in arbitrary namespaces with msvc (non ISO-conform behaviour!).
 ====
 
 

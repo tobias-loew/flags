@@ -8,10 +8,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
-#include "include_test.hpp"
-
 #define TEST_NAMESPACE test_utilities
-#include "gcc_ns_error_workaround.hpp"
+#include "include_test.hpp"
 
 #ifdef TEST_FLAGS_LINKING
 namespace TEST_NAMESPACE {
@@ -25,9 +23,9 @@ enum class flags_enum {
 };
 
 // enable flags_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE flags_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE flags_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 
 // helpers

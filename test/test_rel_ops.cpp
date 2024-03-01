@@ -9,10 +9,8 @@
 #include <boost/flags.hpp>
 #include <array>
 
-#include "include_test.hpp"
-
 #define TEST_NAMESPACE test_rel_ops
-#include "gcc_ns_error_workaround.hpp"
+#include "include_test.hpp"
 
 #ifdef TEST_FLAGS_LINKING
 namespace TEST_NAMESPACE {
@@ -26,9 +24,9 @@ enum class relops_builtin_enum {
 };
 
 // enable relops_builtin_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_builtin_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_builtin_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 
 
@@ -40,9 +38,9 @@ enum class relops_delete_enum {
 };
 
 // enable relops_delete_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_delete_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_delete_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
@@ -55,9 +53,9 @@ enum class relops_partial_order_enum {
 };
 
 // enable relops_delete_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_partial_order_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_partial_order_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
 
@@ -70,9 +68,9 @@ enum class relops_std_less_enum {
 };
 
 // enable relops_delete_enum
-TEST_GNU_ERROR_WORKAROUND_PREAMBLE
-template<> struct boost_flags_enable<TEST_GNU_ERROR_WORKAROUND_NAMESPACE relops_std_less_enum> : std::true_type {};
-TEST_GNU_ERROR_WORKAROUND_EPILOGUE
+TEST_FLAGS_LINKING_PREAMBLE
+template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_std_less_enum> : std::true_type {};
+TEST_FLAGS_LINKING_EPILOGUE
 
 
 #ifdef TEST_FLAGS_LINKING

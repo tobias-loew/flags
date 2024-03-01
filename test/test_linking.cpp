@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#define TEST_NAMESPACE 
 #include "include_test.hpp"
 
 namespace test_basics {

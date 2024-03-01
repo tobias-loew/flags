@@ -658,7 +658,7 @@ pre.rouge .gs {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -678,7 +678,7 @@ pre.rouge .gs {
     <span class="n">all_toppings</span> <span class="o">=</span> <span class="n">tomato</span> <span class="o">|</span> <span class="n">cheese</span> <span class="o">|</span> <span class="n">salami</span> <span class="o">|</span> <span class="n">olives</span> <span class="o">|</span> <span class="n">garlic</span><span class="p">,</span>
 <span class="p">};</span>
 <span class="c1">// enable Boost.Flags for pizza_toppings</span>
-<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">pizza_toppings</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">pizza_toppings</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
 <span class="k">enum</span> <span class="k">class</span> <span class="nc">ice_cream_flavours</span> <span class="p">{</span>
     <span class="n">vanilla</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
@@ -686,7 +686,7 @@ pre.rouge .gs {
     <span class="n">strawberry</span>   <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
 <span class="p">};</span>
 <span class="c1">// enable Boost.Flags for ice_cream_flavours</span>
-<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">ice_cream_flavours</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">ice_cream_flavours</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
 <span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> /*<span class="n">toppings</span>*/<span class="p">)</span> <span class="p">{</span>
     <span class="c1">// order selected pizza</span>
@@ -859,7 +859,7 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span><span class="p">{</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">8</span> <span class="p">};</span>
-<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
+<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -1579,11 +1579,26 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
     <span class="n">option_b</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
 <span class="p">};</span>
 
-<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">my_flags</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
+<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">my_flags</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>A Boost.Flags enabled (scoped/unscoped) enumeration will also be called <em>(scoped/unscoped) flags</em>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The class template <code>boost_flags_enable</code> is defined at global namespace, which allows specialization
+of it in arbitrary namespaces with msvc (non ISO-conform behaviour!).</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -1614,7 +1629,7 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span>
     <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span>
     <span class="p">,</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">option_disable_complement</span>
     <span class="p">{};</span></code></pre>
