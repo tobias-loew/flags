@@ -247,6 +247,21 @@
 template<typename E>
 struct boost_flags_enable : std::false_type {};
 
+// error tag indicating invalid/incompatible types for operation
+namespace boost {
+    namespace flags {
+        struct error_tag {};
+    } // namespace flags
+} // namespace boost
+
+
+// explicitly disable error_tag
+// do it at global scope to make g++ with version < 7 happy
+// cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+// g++ bug: Explicit specialization in a namespace enclosing the specialized template
+template<>
+struct boost_flags_enable<error_tag> : std::false_type {};
+
 
 namespace boost {
     namespace flags {
@@ -321,22 +336,11 @@ namespace boost {
 
         struct option_disable_complement {};
 
-        // indicates invalid/incompatible types for operation
-        struct error_tag {};
-
-        // explicitly disable error_tag
-        template<>
-        struct boost_flags_enable<error_tag> : std::false_type {};
-
-
-
-
         // class-template to indicate complemented flags
         template<typename E>
         struct complement {
             E value;
         };
-
 
 
         // get enum-type from E
