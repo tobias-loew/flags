@@ -223,9 +223,10 @@
 #endif // !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
 
 
-// check, if inline varibles are supported
+
+// check, if inline varibles are supported (MSVC requires at least v142)
 #if !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
-# if defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
+# if defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L) && (!defined(_MSC_VER) || _MSC_VER >= 1920)
 #  define BOOST_FLAGS_HAS_INLINE_VARIABLES 1
 # else //  defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
 #  define BOOST_FLAGS_HAS_INLINE_VARIABLES 0

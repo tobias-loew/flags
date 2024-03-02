@@ -236,12 +236,15 @@ jobs:
             addrmd: 32,64
             os: windows-2019
             msvcver: 2019
-          - toolset: msvc-14.1
-            cxxstd: "11,14,17,20,latest"
-            addrmd: 32,64
-            os: windows-2019
-            msvcver: 2019
-            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"'
+
+          # commented since it does not find cl.exe, but msvc-14.1 is tested anyway with VS 2017 above 
+          # - toolset: msvc-14.1
+          #   cxxstd: "11,14,17,20,latest"
+          #   addrmd: 32,64
+          #   os: windows-2019
+          #   msvcver: 2019
+          #   environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"'
+
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
