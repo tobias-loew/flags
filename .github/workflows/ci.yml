@@ -286,9 +286,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.HOME }}
         run: |
-          Add-VisualStudioComponent -Component Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64
-
-
+          choco install -y visualstudio2022enterprise --package-parameters="'--add Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64'"
 
       - name: Setup Boost
         shell: cmd
@@ -312,7 +310,7 @@ jobs:
           git submodule update --init tools/boostdep
           python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           cmd /c bootstrap
-          b2 -d0 headers
+          b2 --verbose -d0 headers
 
       - name: Run tests
         shell: cmd
@@ -321,7 +319,7 @@ jobs:
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
 
           cd ../boost-root
-          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
+          b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
 
   cuda-linux:
     runs-on: ubuntu-20.04
