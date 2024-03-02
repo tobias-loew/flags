@@ -5,7 +5,9 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS 1
+#if defined(TEST_FLAGS_LINKING_GCC_MINGW) && !defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+# define BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS 1
+#endif
 
 #define TEST_NAMESPACE 
 #include "include_test.hpp"
