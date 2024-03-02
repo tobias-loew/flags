@@ -48,7 +48,7 @@ run test_utilities.cpp ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
 
-local MINGW32 = [ os.environ __MINGW32__ ] ;
+local MINGW32 = [ os.environ MSYSTEM ] ;
 
 if $(MINGW32)-not-empty
 {

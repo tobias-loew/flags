@@ -1689,6 +1689,18 @@ bool operator>= (T1 l, T2 r) = delete;                                          
                                                                                         \
 
 
+// disable for VS 2015 (and earlier) due to ambiguity-bug
+// error C2593 : 'operator <' is ambiguous
+// note: could be 'bool operator <(relops_partial_order_enum,relops_partial_order_enum) noexcept'
+// note: or 'bool operator <(relops_delete_enum,relops_delete_enum)'
+// note: or 'bool operator <<relops_partial_order_enum,relops_partial_order_enum,0x0>(T1,T2) noexcept'
+#if defined(_MSC_VER) && _MSC_VER <= 1900
+
+// sorry, not supported
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E) static_assert(false, "not supported for MSVC v140 or earlier");
+
+#else // defined(_MSC_VER) && _MSC_VER <= 1900
+
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
@@ -1724,7 +1736,8 @@ constexpr bool operator< (T1 l, T2 r) noexcept {                                
 template<typename T1, typename T2,                                                      \
     typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
-    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                       \
+    !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr> \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
 constexpr bool operator<= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                       \
@@ -1733,7 +1746,8 @@ constexpr bool operator<= (T1 l, T2 r) noexcept {                               
 template<typename T1, typename T2,                                                      \
     typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
-    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                       \
+    !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr> \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
 constexpr bool operator> (T1 l, T2 r) noexcept {                                        \
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                        \
@@ -1742,12 +1756,15 @@ constexpr bool operator> (T1 l, T2 r) noexcept {                                
 template<typename T1, typename T2,                                                      \
     typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value &&    \
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
-    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
+    boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                       \
+    !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr> \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
 constexpr bool operator>= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) >= 0;                       \
 }                                                                                       \
-                                                                                        \
+
+
+#endif //  // defined(_MSC_VER) && _MSC_VER <= 1900
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 

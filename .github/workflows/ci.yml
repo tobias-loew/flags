@@ -235,26 +235,32 @@ jobs:
             cxxstd: "11,14"
             addrmd: 32,64
             os: windows-2019
+            msvcver: 2022
           - toolset: msvc-14.1
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
+            msvcver: 2022
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
+            msvcver: 2022
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
             os: windows-2022
+            msvcver: 2022
           - toolset: clang-win
             cxxstd: "14,17,latest"
             addrmd: 32,64
             os: windows-2022
+            msvcver: 2022
           - toolset: gcc
             cxxstd: "11,14,17,2a"
             addrmd: 64
             os: windows-2019
+            msvcver: 2022
 
     runs-on: ${{matrix.os}}
 
@@ -280,9 +286,17 @@ jobs:
           choco install visualstudio2017-workload-vctools
   
 
+      - name: Install MSVC v141 component
+        id: install_msvc_v141_component
+        if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.1' ))
+        shell: bash
+        working-directory: ${{ env.HOME }}
+        run: |
+          choco install -y visualstudio2022enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.v141.x86.x64'"
+
       - name: Install MSVC v142 component
         id: install_msvc_v142_component
-        if: ( matrix.toolset == 'msvc-14.2' )
+        if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.2' ))
         shell: bash
         working-directory: ${{ env.HOME }}
         run: |
@@ -315,7 +329,6 @@ jobs:
       - name: Run tests
         shell: cmd
         run: |
-          # run environment setup script if any
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
 
           cd ../boost-root

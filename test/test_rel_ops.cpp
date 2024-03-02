@@ -47,6 +47,12 @@ TEST_FLAGS_LINKING_EPILOGUE
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
 
+#if defined(_MSC_VER) && _MSC_VER <= 1900
+
+// BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
+
+#else // defined(_MSC_VER) && _MSC_VER <= 1900
+
 enum class relops_partial_order_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
@@ -60,6 +66,8 @@ template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_partial
 TEST_FLAGS_LINKING_EPILOGUE
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
+
+#endif // defined(_MSC_VER) && _MSC_VER <= 1900
 
 
 enum class relops_std_less_enum {
@@ -310,6 +318,12 @@ boost::flags::partial_ordering check_bit_incusion(T l, T r) {
 
 
 void test_partial_order() {
+#if defined(_MSC_VER) && _MSC_VER <= 1900
+
+    // BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
+
+#else // defined(_MSC_VER) && _MSC_VER <= 1900
+
     using E = relops_partial_order_enum;
 
     // partial order relational ops -> bitset inclusion
@@ -376,6 +390,8 @@ void test_partial_order() {
             }
         }
     }
+
+#endif // defined(_MSC_VER) && _MSC_VER <= 1900
 }
 
 
