@@ -1185,10 +1185,10 @@ namespace boost {
             };
 
 #if (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
-            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
-            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
-            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
-            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
+            BOOST_FLAGS_WEAK_SYMBOL const partial_ordering partial_ordering::equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
+            BOOST_FLAGS_WEAK_SYMBOL const partial_ordering partial_ordering::less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
+            BOOST_FLAGS_WEAK_SYMBOL const partial_ordering partial_ordering::greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
+            BOOST_FLAGS_WEAK_SYMBOL const partial_ordering partial_ordering::unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
 #endif // (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
         }
 
@@ -1198,7 +1198,7 @@ namespace boost {
         namespace impl {
             template<typename T1, typename T2>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
+                constexpr partial_ordering normalized_subset_induced_compare(T1 l, T2 r) noexcept {
                 return l == r
                     ? partial_ordering::equivalent
                     : (l & r) == l
@@ -1211,7 +1211,7 @@ namespace boost {
 
             template<typename T1, typename T2>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
+                constexpr partial_ordering subset_induced_compare(T1 l, T2 r) noexcept {
                 return normalized_subset_induced_compare(
                     get_normalized(l),
                     get_normalized(r)
@@ -1593,22 +1593,22 @@ bool operator>= (T1 l, T2 r) = delete;                                          
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator< (E l, E r) noexcept {                                                    \
+constexpr bool operator< (E l, E r) noexcept {                                          \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) < 0;             \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator<= (E l, E r) noexcept {                                                   \
+constexpr bool operator<= (E l, E r) noexcept {                                         \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) <= 0;            \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator> (E l, E r) noexcept {                                                    \
+constexpr bool operator> (E l, E r) noexcept {                                          \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) > 0;             \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator>= (E l, E r) noexcept {                                                   \
+constexpr bool operator>= (E l, E r) noexcept {                                         \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) >= 0;            \
 }                                                                                       \
                                                                                         \
@@ -1618,7 +1618,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator< (T1 l, T2 r) noexcept {                                                  \
+constexpr bool operator< (T1 l, T2 r) noexcept {                                        \
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                        \
 }                                                                                       \
                                                                                         \
@@ -1627,7 +1627,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator<= (T1 l, T2 r) noexcept {                                                 \
+constexpr bool operator<= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                       \
 }                                                                                       \
                                                                                         \
@@ -1636,7 +1636,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator> (T1 l, T2 r) noexcept {                                                  \
+constexpr bool operator> (T1 l, T2 r) noexcept {                                        \
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                        \
 }                                                                                       \
                                                                                         \
@@ -1645,7 +1645,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                 \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator>= (T1 l, T2 r) noexcept {                                                 \
+constexpr bool operator>= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) >= 0;                       \
 }                                                                                       \
                                                                                         \
@@ -1688,22 +1688,22 @@ bool operator>= (T1 l, T2 r) = delete;                                          
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator< (E l, E r) noexcept {                                                    \
+constexpr bool operator< (E l, E r) noexcept {                                          \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) < 0;             \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator<= (E l, E r) noexcept {                                                   \
+constexpr bool operator<= (E l, E r) noexcept {                                         \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) <= 0;            \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator> (E l, E r) noexcept {                                                    \
+constexpr bool operator> (E l, E r) noexcept {                                          \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) > 0;             \
 }                                                                                       \
                                                                                         \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator>= (E l, E r) noexcept {                                                   \
+constexpr bool operator>= (E l, E r) noexcept {                                         \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) >= 0;            \
 }                                                                                       \
                                                                                         \
@@ -1713,7 +1713,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator< (T1 l, T2 r) noexcept {                                                  \
+constexpr bool operator< (T1 l, T2 r) noexcept {                                        \
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                        \
 }                                                                                       \
                                                                                         \
@@ -1722,7 +1722,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator<= (T1 l, T2 r) noexcept {                                                 \
+constexpr bool operator<= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                       \
 }                                                                                       \
                                                                                         \
@@ -1731,7 +1731,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator> (T1 l, T2 r) noexcept {                                                  \
+constexpr bool operator> (T1 l, T2 r) noexcept {                                        \
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                        \
 }                                                                                       \
                                                                                         \
@@ -1740,7 +1740,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-bool operator>= (T1 l, T2 r) noexcept {                                                 \
+constexpr bool operator>= (T1 l, T2 r) noexcept {                                       \
     return boost::flags::impl::subset_induced_compare(l, r) >= 0;                       \
 }                                                                                       \
                                                                                         \
@@ -1766,7 +1766,7 @@ std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-std::partial_ordering operator<=> (E l, E r) noexcept {                                 \
+constexpr std::partial_ordering operator<=> (E l, E r) noexcept {                       \
     return boost::flags::impl::normalized_subset_induced_compare(l, r);                 \
 }                                                                                       \
                                                                                         \
@@ -1776,7 +1776,7 @@ template<typename T1, typename T2>                                              
               std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                       \
                 boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                    \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                               \
+constexpr std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                     \
     return boost::flags::impl::subset_induced_compare(l, r);                            \
 }
 
@@ -1796,7 +1796,7 @@ std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-std::partial_ordering operator<=> (E l, E r) noexcept {                                 \
+constexpr std::partial_ordering operator<=> (E l, E r) noexcept {                       \
     return boost::flags::impl::normalized_subset_induced_compare(l, r);                 \
 }                                                                                       \
                                                                                         \
@@ -1806,7 +1806,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr > \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                               \
+constexpr std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                     \
     return boost::flags::impl::subset_induced_compare(l, r);                            \
 }
 
