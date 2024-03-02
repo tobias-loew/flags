@@ -352,7 +352,6 @@ jobs:
         run: |
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
           ${{ matrix.set_env }}
-          echo GCC_ON_WINDOWS: %GCC_ON_WINDOWS%
 
           cd ../boost-root
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
