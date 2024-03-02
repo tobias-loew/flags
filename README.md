@@ -17,3 +17,5 @@ type-safe and non-intrusive bitwise-operators for C++ enums
     * weak symbols prblem with gcc on mingw  
 
 * finally, remove ToDo list
+
+[![CI](https://github.com/tobias-loew/flags/actions/workflows/ci.yml/badge.svg)](https://github.com/tobias-loew/flags/actions/workflows/ci.yml)
