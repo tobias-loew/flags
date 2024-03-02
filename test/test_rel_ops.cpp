@@ -401,7 +401,7 @@ void test_std_less() {
 #define OP <
                                         bool bf = v1 OP v2;
                                         bool bu = to_underlying(v1) OP to_underlying(v2);
-                                        BOOST_TEST((bf == bu));
+                                        BOOST_TEST(!(bf == bu));
 #undef OP
                                     }
 

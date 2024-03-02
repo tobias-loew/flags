@@ -10,6 +10,8 @@
 #define TEST_REPORT_CONFIG(name)  BOOST_LIGHTWEIGHT_TEST_OSTREAM << #name << " : " << name << "\n"
 
 inline bool report_config() {
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n\n\nreporting config to BOOST_LIGHTWEIGHT_TEST_OSTREAM \n\n\n";
+    std::cout << "\n\n\nreporting config to std::cout\n\n\n";
 
 #if defined(__GNUC__)
     TEST_REPORT_CONFIG(__GNUC__);
