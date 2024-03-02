@@ -261,6 +261,7 @@ jobs:
             addrmd: 64
             os: windows-2019
             msvcver: 2022
+            set_env: "set GCC_ON_WINDOWS=1"
 
     runs-on: ${{matrix.os}}
 
@@ -330,6 +331,7 @@ jobs:
         shell: cmd
         run: |
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
+          [ -n "${{ matrix.set_env }}" ] && "${{ matrix.set_env }}"
 
           cd ../boost-root
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
