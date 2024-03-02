@@ -117,15 +117,33 @@
 
 // only required for definition of partial_ordering
 # if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
 // BOOST_FLAGS_DLL_SELECTANY is not used
+
 # else // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
 // adapted from boost/dll/alias.hpp
 #  if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
-#define BOOST_FLAGS_DLL_SELECTANY __declspec(selectany)
+#   define BOOST_FLAGS_DLL_SELECTANY __declspec(selectany)
 #  else // defined(_MSC_VER)
-#define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
+#   if BOOST_FLAGS_IS_GCC_COMPILER
+#    if !defined(__MINGW32__)
+        // There are some problems with mixing `__dllexport__` and `weak` using MinGW
+        // See https://sourceware.org/bugzilla/show_bug.cgi?id=17480
+#     define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
+#    else // !defined(__MINGW32__)
+#     define BOOST_FLAGS_DLL_SELECTANY
+#    endif // !defined(__MINGW32__)
+#   else // BOOST_FLAGS_IS_GCC_COMPILER
+#    if defined(__clang__)
+#     define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
+#    else // defined(__clang__)
+#     define BOOST_FLAGS_DLL_SELECTANY
+#    endif // defined(__clang__)
+#   endif // BOOST_FLAGS_IS_GCC_COMPILER
 #  endif // defined(_MSC_VER)
 # endif // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
 #endif // !defined(BOOST_FLAGS_DLL_SELECTANY)
 
 
@@ -1455,7 +1473,7 @@ using boost::flags::operator==;
 using boost::flags::operator!=;
 #endif
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 using boost::flags::operator<=>;
 #endif
 
