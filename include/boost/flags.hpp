@@ -222,6 +222,13 @@
 # endif //  defined(__cpp_lib_logical_traits)
 #endif // !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
 
+// first check if user requested explicit definition
+#if defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS) && (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+#if !defined(BOOST_FLAGS_WEAK_SYMBOL)
+#  define BOOST_FLAGS_WEAK_SYMBOL 
+# endif // !defined(BOOST_FLAGS_WEAK_SYMBOL)
+#endif // defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS) && (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+
 
 
 // check, if inline varibles are supported (MSVC requires at least v142)
