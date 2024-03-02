@@ -286,7 +286,8 @@ jobs:
         shell: bash
         working-directory: ${{ env.HOME }}
         run: |
-          choco install Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64
+          Add-VisualStudioComponent -Component Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64
+
 
 
       - name: Setup Boost
