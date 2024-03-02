@@ -220,19 +220,19 @@ jobs:
       matrix:
         include:
           - toolset: msvc-14.0
-            cxxstd: "11,14,17,20,latest"
+            cxxstd: "11,14"
             addrmd: 32,64
             os: windows-2019
             msvcver: 2017
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: "call C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
           - toolset: msvc-14.1
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
             msvcver: 2017
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: "call C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
           - toolset: msvc-14.0
-            cxxstd: "11,14,17,20,latest"
+            cxxstd: "11,14"
             addrmd: 32,64
             os: windows-2019
           - toolset: msvc-14.1
@@ -251,7 +251,7 @@ jobs:
             cxxstd: "14,17,latest"
             addrmd: 32,64
             os: windows-2022
-          - toolset: gcc-mingw
+          - toolset: gcc
             cxxstd: "11,14,17,2a"
             addrmd: 64
             os: windows-2019
@@ -278,11 +278,20 @@ jobs:
           choco install visualstudio2017community
           choco install visualstudio2017-workload-nativedesktop
           choco install visualstudio2017-workload-vctools
+  
+
+      - name: Install MSVC v142 component
+        id: install_msvc_v142_component
+        if: ( matrix.toolset == 'msvc-14.2' )
+        shell: bash
+        working-directory: ${{ env.HOME }}
+        run: |
+          choco install Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64
+
 
       - name: Setup Boost
         shell: cmd
         run: |
-          # run environment setup script if any
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
 
           echo GITHUB_REPOSITORY: %GITHUB_REPOSITORY%
