@@ -224,13 +224,13 @@ jobs:
             addrmd: 32,64
             os: windows-2019
             msvcver: 2017
-            environment_script: "call C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
           - toolset: msvc-14.1
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
             msvcver: 2017
-            environment_script: "call C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
           - toolset: msvc-14.0
             cxxstd: "11,14"
             addrmd: 32,64
@@ -241,7 +241,7 @@ jobs:
             addrmd: 32,64
             os: windows-2019
             msvcver: 2019
-            environment_script: "call C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"'
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
@@ -349,7 +349,7 @@ jobs:
         run: |
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
           ${{ matrix.set_env }}
-          echo GCC_ON_WINDOW = %GCC_ON_WINDOW%
+          echo GCC_ON_WINDOWS: %GCC_ON_WINDOWS%
 
           cd ../boost-root
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
