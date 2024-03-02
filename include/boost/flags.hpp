@@ -155,7 +155,11 @@
 # endif // defined(__has_include)
 #endif // !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 
-
+#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON) && BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+// this should usually not happen as spaceship requires std::partial_ordering
+# undef BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+# define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
+#endif // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON && (BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
 
 //
 // [[nodiscard]] attribute

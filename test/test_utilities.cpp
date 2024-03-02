@@ -194,7 +194,6 @@ int main() {
     test_modify_inplace();
     std::cout << "__MINGW32__ not defined\n";
 
-    BOOST_TEST(1 == 0);
     return boost::report_errors();
 }
 
