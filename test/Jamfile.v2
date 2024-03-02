@@ -53,7 +53,8 @@ local GCC_ON_WINDOWS = [ os.environ GCC_ON_WINDOWS ] ;
 
 if $(GCC_ON_WINDOWS)-not-empty
 {
-	run test_linking.cpp test_basics_link.cpp test_disable_complement_link.cpp test_rel_ops_link.cpp test_utilities_link.cpp order_pizza_link.cpp : : : <define>TEST_FLAGS_LINKING <toolset>gcc,<cxxflags>11:<define>TEST_FLAGS_LINKING_GCC_MINGW <toolset>gcc,<cxxflags>14:<define>TEST_FLAGS_LINKING_GCC_MINGW ;
+#	run test_linking.cpp test_basics_link.cpp test_disable_complement_link.cpp test_rel_ops_link.cpp test_utilities_link.cpp order_pizza_link.cpp : : : <define>TEST_FLAGS_LINKING <toolset>gcc,<cxxflags>11:<define>TEST_FLAGS_LINKING_GCC_MINGW <toolset>gcc,<cxxflags>14:<define>TEST_FLAGS_LINKING_GCC_MINGW ;
+	run test_linking.cpp test_basics_link.cpp test_disable_complement_link.cpp test_rel_ops_link.cpp test_utilities_link.cpp order_pizza_link.cpp : : : <define>TEST_FLAGS_LINKING <define>TEST_FLAGS_LINKING_GCC_MINGW ;
 } 
 else
 {
