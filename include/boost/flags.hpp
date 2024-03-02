@@ -1796,7 +1796,8 @@ std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 #define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)                                            \
 /* matches better than built-in relational operators */                                 \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-constexpr std::partial_ordering operator<=> (E l, E r) noexcept {                       \
+constexpr auto operator<=> (E l, E r) noexcept                                          \
+    -> decltype(boost::flags::impl::normalized_subset_induced_compare(l, r)) {          \
     return boost::flags::impl::normalized_subset_induced_compare(l, r);                 \
 }                                                                                       \
                                                                                         \
@@ -1806,7 +1807,8 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                            \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr > \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                         \
-constexpr std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                     \
+constexpr auto operator<=> (T1 l, T2 r) noexcept                                        \
+    -> decltype(boost::flags::impl::subset_induced_compare(l, r)) {                     \
     return boost::flags::impl::subset_induced_compare(l, r);                            \
 }
 

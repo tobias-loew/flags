@@ -220,13 +220,25 @@ jobs:
       matrix:
         include:
           - toolset: msvc-14.0
-            cxxstd: "14,17,20,latest"
+            cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
-            os: windows-2015
+            os: windows-2019
+            msvcver: 2017,
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
           - toolset: msvc-14.1
-            cxxstd: "14,17,20,latest"
+            cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
-            os: windows-2017
+            os: windows-2019
+            msvcver: 2017,
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
+          - toolset: msvc-14.0
+            cxxstd: "11,14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2019
+          - toolset: msvc-14.1
+            cxxstd: "11,14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2019
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
@@ -257,9 +269,22 @@ jobs:
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
   
 
+      - name: Install MSVC 2017
+        id: install_msvc_2017
+        if: startsWith(matrix.os, 'windows-2019') && ( matrix.msvcver == 2017 )
+        shell: bash
+        working-directory: ${{ env.HOME }}
+        run: |
+          choco install visualstudio2017community
+          choco install visualstudio2017-workload-nativedesktop
+          choco install visualstudio2017-workload-vctools
+
       - name: Setup Boost
         shell: cmd
         run: |
+          # run environment setup script if any
+          [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
+
           echo GITHUB_REPOSITORY: %GITHUB_REPOSITORY%
           for /f %%i in ("%GITHUB_REPOSITORY%") do set LIBRARY=%%~nxi
           echo LIBRARY: %LIBRARY%
@@ -282,6 +307,9 @@ jobs:
       - name: Run tests
         shell: cmd
         run: |
+          # run environment setup script if any
+          [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
+
           cd ../boost-root
           b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
 
