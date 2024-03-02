@@ -102,7 +102,7 @@ constexpr auto to_underlying(E value)
 template<typename T>
 auto make_off_on(T v) 
 #if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
--> typename std::underlying_type<E>::type
+-> typename std::array<T, 2>
 #endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return std::array<T, 2>{{T{}, v}};  // use double braces to prevent C++11 clang warning "suggest braces around initialization of subobject"
