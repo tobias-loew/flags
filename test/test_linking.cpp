@@ -5,11 +5,13 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test_trait.hpp>
-#include <boost/flags.hpp>
+#define BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS 1
 
 #define TEST_NAMESPACE 
 #include "include_test.hpp"
+
+#include <boost/core/lightweight_test_trait.hpp>
+#include <boost/flags.hpp>
 
 namespace test_basics {
     int main();

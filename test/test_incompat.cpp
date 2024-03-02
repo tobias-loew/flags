@@ -5,11 +5,11 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test_trait.hpp>
-#include <boost/flags.hpp>
-
 #define TEST_NAMESPACE 
 #include "include_test.hpp"
+
+#include <boost/core/lightweight_test_trait.hpp>
+#include <boost/flags.hpp>
 
 // only testing for unscoped enums
 
@@ -39,9 +39,9 @@ enum class not_enabled_enum {};
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value)
-#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 -> typename std::underlying_type<E>::type
-#endif // TEST_NO_CXX14_DECLTYPE_AUTO
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
@@ -50,15 +50,15 @@ constexpr auto to_underlying(E value)
 
 
 void test_fail_with_enabled() {
-#ifdef TEST_COMPILE_FAIL_WITH_ENABLED
+#if defined(TEST_COMPILE_FAIL_WITH_ENABLED)
     auto v = flags_enum{} & flags2_enum{};
-#endif
+#endif // defined(TEST_COMPILE_FAIL_WITH_ENABLED)
 }
 
 void test_fail_with_not_enabled() {
-#ifdef TEST_COMPILE_FAIL_WITH_NOT_ENABLED
+#if defined(TEST_COMPILE_FAIL_WITH_NOT_ENABLED)
     auto v = flags_enum{} & not_enabled_enum{};
-#endif
+#endif // defined(TEST_COMPILE_FAIL_WITH_NOT_ENABLED)
 }
 
 int main() {

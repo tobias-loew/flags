@@ -5,16 +5,16 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
+#define TEST_NAMESPACE test_rel_ops
+#include "include_test.hpp"
+
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 #include <array>
 
-#define TEST_NAMESPACE test_rel_ops
-#include "include_test.hpp"
-
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
 
 enum class relops_builtin_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
@@ -73,7 +73,7 @@ template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE relops_std_les
 TEST_FLAGS_LINKING_EPILOGUE
 
 
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 
 } // namespace TEST_NAMESPACE
 
@@ -81,29 +81,29 @@ BOOST_FLAGS_SPECIALIZE_STD_LESS(TEST_NAMESPACE::relops_std_less_enum)
 
 namespace TEST_NAMESPACE {
 
-#else  // TEST_FLAGS_LINKING
+#else  // defined(TEST_FLAGS_LINKING)
 
 BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
 
 
 
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value)
-#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 -> typename std::underlying_type<E>::type
-#endif // TEST_NO_CXX14_DECLTYPE_AUTO
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
 
 template<typename T>
 auto make_off_on(T v) 
-#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
--> typename std::array<T, 2>
-#endif // TEST_NO_CXX14_DECLTYPE_AUTO
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
+-> typename std::underlying_type<E>::type
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return std::array<T, 2>{{T{}, v}};  // use double braces to prevent C++11 clang warning "suggest braces around initialization of subobject"
 }
@@ -199,7 +199,7 @@ void test_delete() {
                                     (void)v1;   // prevent unused warning
                                     (void)v2;   // prevent unused warning
 
-#ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_LT
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LT)
                                     {
 #define OP <
                                         bool bf = v1 OP v2;
@@ -207,9 +207,9 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LT)
 
-#ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_LE
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LE)
                                     {
 #define OP <=
                                         bool bf = v1 OP v2;
@@ -217,9 +217,9 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LE)
 
-#ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_GT
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_GT)
                                     {
 #define OP >
                                         bool bf = v1 OP v2;
@@ -227,9 +227,9 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_GT)
 
-#ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_GE
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_GE)
                                     {
 #define OP >=
                                         bool bf = v1 OP v2;
@@ -237,9 +237,9 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_GE)
 
-#ifdef TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP)
 
 #if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
                                     {
@@ -256,7 +256,7 @@ void test_delete() {
 #endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
 
 
-#endif
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP)
                                 }
                             }
                         }
@@ -455,6 +455,6 @@ int main() {
     return boost::report_errors();
 }
 
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 } // namespace TEST_NAMESPACE
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)

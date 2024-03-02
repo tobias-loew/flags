@@ -5,15 +5,15 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test_trait.hpp>
-#include <boost/flags.hpp>
-
 #define TEST_NAMESPACE test_utilities
 #include "include_test.hpp"
 
-#ifdef TEST_FLAGS_LINKING
+#include <boost/core/lightweight_test_trait.hpp>
+#include <boost/flags.hpp>
+
+#if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
 
 enum class flags_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
@@ -31,9 +31,9 @@ TEST_FLAGS_LINKING_EPILOGUE
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value)
-#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 -> typename std::underlying_type<E>::type
-#endif // TEST_NO_CXX14_DECLTYPE_AUTO
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
@@ -50,9 +50,9 @@ void test_any() {
     BOOST_TEST(any(a | b));
     BOOST_TEST(!any(a & b));
 
-#ifdef TEST_COMPILE_FAIL_COMPLEMENT_ANY
+#if defined(TEST_COMPILE_FAIL_COMPLEMENT_ANY)
     auto v = any(~a);
-#endif
+#endif // defined(TEST_COMPILE_FAIL_COMPLEMENT_ANY)
 }
 
 
@@ -66,9 +66,9 @@ void test_none() {
     BOOST_TEST(!none(a | b));
     BOOST_TEST(none(a & b));
 
-#ifdef TEST_COMPILE_FAIL_COMPLEMENT_NONE
+#if defined(TEST_COMPILE_FAIL_COMPLEMENT_NONE)
     auto v = none(~a);
-#endif
+#endif // defined(TEST_COMPILE_FAIL_COMPLEMENT_NONE)
 }
 
 void test_subset() {
@@ -193,6 +193,6 @@ int main() {
     return boost::report_errors();
 }
 
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 } // namespace TEST_NAMESPACE
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)

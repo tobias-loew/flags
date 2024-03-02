@@ -19,141 +19,6 @@
 #include <utility>
 
 
-#if defined(__GNUC__) && (!defined(__clang__) || defined(__MINGW32__))
-# define BOOST_FLAGS_IS_GCC_COMPILER 1
-#else // defined(__GNUC__) && !defined(__clang__)
-# define BOOST_FLAGS_IS_GCC_COMPILER 0
-#endif // defined(__GNUC__) && !defined(__clang__)
-
-
-#if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
-// g++ does not allow overwriting rel. operators with spaceship for enums 
-// cf. https://cplusplus.github.io/CWG/issues/2673.html
-// cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
-// hopefully g++ 14 will have fixed it
-# if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
-# else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 0
-# endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#endif // !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
-
-
-#if !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-# if defined(__has_include)
-#  if __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
-#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
-#  else // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
-#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
-#  endif // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
-# else // defined(__has_include)
-#  define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
-# endif // defined(__has_include)
-#endif // !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-
-
-
-//
-// [[nodiscard]]:
-//
-#if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
-#if __has_attribute(nodiscard)
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
-#endif
-#if __has_attribute(no_unique_address)
-# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#endif
-#elif defined(__has_cpp_attribute)
-// clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
-#if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
-#endif
-#endif
-#ifndef BOOST_FLAGS_ATTRIBUTE_NODISCARD
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD
-#endif
-
-
-
-// adapted from boost/asio/detail/config.hpp
-// Support concepts on compilers known to allow them.
-#if !defined(BOOST_FLAGS_HAS_CONCEPTS)
-# if !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
-#  if defined(__cpp_concepts)
-#   define BOOST_FLAGS_HAS_CONCEPTS 1
-#   if (__cpp_concepts >= 201707)
-#    define BOOST_FLAGS_CONCEPT concept
-#   else // (__cpp_concepts >= 201707)
-#    define BOOST_FLAGS_CONCEPT concept bool
-#   endif // (__cpp_concepts >= 201707)
-#  else // defined(__cpp_concepts)
-#   define BOOST_FLAGS_HAS_CONCEPTS 0
-#  endif // defined(__cpp_concepts)
-# else // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
-#  define BOOST_FLAGS_HAS_CONCEPTS 0
-# endif // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
-#endif // !defined(BOOST_FLAGS_HAS_CONCEPTS)
-
-
-// check if std::is_scoped_enum is available
-#if !defined(BOOST_FLAGS_HAS_IS_SCOPED_ENUM)
-# if defined(__cpp_lib_is_scoped_enum)
-#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 1
-# else // defined(__cpp_lib_is_scoped_enum)
-#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 0
-# endif // defined(__cpp_lib_is_scoped_enum)
-#endif // !defined(BOOST_FLAGS_HAS_IS_SCOPED_ENUM)
-
-#if !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
-# if defined(__cpp_lib_logical_traits)
-#  define BOOST_FLAGS_HAS_LOGICAL_TRAITS 1
-# else //  defined(__cpp_lib_logical_traits)
-#  define BOOST_FLAGS_HAS_LOGICAL_TRAITS 0
-# endif //  defined(__cpp_lib_logical_traits)
-#endif // !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
-
-
-#if !defined(BOOST_FLAGS_DLL_SELECTANY)
-
-// only required for definition of partial_ordering
-# if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-
-// BOOST_FLAGS_DLL_SELECTANY is not used
-
-# else // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-
-// adapted from boost/dll/alias.hpp
-#  if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
-#   define BOOST_FLAGS_DLL_SELECTANY __declspec(selectany)
-#  else // defined(_MSC_VER)
-#   if BOOST_FLAGS_IS_GCC_COMPILER
-#    if !defined(__MINGW32__)
-        // There are some problems with mixing `__dllexport__` and `weak` using MinGW
-        // See https://sourceware.org/bugzilla/show_bug.cgi?id=17480
-#     define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
-#    else // !defined(__MINGW32__)
-#     define BOOST_FLAGS_DLL_SELECTANY
-#    endif // !defined(__MINGW32__)
-#   else // BOOST_FLAGS_IS_GCC_COMPILER
-#    if defined(__clang__)
-#     define BOOST_FLAGS_DLL_SELECTANY __attribute__((weak))
-#    else // defined(__clang__)
-#     define BOOST_FLAGS_DLL_SELECTANY
-#    endif // defined(__clang__)
-#   endif // BOOST_FLAGS_IS_GCC_COMPILER
-#  endif // defined(_MSC_VER)
-# endif // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-
-#endif // !defined(BOOST_FLAGS_DLL_SELECTANY)
-
-
-#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
-#include <compare>
-#endif
-
-
-
-
 /////////////////////////////////////////////////////////////////
 //
 // purpose: 
@@ -168,6 +33,7 @@
 //
 // Example:
 /*
+    #include <boost/flags.hpp>
 
     enum class pizza_toppings {
         tomato      = boost::flags::nth_bit(0), // == 0x01
@@ -250,6 +116,176 @@
         }
     }
 */
+
+
+
+
+// detecting g++
+#if defined(__GNUC__) && (!defined(__clang__) || defined(__MINGW32__))
+# define BOOST_FLAGS_IS_GCC_COMPILER 1
+#else // defined(__GNUC__) && !defined(__clang__)
+# define BOOST_FLAGS_IS_GCC_COMPILER 0
+#endif // defined(__GNUC__) && !defined(__clang__)
+
+
+// check if the spaceship has alreay landed
+#if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+// g++ does not allow overwriting rel. operators with spaceship for enums 
+// cf. https://cplusplus.github.io/CWG/issues/2673.html
+// cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
+// hopefully g++ 14 will have fixed it
+# if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
+# else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 0
+# endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+#endif // !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+
+
+// check for library support of three-way-comparison (flags will use std::partial_ordering)
+#if !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# if defined(__has_include)
+#  if __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
+#  else // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
+#  endif // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
+# else // defined(__has_include)
+#  define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
+# endif // defined(__has_include)
+#endif // !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
+
+
+//
+// [[nodiscard]] attribute
+//
+#if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
+#if __has_attribute(nodiscard)
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+#endif
+#if __has_attribute(no_unique_address)
+# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+#elif defined(__has_cpp_attribute)
+// clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
+#if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+#endif
+#endif
+#ifndef BOOST_FLAGS_ATTRIBUTE_NODISCARD
+# define BOOST_FLAGS_ATTRIBUTE_NODISCARD
+#endif
+
+
+
+// adapted from boost/asio/detail/config.hpp
+// Support concepts on compilers known to allow them.
+#if !defined(BOOST_FLAGS_HAS_CONCEPTS)
+# if !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#  if defined(__cpp_concepts)
+#   define BOOST_FLAGS_HAS_CONCEPTS 1
+#   if (__cpp_concepts >= 201707)
+#    define BOOST_FLAGS_CONCEPT concept
+#   else // (__cpp_concepts >= 201707)
+#    define BOOST_FLAGS_CONCEPT concept bool
+#   endif // (__cpp_concepts >= 201707)
+#  else // defined(__cpp_concepts)
+#   define BOOST_FLAGS_HAS_CONCEPTS 0
+#  endif // defined(__cpp_concepts)
+# else // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#  define BOOST_FLAGS_HAS_CONCEPTS 0
+# endif // !defined(BOOST_FLAGS_DISABLE_CONCEPTS)
+#endif // !defined(BOOST_FLAGS_HAS_CONCEPTS)
+
+
+// check if std::is_scoped_enum is available
+#if !defined(BOOST_FLAGS_HAS_IS_SCOPED_ENUM)
+# if defined(__cpp_lib_is_scoped_enum)
+#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 1
+# else // defined(__cpp_lib_is_scoped_enum)
+#  define BOOST_FLAGS_HAS_IS_SCOPED_ENUM 0
+# endif // defined(__cpp_lib_is_scoped_enum)
+#endif // !defined(BOOST_FLAGS_HAS_IS_SCOPED_ENUM)
+
+
+// check for std::conjunction, std::disjunction and std::negation
+#if !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
+# if defined(__cpp_lib_logical_traits)
+#  define BOOST_FLAGS_HAS_LOGICAL_TRAITS 1
+# else //  defined(__cpp_lib_logical_traits)
+#  define BOOST_FLAGS_HAS_LOGICAL_TRAITS 0
+# endif //  defined(__cpp_lib_logical_traits)
+#endif // !defined(BOOST_FLAGS_HAS_LOGICAL_TRAITS)
+
+
+// check, if inline varibles are supported
+#if !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
+# if defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
+#  define BOOST_FLAGS_HAS_INLINE_VARIABLES 1
+# else //  defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
+#  define BOOST_FLAGS_HAS_INLINE_VARIABLES 0
+# endif //  defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L)
+#endif // !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
+
+
+// attribute for defining weak symbols 
+// only needed when std::partial_ordering is not present and inline variables are not supported
+#if !defined(BOOST_FLAGS_WEAK_SYMBOL) && (BOOST_FLAGS_HAS_INLINE_VARIABLES)
+# define BOOST_FLAGS_WEAK_SYMBOL inline
+#endif // !defined(BOOST_FLAGS_WEAK_SYMBOL) && (BOOST_FLAGS_HAS_INLINE_VARIABLES)
+
+// explicit enable/disable definition of emulated partial_ordering objects
+// again, only needed when std::partial_ordering is not present and inline variables are not supported 
+// at least gcc on mingw has problems with weak symbols
+#if !defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+# define BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS 1
+#endif // !defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+
+
+// trying to set up weak-symbols appropriate
+#if !defined(BOOST_FLAGS_WEAK_SYMBOL)
+
+// only required for definition of partial_ordering
+# if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
+// BOOST_FLAGS_WEAK_SYMBOL is not used
+
+# else // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
+// adapted from boost/dll/alias.hpp
+#  if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
+#   define BOOST_FLAGS_WEAK_SYMBOL __declspec(selectany)
+#  else // defined(_MSC_VER)
+#   if BOOST_FLAGS_IS_GCC_COMPILER
+#    if !defined(__MINGW32__)
+        // There are some problems with mixing `__dllexport__` and `weak` using MinGW
+        // See https://sourceware.org/bugzilla/show_bug.cgi?id=17480
+#     define BOOST_FLAGS_WEAK_SYMBOL __attribute__((weak))
+#    else // !defined(__MINGW32__)
+#     define BOOST_FLAGS_WEAK_SYMBOL
+#    endif // !defined(__MINGW32__)
+#   else // BOOST_FLAGS_IS_GCC_COMPILER
+#    if defined(__clang__)
+#     define BOOST_FLAGS_WEAK_SYMBOL __attribute__((weak))
+#    else // defined(__clang__)
+#     define BOOST_FLAGS_WEAK_SYMBOL
+#    endif // defined(__clang__)
+#   endif // BOOST_FLAGS_IS_GCC_COMPILER
+#  endif // defined(_MSC_VER)
+# endif // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+
+#endif // !defined(BOOST_FLAGS_WEAK_SYMBOL)
+
+
+
+#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+#include <compare>
+#endif
+
+
+
+
 
 // non-intrusive opt-in to operations of boost::flags
 // specialize
@@ -1148,12 +1184,12 @@ namespace boost {
                 static const partial_ordering unordered;
             };
 
-#if !defined(BOOST_FLAGS_NO_DEFINITION_OF_PARTIAL_ORDERING_OBJECTS)
-            BOOST_FLAGS_DLL_SELECTANY const partial_ordering partial_ordering::equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
-            BOOST_FLAGS_DLL_SELECTANY const partial_ordering partial_ordering::less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
-            BOOST_FLAGS_DLL_SELECTANY const partial_ordering partial_ordering::greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
-            BOOST_FLAGS_DLL_SELECTANY const partial_ordering partial_ordering::unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
-#endif // !defined(BOOST_FLAGS_NO_DEFINITION_OF_PARTIAL_ORDERING_OBJECTS)
+#if (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
+            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::equivalent{ static_cast<compare_underlying_t>(compare_equal_enum::equivalent) };
+            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::less{ static_cast<compare_underlying_t>(compare_ordered_enum::less) };
+            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::greater{ static_cast<compare_underlying_t>(compare_ordered_enum::greater) };
+            BOOST_FLAGS_WEAK_SYMBOL constexpr partial_ordering partial_ordering::unordered{ static_cast<compare_underlying_t>(compare_incomparable::unordered) };
+#endif // (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
         }
 
         // alias to partial_ordering

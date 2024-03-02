@@ -8,13 +8,13 @@
 
 #include <boost/core/lightweight_test_trait.hpp>
 
-#ifdef TEST_COMPILE_FAIL
+#if defined(TEST_COMPILE_FAIL)
 
 
 char not_a_function;
 int i = not_a_function();
 
-#endif
+#endif // defined(TEST_COMPILE_FAIL)
 
 int main() {
     

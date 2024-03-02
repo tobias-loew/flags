@@ -5,15 +5,15 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test_trait.hpp>
-#include <boost/flags.hpp>
-
 #define TEST_NAMESPACE test_disable_complement
 #include "include_test.hpp"
 
-#ifdef TEST_FLAGS_LINKING
+#include <boost/core/lightweight_test_trait.hpp>
+#include <boost/flags.hpp>
+
+#if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
 
 enum class flags_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
@@ -31,9 +31,9 @@ TEST_FLAGS_LINKING_EPILOGUE
 // helpers
 template<typename E>
 constexpr auto to_underlying(E value)
-#ifdef TEST_NO_CXX14_DECLTYPE_AUTO
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 -> typename std::underlying_type<E>::type
-#endif // TEST_NO_CXX14_DECLTYPE_AUTO
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
@@ -90,6 +90,6 @@ int main() {
     return boost::report_errors();
 }
 
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 } // namespace TEST_NAMESPACE
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)

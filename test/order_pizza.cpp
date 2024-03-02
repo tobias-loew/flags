@@ -5,16 +5,16 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test_trait.hpp>
-#include <boost/flags.hpp>
-
 #define TEST_NAMESPACE order_pizza
 #include "include_test.hpp"
 
+#include <boost/core/lightweight_test_trait.hpp>
+#include <boost/flags.hpp>
 
-#ifdef TEST_FLAGS_LINKING
+
+#if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
 
 enum class pizza_toppings {
     tomato       = boost::flags::nth_bit(0), // == 0x01
@@ -59,32 +59,32 @@ int main() {
     order_pizza(toppings & ~pizza_toppings::salami);    // order a vegetarian pizza
     order_ice_cream(ice_cream_flavours::vanilla);       // order desert
 
-#ifdef TEST_COMPILE_FAIL_ORDER_WITH_COMPLEMENT
+#if defined(TEST_COMPILE_FAIL_ORDER_WITH_COMPLEMENT)
     // Guest: "Pizza without olives!"
     // Waiter: "Ok, no olives. But what else to put on it?"
     // error: negative mask is not a pizza topping
     order_pizza(~pizza_toppings::olives);
-#endif
+#endif // defined(TEST_COMPILE_FAIL_ORDER_WITH_COMPLEMENT)
 
     // Guest: "Pizza with all toppings but olives!"
     // Waiter: "Ok, got it!"
     // Waiter takes note: Pizza with tomato, cheese, salami, garlic.
     order_pizza(pizza_toppings::all_toppings & ~pizza_toppings::olives);
 
-#ifdef TEST_COMPILE_FAIL_MIX_INCOMPATIBLE
+#if defined(TEST_COMPILE_FAIL_MIX_INCOMPATIBLE)
     // error: mixing different enumerations
     toppings |= ice_cream_flavours::strawberry;
-#endif
+#endif // defined(TEST_COMPILE_FAIL_MIX_INCOMPATIBLE)
 
-#ifdef TEST_COMPILE_FAIL_ORDER_WRONG_DESSERT
+#if defined(TEST_COMPILE_FAIL_ORDER_WRONG_DESSERT)
     // error: called with wrong enumeration
     order_ice_cream(toppings);
-#endif
+#endif // defined(TEST_COMPILE_FAIL_ORDER_WRONG_DESSERT)
     BOOST_TEST(ice_cream_flavours::vanilla == ice_cream_flavours::vanilla);
 
     return boost::report_errors();
 }
 
-#ifdef TEST_FLAGS_LINKING
+#if defined(TEST_FLAGS_LINKING)
 } // namespace TEST_NAMESPACE
-#endif // TEST_FLAGS_LINKING
+#endif // defined(TEST_FLAGS_LINKING)
