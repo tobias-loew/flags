@@ -235,17 +235,17 @@ jobs:
             cxxstd: "11,14"
             addrmd: 32,64
             os: windows-2019
-            msvcver: 2022
+            msvcver: 2019
           - toolset: msvc-14.1
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
-            msvcver: 2022
+            msvcver: 2019
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
-            msvcver: 2022
+            msvcver: 2019
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
@@ -260,7 +260,7 @@ jobs:
             cxxstd: "11,14,17,2a"
             addrmd: 64
             os: windows-2019
-            msvcver: 2022
+            msvcver: 2019
             set_env: "set GCC_ON_WINDOWS=1"
 
     runs-on: ${{matrix.os}}
@@ -287,7 +287,15 @@ jobs:
           choco install visualstudio2017-workload-vctools
   
 
-      - name: Install MSVC v141 component
+      - name: Install MSVC v141 component for VS 2019
+        id: install_msvc_v141_component
+        if: (( matrix.msvcver == 2019 ) && ( matrix.toolset == 'msvc-14.1' ))
+        shell: bash
+        working-directory: ${{ env.HOME }}
+        run: |
+          choco install -y visualstudio2019enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.v141.x86.x64'"
+
+      - name: Install MSVC v141 component for VS 2022
         id: install_msvc_v141_component
         if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.1' ))
         shell: bash
@@ -295,7 +303,15 @@ jobs:
         run: |
           choco install -y visualstudio2022enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.v141.x86.x64'"
 
-      - name: Install MSVC v142 component
+      - name: Install MSVC v142 component for VS 2019
+        id: install_msvc_v142_component
+        if: (( matrix.msvcver == 2019 ) && ( matrix.toolset == 'msvc-14.2' ))
+        shell: bash
+        working-directory: ${{ env.HOME }}
+        run: |
+          choco install -y visualstudio2019enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64'"
+
+      - name: Install MSVC v142 component for VS 2022
         id: install_msvc_v142_component
         if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.2' ))
         shell: bash
@@ -331,7 +347,7 @@ jobs:
         shell: cmd
         run: |
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
-          [ -n "${{ matrix.set_env }}" ] && ${{ matrix.set_env }}
+          ${{ matrix.set_env }}
 
           cd ../boost-root
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
