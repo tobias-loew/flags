@@ -223,13 +223,13 @@ jobs:
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
-            msvcver: 2017,
+            msvcver: 2017
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
           - toolset: msvc-14.1
             cxxstd: "11,14,17,20,latest"
             addrmd: 32,64
             os: windows-2019
-            msvcver: 2017,
+            msvcver: 2017
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"
           - toolset: msvc-14.0
             cxxstd: "11,14,17,20,latest"
@@ -271,7 +271,7 @@ jobs:
 
       - name: Install MSVC 2017
         id: install_msvc_2017
-        if: startsWith(matrix.os, 'windows-2019') && ( matrix.msvcver == 2017 )
+        if: ( matrix.msvcver == 2017 )
         shell: bash
         working-directory: ${{ env.HOME }}
         run: |

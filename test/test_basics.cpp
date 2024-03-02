@@ -11,6 +11,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test_post.hpp"
+
 #if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
@@ -225,6 +227,7 @@ void test_bfand() {
 
 
 int main() {
+    report_config();
     test_nth_bit();
     test_negation_operators();
     test_complement_types();

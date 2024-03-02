@@ -13,6 +13,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test_post.hpp"
+
 namespace test_basics {
     int main();
 }
@@ -35,6 +37,7 @@ namespace order_pizza {
 
 
 int main() {
+    report_config();
     test_basics::main();
     test_disable_complement::main();
     test_rel_ops::main();

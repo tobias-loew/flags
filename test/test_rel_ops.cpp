@@ -12,6 +12,8 @@
 #include <boost/flags.hpp>
 #include <array>
 
+#include "include_test_post.hpp"
+
 #if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
@@ -448,6 +450,7 @@ void test_std_less() {
 
 
 int main() {
+    report_config();
     test_builtin();
     test_delete();
     test_partial_order();

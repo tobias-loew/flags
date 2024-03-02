@@ -11,6 +11,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test_post.hpp"
+
 
 #if defined(TEST_FLAGS_LINKING)
 namespace TEST_NAMESPACE {
@@ -53,6 +55,7 @@ void order_ice_cream(ice_cream_flavours /*flavours*/) {
  }
 
 int main() {
+    report_config();
     pizza_toppings toppings = pizza_toppings::tomato | pizza_toppings::cheese; // a decent start
     toppings |= pizza_toppings::salami | pizza_toppings::olives;    // even better
     order_pizza(toppings);                              // order main course

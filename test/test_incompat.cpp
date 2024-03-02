@@ -11,6 +11,8 @@
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
 
+#include "include_test_post.hpp"
+
 // only testing for unscoped enums
 
 enum class flags_enum {};
@@ -62,6 +64,7 @@ void test_fail_with_not_enabled() {
 }
 
 int main() {
+    report_config();
     test_fail_with_enabled();
     test_fail_with_not_enabled();
 
