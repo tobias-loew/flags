@@ -90,6 +90,14 @@ void test_complement_types() {
     auto c4 = ~c3;
     auto c5 = ~c4;
 
+    // prevent unused warnings
+    (void)(c1);
+    (void)(c2);
+    (void)(c3);
+    (void)(c4);
+    (void)(c5);
+
+
     static_assert(std::is_same<decltype(c1), boost::flags::complement<decltype(c0)>>::value, "error in complement type");
 
     static_assert(std::is_same<decltype(c0), decltype(c2)>::value, "error in complement type");

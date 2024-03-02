@@ -7,28 +7,32 @@
 
 #include <iostream>
 
-#define TEST_REPORT_CONFIG(name)  BOOST_LIGHTWEIGHT_TEST_OSTREAM << #name << " : " << name << "\n"
+
+// helper to report compiler environment
+
+#define TEST_REPORT_CONFIG_STREAM BOOST_LIGHTWEIGHT_TEST_OSTREAM
+//#define TEST_REPORT_CONFIG_STREAM std::cout
+
+#define TEST_REPORT_CONFIG(name)  TEST_REPORT_CONFIG_STREAM << #name << " : " << name << "\n"
 
 inline bool report_config() {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n\n\nreporting config to BOOST_LIGHTWEIGHT_TEST_OSTREAM \n\n\n";
-    std::cout << "\n\n\nreporting config to std::cout\n\n\n";
 
 #if defined(__GNUC__)
     TEST_REPORT_CONFIG(__GNUC__);
 #else 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "__GNUC__ not defined\n";
+    TEST_REPORT_CONFIG_STREAM << "__GNUC__ not defined\n";
 #endif
 
 #if defined(__clang__)
     TEST_REPORT_CONFIG(__clang__);
 #else 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "__clang__ not defined\n";
+    TEST_REPORT_CONFIG_STREAM << "__clang__ not defined\n";
 #endif
 
 #if defined(__MINGW32__)
     TEST_REPORT_CONFIG(__MINGW32__);
 #else 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "__MINGW32__ not defined\n";
+    TEST_REPORT_CONFIG_STREAM << "__MINGW32__ not defined\n";
 #endif
 
     TEST_REPORT_CONFIG(BOOST_FLAGS_IS_GCC_COMPILER);
@@ -42,4 +46,3 @@ inline bool report_config() {
     return true;
 }
 
-static bool output_config = report_config();
