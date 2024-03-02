@@ -288,7 +288,7 @@ jobs:
   
 
       - name: Install MSVC v141 component for VS 2019
-        id: install_msvc_v141_component
+        id: install_msvc_v141_component_vs_2019
         if: (( matrix.msvcver == 2019 ) && ( matrix.toolset == 'msvc-14.1' ))
         shell: bash
         working-directory: ${{ env.HOME }}
@@ -296,7 +296,7 @@ jobs:
           choco install -y visualstudio2019enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.v141.x86.x64'"
 
       - name: Install MSVC v141 component for VS 2022
-        id: install_msvc_v141_component
+        id: install_msvc_v141_component_vs_2022
         if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.1' ))
         shell: bash
         working-directory: ${{ env.HOME }}
@@ -304,7 +304,7 @@ jobs:
           choco install -y visualstudio2022enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.v141.x86.x64'"
 
       - name: Install MSVC v142 component for VS 2019
-        id: install_msvc_v142_component
+        id: install_msvc_v142_component_vs_2019
         if: (( matrix.msvcver == 2019 ) && ( matrix.toolset == 'msvc-14.2' ))
         shell: bash
         working-directory: ${{ env.HOME }}
@@ -312,7 +312,7 @@ jobs:
           choco install -y visualstudio2019enterprise --package-parameters="'--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64'"
 
       - name: Install MSVC v142 component for VS 2022
-        id: install_msvc_v142_component
+        id: install_msvc_v142_component_vs_2022
         if: (( matrix.msvcver == 2022 ) && ( matrix.toolset == 'msvc-14.2' ))
         shell: bash
         working-directory: ${{ env.HOME }}
