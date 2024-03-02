@@ -331,7 +331,7 @@ jobs:
         shell: cmd
         run: |
           [ -n "${{ matrix.environment_script }}" ] && "${{ matrix.environment_script }}"
-          [ -n "${{ matrix.set_env }}" ] && "${{ matrix.set_env }}"
+          [ -n "${{ matrix.set_env }}" ] && ${{ matrix.set_env }}
 
           cd ../boost-root
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
