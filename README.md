@@ -12,7 +12,7 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 * create example on godbolt and put link here, into the docs and boost-list probing email
 * add github action with test-matrix to test on all kind of compilers with all kind of C++ versions
 * uniform macro handling
-* update docs with latest changes (C++11 conformance)
+* update docs with latest changes (C++11 conformance), adjust macros
  
     * weak symbols prblem with gcc on mingw  
 
