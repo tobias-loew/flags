@@ -818,9 +818,15 @@ namespace boost {
             constexpr auto
             operator~(T value) noexcept -> typename impl::unary_operation_result<T, impl::negation>::type {
             using result_t = typename impl::unary_operation_result<T, impl::negation>::type;
+            // clang reports warnings here, e.g.
+            // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
+            //return result_t{
+            //    static_cast<enum_type_t<T>>(~impl::get_underlying(value))
+            //};
 
+            using underlying_type = decltype(impl::get_underlying(value));
             return result_t{
-                static_cast<enum_type_t<T>>(~impl::get_underlying(value))
+                static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying(value)))
             };
         }
 
