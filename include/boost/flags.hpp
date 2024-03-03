@@ -767,8 +767,16 @@ namespace boost {
             operator&(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::conjunction>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::conjunction>::type;
 
+            // ensure we do not leave the valid value range (would be UB with constant expressions)
+            // clang reports warnings here, e.g.
+            // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
+            //return result_t{
+            //    static_cast<enum_type_t<T>>(~impl::get_underlying(value))
+            //};
+
+            using underlying_type = decltype(impl::get_underlying(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(impl::get_underlying(lhs) & impl::get_underlying(rhs))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) & impl::get_underlying(rhs)))
             };
         }
 
@@ -784,8 +792,16 @@ namespace boost {
             operator|(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::disjunction>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::disjunction>::type;
 
+            // ensure we do not leave the valid value range (would be UB with constant expressions)
+            // clang reports warnings here, e.g.
+            // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
+            //return result_t{
+            //    static_cast<enum_type_t<T>>(~impl::get_underlying(value))
+            //};
+
+            using underlying_type = decltype(impl::get_underlying(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(impl::get_underlying(lhs) | impl::get_underlying(rhs))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) | impl::get_underlying(rhs)))
             };
         }
 
@@ -801,8 +817,16 @@ namespace boost {
             operator^(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::not_equal>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::not_equal>::type;
 
+            // ensure we do not leave the valid value range (would be UB with constant expressions)
+            // clang reports warnings here, e.g.
+            // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
+            //return result_t{
+            //    static_cast<enum_type_t<T>>(~impl::get_underlying(value))
+            //};
+
+            using underlying_type = decltype(impl::get_underlying(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(impl::get_underlying(lhs) ^ impl::get_underlying(rhs))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) ^ impl::get_underlying(rhs)))
             };
         }
 
@@ -818,6 +842,8 @@ namespace boost {
             constexpr auto
             operator~(T value) noexcept -> typename impl::unary_operation_result<T, impl::negation>::type {
             using result_t = typename impl::unary_operation_result<T, impl::negation>::type;
+
+            // ensure we do not leave the valid value range (would be UB with constant expressions)
             // clang reports warnings here, e.g.
             // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
             //return result_t{
