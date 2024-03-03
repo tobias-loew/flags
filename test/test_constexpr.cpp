@@ -125,6 +125,20 @@ void test_binary_operators() {
     static constexpr auto neg_ad_neg_ac = neg_ad | neg_ac;
     static constexpr auto neg_ad_and_neg_ac = neg_ad & neg_ac;
 
+    // silence unused warnings
+    (void)ab;
+    (void)ac;
+    (void)ad;
+    (void)acd;
+    (void)ab_and_ac;
+    (void)neg_a;
+    (void)neg_ac;
+    (void)neg_ad;
+    (void)neg_acd;
+    (void)neg_ad_neg_ac;
+    (void)neg_ad_and_neg_ac;
+
+
     static_assert(ab_and_ac == a, "constexpr test failed");
     static_assert((neg_a & d) == d, "constexpr test failed");
     static_assert((neg_ac & d) == d, "constexpr test failed");
@@ -139,6 +153,9 @@ void test_binary_operators() {
 
 void test_null() {
     static constexpr flags_enum a = flags_enum::bit_0;
+
+    // silence unused warnings
+    (void)a;
 
     static_assert((a != nullptr), "constexpr test failed");
     static_assert(!(a == nullptr), "constexpr test failed");
@@ -157,6 +174,12 @@ void test_bfand() {
     static constexpr flags_enum b = flags_enum::bit_1;
     static constexpr flags_enum c = flags_enum::bit_2;
     static constexpr flags_enum d = flags_enum::bit_3;
+
+    // silence unused warnings
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
 
     static_assert(!(a BOOST_FLAGS_AND b), "constexpr test failed");
     static_assert(((a | b) BOOST_FLAGS_AND b), "constexpr test failed");
