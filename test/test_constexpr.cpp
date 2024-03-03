@@ -88,6 +88,9 @@ void test_negation_operators() {
         flags_enum::bit_0 | flags_enum::bit_1 | flags_enum::bit_2 | flags_enum::bit_3,
     };
 
+    // silence unused warnings
+    (void)test_cases;
+
     // requires C++14
 #if __cplusplus >= 201402L
     static_assert([]() {

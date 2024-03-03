@@ -24,8 +24,8 @@ project
   ;
 
 
-run test_test.cpp ;
-compile-fail test_test.cpp : <define>TEST_COMPILE_FAIL : test_test_TEST_COMPILE_FAIL ;
+run test_fail.cpp ;
+compile-fail test_fail.cpp : <define>TEST_COMPILE_FAIL : test_fail_TEST_COMPILE_FAIL ;
 
 run test_basics.cpp ;
 run test_basics.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_basics_UNSCOPED ;

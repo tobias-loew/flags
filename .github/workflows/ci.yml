@@ -388,6 +388,16 @@ jobs:
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++17 -c test/test_rel_ops.cpp
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++11 -c test/test_utilities.cpp
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/order_pizza.cpp
+          if nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_fail.cpp ; then
+            exit 1
+          fi
+          if nvcc -x cu -I ./include -DTEST_COMPILE_FAIL_WITH_ENABLED -D -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp ; then
+            exit 1
+          fi
+          if nvcc -x cu -I ./include -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -D -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp ; then
+            exit 1
+          fi
+
 
   cuda-windows:
     runs-on: windows-2019
