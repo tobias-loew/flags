@@ -631,8 +631,9 @@ pre.rouge .gs {
 <ul class="sectlevel3">
 <li><a href="#boost_flags_null">BOOST_FLAGS_NULL</a></li>
 <li><a href="#boost_flags_rel_ops_delete">BOOST_FLAGS_REL_OPS_DELETE</a></li>
-<li><a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a></li>
 <li><a href="#boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</a></li>
+<li><a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a></li>
+<li><a href="#boost_flags_specialize_std_less_2">BOOST_FLAGS_SPECIALIZE_STD_LESS</a></li>
 </ul>
 </li>
 <li><a href="#configuration_macros">Configuration Macros</a>
@@ -676,7 +677,7 @@ pre.rouge .gs {
 </div>
 </div>
 <div class="paragraph">
-<p>Example:</p>
+<p>Example:  <a href="https://godbolt.org/z/bMrfb6Gz5" target="_blank" rel="noopener">on Godbolt compiler explorer</a></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -702,13 +703,41 @@ pre.rouge .gs {
 <span class="c1">// enable Boost.Flags for ice_cream_flavours</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">ice_cream_flavours</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
-<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> /*<span class="n">toppings</span>*/<span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// order selected pizza</span>
- <span class="p">}</span>
+<span class="c1">// order selected pizza</span>
+<span class="kt">void</span> <span class="nf">order_pizza</span><span class="p">(</span><span class="n">pizza_toppings</span> <span class="n">toppings</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Pizza ordered with</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">tomato</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- tomato</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">cheese</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- cheese</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">salami</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- salami</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">olives</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- olives</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">toppings</span> <span class="o">&amp;</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">garlic</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- garlic</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
 
-<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> /*<span class="n">flavours</span>*/<span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// order selected dessert</span>
- <span class="p">}</span>
+<span class="c1">// order selected dessert</span>
+<span class="kt">void</span> <span class="nf">order_ice_cream</span><span class="p">(</span><span class="n">ice_cream_flavours</span> <span class="n">flavours</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Ice cream ordered with flavours</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">flavours</span> <span class="o">&amp;</span> <span class="n">ice_cream_flavours</span><span class="o">::</span><span class="n">vanilla</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- vanilla</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">flavours</span> <span class="o">&amp;</span> <span class="n">ice_cream_flavours</span><span class="o">::</span><span class="n">chocolate</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- chocolate</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">flavours</span> <span class="o">&amp;</span> <span class="n">ice_cream_flavours</span><span class="o">::</span><span class="n">strawberry</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"- strawberry</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">pizza_toppings</span> <span class="n">toppings</span> <span class="o">=</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">tomato</span> <span class="o">|</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">cheese</span><span class="p">;</span> <span class="c1">// a decent start</span>
@@ -2163,10 +2192,17 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 </td>
 <td class="content">
 <div class="paragraph">
-<p>It is strongly recommended to define either <code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</code> or <code>BOOST_FLAGS_REL_OPS_DELETE</code> for flag-like enumerations.</p>
+<p>It is recommended to define either <code>BOOST_FLAGS_REL_OPS_DELETE</code> for flag-like enumerations.</p>
 </div>
 <div class="paragraph">
-<p>The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!</p>
+<p>This prohibits the accidental usage of relational operators with flag values (
+The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!).</p>
+</div>
+<div class="paragraph">
+<p>When flags have to be stored in ordered container or sorted, please either define <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> for the enumeration or specify <code>boost::flags::total_order_t</code> as <em>Compare</em> predicate type.</p>
+</div>
+<div class="paragraph">
+<p>Range algorithms require the specification of <code>boost::flags::total_order</code> as compare object.</p>
 </div>
 </td>
 </tr>
@@ -2332,6 +2368,22 @@ Furthermore, the current wording doesn&#8217;t allow overloading or deleting tho
 </div>
 </div>
 <div class="sect3">
+<h4 id="boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</h4>
+<div class="paragraph">
+<p>The macro <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> specialize std::less for E and complement&lt;E&gt; with the total order based on the value of the underlying integer type (i.e. <code>&lt;</code> on the underlying integer type).</p>
+</div>
+<div class="paragraph">
+<p>The macro <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> has to be defined at global namespace.</p>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>The definition of <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> will not enablerange algorithms to use that total order. Here it is required to explicitely specify <code>boost::flags::total_order</code> as compare object.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
 <h4 id="boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</h4>
 <div class="paragraph">
 <p>The macro <code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)</code> defines all relational operators for a Boost.Flags enabled enumeration <code>E</code>.<br>
@@ -2372,7 +2424,7 @@ The following semantics apply</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</h4>
+<h4 id="boost_flags_specialize_std_less_2">BOOST_FLAGS_SPECIALIZE_STD_LESS</h4>
 <div class="paragraph">
 <p>The macro <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> specializes <code>std::less</code> for <code>E</code> to use <code>boost::flags::total_order</code>.</p>
 </div>

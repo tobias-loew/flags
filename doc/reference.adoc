@@ -355,9 +355,15 @@ There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PART
 
 [WARNING]
 ====
-It is strongly recommended to define either `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` or `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
+It is recommended to define either `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
 
-The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!
+This prohibits the accidental usage of relational operators with flag values ( 
+The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!).
+
+When flags have to be stored in ordered container or sorted, please either define `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` for the enumeration or specify `boost::flags::total_order_t` as _Compare_ predicate type.
+
+Range algorithms require the specification of `boost::flags::total_order` as compare object.
+
 ====
 
 ## Boolean predicates
@@ -521,8 +527,16 @@ The macro `BOOST_FLAGS_REL_OPS_DELETE(E)` has to be defined at global namespace.
 
 
 
+### BOOST_FLAGS_SPECIALIZE_STD_LESS
 
+The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` specialize std::less for E and complement<E> with the total order based on the value of the underlying integer type (i.e. `<` on the underlying integer type).
 
+The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global namespace.
+
+[INFO]
+====
+The definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` will not enablerange algorithms to use that total order. Here it is required to explicitely specify `boost::flags::total_order` as compare object.
+====
 
 
 ### BOOST_FLAGS_REL_OPS_PARTIAL_ORDER

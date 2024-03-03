@@ -3,9 +3,11 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 
 [read the docs](https://tobias-loew.github.io/flags)
 
+[example on Godbolt compiler explorer](https://godbolt.org/z/bMrfb6Gz5)
+
 # ToDo
 
-* create example on godbolt and put link here, into the docs and boost-list probing email
+* put godbolt link in boost-list probing email
 * update boost-list probing email to reflect latest changes (C++11 conformance, std::less stuff, godbolt example(see below))
 * finally, remove ToDo list
 
