@@ -46,7 +46,17 @@ constexpr auto to_underlying(E value)
 }
 
 
-
+#if __cplusplus >= 201402L
+constexpr bool check_nth_bit() {
+    // test whole range of int
+    for (int i = 0; i < static_cast<int>(sizeof(int) * 8); ++i) {
+        if (!(boost::flags::nth_bit(i) == 1 << i)) {
+            return false;
+        }
+    }
+    return true;
+}
+#endif
 
 void test_nth_bit() {
 
@@ -62,20 +72,15 @@ void test_nth_bit() {
 
     // requires C++14
 #if __cplusplus >= 201402L
-    static_assert([]() {
-        // test whole range of int
-        for (int i = 0; i < static_cast<int>(sizeof(int) * 8); ++i) {
-            if (!(boost::flags::nth_bit(i) == 1 << i)) {
-                return false;
-            }
-        }
-        reutrn true;
-        }(), "constexpr test failed");
+    static_assert(check_nth_bit(), "constexpr test failed");
 #endif
 }
 
-void test_negation_operators() {
-    static constexpr flags_enum test_cases[] = {
+
+
+#if __cplusplus >= 201402L
+constexpr bool check_negation_operators() {
+    const flags_enum test_cases[] = {
         flags_enum{},
         flags_enum::bit_0,
         flags_enum::bit_1,
@@ -88,23 +93,23 @@ void test_negation_operators() {
         flags_enum::bit_0 | flags_enum::bit_1 | flags_enum::bit_2 | flags_enum::bit_3,
     };
 
-    // silence unused warnings
-    (void)test_cases;
+    // test whole range of int
+    for (auto value : test_cases) {
+        if (!(value == ~~value)) {
+            return false;
+        }
+        if (!(~value == ~~~value)) {
+            return false;
+        }
+        }
+    return true;
+}
+#endif
 
+void test_negation_operators() {
     // requires C++14
 #if __cplusplus >= 201402L
-    static_assert([]() {
-        // test whole range of int
-        for (int i = 0; i < static_cast<int>(sizeof(int) * 8); ++i) {
-            if (!(value == ~~value)) {
-                return false;
-            }
-            if (!(~value == ~~~value)) {
-                return false;
-            }
-}
-        reutrn true;
-        }(), "constexpr test failed");
+    static_assert(check_negation_operators(), "constexpr test failed");
 #endif
 }
 
