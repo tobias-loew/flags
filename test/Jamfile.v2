@@ -60,6 +60,8 @@ else
 	run test_linking.cpp test_basics_link.cpp test_disable_complement_link.cpp test_rel_ops_link.cpp test_utilities_link.cpp order_pizza_link.cpp : : : <define>TEST_FLAGS_LINKING  ;
 }
     
+run test_constexpr.cpp ;
+run test_constexpr.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_constexpr_UNSCOPED ;
 
 
 # text example
