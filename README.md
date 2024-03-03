@@ -5,6 +5,7 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 
 # ToDo
 
+* mention value range issues (esp. with constexpr) https://eel.is/c++draft/dcl.enum#7 and https://eel.is/c++draft/dcl.enum#8
 * update boost-list probing email to reflect latest changes (C++11 conformance, std::less stuff, godbolt example(see below))
 * add support for fail on cuda
 * create example on godbolt and put link here, into the docs and boost-list probing email
