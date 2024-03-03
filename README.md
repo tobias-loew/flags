@@ -19,3 +19,5 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 * finally, remove ToDo list
 
 [![CI](https://github.com/tobias-loew/flags/actions/workflows/ci.yml/badge.svg)](https://github.com/tobias-loew/flags/actions/workflows/ci.yml)
+
+[![License](https://img.shields.io/badge/license-boost-brightgreen.svg)](LICENSE_1_0.txt)
