@@ -63,6 +63,10 @@ else
 run test_constexpr.cpp ;
 run test_constexpr.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_constexpr_UNSCOPED ;
 
+run test_container_algorithm.cpp ;
+compile-fail test_container_algorithm.cpp : <define>TEST_COMPILE_FAIL_CONTAINER_DELETE_LT <define>TEST_COMPILE_FAIL_SET : test_container_algorithm_FAIL_SET ;
+compile-fail test_container_algorithm.cpp : <define>TEST_COMPILE_FAIL_CONTAINER_DELETE_LT <define>TEST_COMPILE_FAIL_MULTISET : test_container_algorithm_FAIL_MULTISET ;
+
 
 # text example
 run order_pizza.cpp ;

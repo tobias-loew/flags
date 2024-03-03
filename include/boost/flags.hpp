@@ -1550,7 +1550,7 @@ namespace std {                                                                 
     struct less<E> {                                                                    \
         BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                 \
             constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {      \
-            return boost::flags::total_order(rhs, lhs);                                 \
+            return boost::flags::total_order(lhs, rhs);                                 \
         }                                                                               \
     };                                                                                  \
     template<>                                                                          \
@@ -1560,7 +1560,7 @@ namespace std {                                                                 
                 boost::flags::complement<E> const& lhs,                                 \
                 boost::flags::complement<E> const& rhs                                  \
                 ) const noexcept {                                                      \
-            return boost::flags::total_order(rhs, lhs);                                 \
+            return boost::flags::total_order(lhs, rhs);                                 \
         }                                                                               \
     };                                                                                  \
 } /* namespace std */                                                               
