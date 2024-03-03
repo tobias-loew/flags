@@ -560,3 +560,73 @@ The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` specializes `std::less` for `E` t
 
 
 The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global namespace.
+
+
+## Configuration Macros
+
+If not specified, all the following macros are deduced from the system, compiler, C++ version.
+(Boost.Flags is tested with all major compilers on linux (ubuntu), macos and windows.)
+
+
+
+### BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+Specifies, if three way comparison (<\=>) is available.
+
+Possible values: 0 or 1
+
+### BOOST_FLAGS_HAS_PARTIAL_ORDERING
+
+Specifies, if `std::partial_ordering` is available.
+
+Possible values: 0 or 1
+
+
+### BOOST_FLAGS_HAS_CONCEPTS
+
+Specifies, if the compiler supports concepts.
+
+Possible values: 0 or 1
+
+
+### BOOST_FLAGS_HAS_IS_SCOPED_ENUM
+
+Specifies, if `std::is_scoped_enum` is available.
+
+Possible values: 0 or 1
+
+
+
+### BOOST_FLAGS_HAS_LOGICAL_TRAITS
+
+Specifies, if the logical traits `std::conjunction`, `std::disjunction` and `std::negation` are available.
+
+Possible values: 0 or 1
+
+### BOOST_FLAGS_HAS_INLINE_VARIABLES
+
+Specifies, if the `inline` variables are available (and work correctly: broken in msvc before version v142).
+
+Possible values: 0 or 1
+
+### BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS
+
+Specifies, if the partial_ordering emulation is defined. +
+Only used, when `std::partial_ordering` is not available.
+
+Possible values: 0 or 1
+
+
+### BOOST_FLAGS_WEAK_SYMBOL
+
+Text used to specify a symbol with weak linkage 
+
+* `__declspec(selectany)` for mscv and clang-cl, ICC on windows
+* `\\__attribute__\((weak))` for g++ and clang, except for g++ on mingw: in that case please define `BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS=1` in exactly one translation unit
+
+
+
+### BOOST_FLAGS_ATTRIBUTE_NODISCARD
+
+Text used as nodiscard attribute (e.g. `[[nodiscard]]`).
+

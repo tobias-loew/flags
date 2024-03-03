@@ -129,57 +129,60 @@
 
 
 // check if the spaceship has alreay landed
-#if !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if !defined(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 // g++ does not allow overwriting rel. operators with spaceship for enums 
 // cf. https://cplusplus.github.io/CWG/issues/2673.html
 // cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
 // hopefully g++ 14 will have fixed it
 # if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 1
+#  define BOOST_FLAGS_HAS_THREE_WAY_COMPARISON 0
 # else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#  define BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON 0
+#  define BOOST_FLAGS_HAS_THREE_WAY_COMPARISON 1
 # endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
-#endif // !defined(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#endif // !defined(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 
 // check for library support of three-way-comparison (flags will use std::partial_ordering)
-#if !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+#if !defined(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 # if defined(__has_include)
 #  if __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
-#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
+#   define BOOST_FLAGS_HAS_PARTIAL_ORDERING 1
 #  else // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
-#   define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
+#   define BOOST_FLAGS_HAS_PARTIAL_ORDERING 0
 #  endif // __has_include(<compare>) && defined(__cpp_lib_three_way_comparison) && (__cpp_lib_three_way_comparison >= 201907L)
 # else // defined(__has_include)
-#  define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 1
+#  define BOOST_FLAGS_HAS_PARTIAL_ORDERING 0
 # endif // defined(__has_include)
-#endif // !defined(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+#endif // !defined(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON) && BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+#if (BOOST_FLAGS_HAS_THREE_WAY_COMPARISON) && !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 // this should usually not happen as spaceship requires std::partial_ordering
-# undef BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
-# define BOOST_FLAGS_EMULATE_PARTIAL_ORDERING 0
-#endif // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON && (BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# undef BOOST_FLAGS_HAS_PARTIAL_ORDERING
+# define BOOST_FLAGS_HAS_PARTIAL_ORDERING 1
+#endif // (BOOST_FLAGS_HAS_THREE_WAY_COMPARISON) && !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
 //
 // [[nodiscard]] attribute
 //
-#if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
-#if __has_attribute(nodiscard)
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
-#endif
-#if __has_attribute(no_unique_address)
-# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#endif
-#elif defined(__has_cpp_attribute)
+
+#if !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD)
+# if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
+# if __has_attribute(nodiscard)
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+# endif
+# if __has_attribute(no_unique_address)
+#  define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+# endif
+# elif defined(__has_cpp_attribute)
 // clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
-#if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
-#endif
-#endif
-#ifndef BOOST_FLAGS_ATTRIBUTE_NODISCARD
-# define BOOST_FLAGS_ATTRIBUTE_NODISCARD
-#endif
+# if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
+# endif
+# endif
+# ifndef BOOST_FLAGS_ATTRIBUTE_NODISCARD
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD
+# endif
+#endif // !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD)
 
 
 
@@ -259,11 +262,11 @@
 #if !defined(BOOST_FLAGS_WEAK_SYMBOL)
 
 // only required for definition of partial_ordering
-# if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 // BOOST_FLAGS_WEAK_SYMBOL is not used
 
-# else // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# else // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 // adapted from boost/dll/alias.hpp
 #  if defined(_MSC_VER) // MSVC, Clang-cl, and ICC on Windows
@@ -285,13 +288,13 @@
 #    endif // defined(__clang__)
 #   endif // BOOST_FLAGS_IS_GCC_COMPILER
 #  endif // defined(_MSC_VER)
-# endif // !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+# endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 #endif // !defined(BOOST_FLAGS_WEAK_SYMBOL)
 
 
 
-#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+#if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 #include <compare>
 #endif
 
@@ -1151,7 +1154,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
-#if BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+#if !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
         namespace impl {
             // implementation of partial order
@@ -1280,7 +1283,7 @@ namespace boost {
         };
         static constexpr partial_order_t partial_order{};
 
-#else // BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+#else // !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
         // alias to partial_ordering
         using partial_ordering = std::partial_ordering;
@@ -1326,7 +1329,7 @@ namespace boost {
             using is_transparent = int;
         };
         static constexpr partial_order_t partial_order{};
-#endif // BOOST_FLAGS_EMULATE_PARTIAL_ORDERING
+#endif // !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
 
 
@@ -1553,7 +1556,7 @@ using boost::flags::operator==;
 using boost::flags::operator!=;
 #endif
 
-#if !(BOOST_FLAGS_EMULATE_PARTIAL_ORDERING)
+#if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 using boost::flags::operator<=>;
 #endif
 
@@ -1597,7 +1600,7 @@ namespace std {                                                                 
     };                                                                                  \
 } /* namespace std */                                                               
 
-#if BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
+#if !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
@@ -1809,7 +1812,7 @@ constexpr bool operator>= (T1 l, T2 r) noexcept {                               
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
 
-#else // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
+#else // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
@@ -1877,7 +1880,7 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 
 
 
-#endif // BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON
+#endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 
 #define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &

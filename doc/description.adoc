@@ -92,18 +92,41 @@ int main() {
 * is non-intrusive - only template specializations required
 * single header-file library
 * no dependencies (only standard-library includes)
+* everything is `constexpr`
+* already works with C++11
 * zero-overhead in optimized builds
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
 
 ## _scoped_ or _unscoped_ enumerations? - TL;DR
 
-The usage of _scoped_ enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type.
+The usage of _scoped_ enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than 
+unscoped by prohibiting implicit conversion to the underlying integer type.
 
 * for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations
 * for _unscoped_ enumerations Boost.Flags will additionally delete equality tests against integer-types.
 
 Instead of testing against `0` the macro `BOOST_FLAGS_NULL` or `nullptr` can be used. (For both kinds of enumerations.)
+
+
+## What about the underlying type? - TL;DR
+
+* **For unscoped enumerations absolutely REQUIRED!**
+* **For language standards before C++20 as an `unsigned` type (for both scoped and unscoped enumerations)!**
+
+Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement also for signed integers, even before it got mandatory with C++20
+(https://en.cppreference.com/w/cpp/language/types).
+
+
+But, defining the underlying type for unscoped enumerations is crutial! Otherwise UB is lurking around the corner for `constexpr` flag-calculations (when `operator ~` is used). +
+Clang has even a warning for it `-Wenum-constexpr-conversion` and https://github.com/llvm/llvm-project/issues/59036[they are planing to turn it into a hard error].
+Follow the links, to read the details:
+
+* https://eel.is/c++draft/expr.static.cast#10[constant expression, window=_blank]
+* https://eel.is/c++draft/dcl.enum#7[enum value range, window=_blank] 
+* https://eel.is/c++draft/dcl.enum#8[enum value range (cont.), window=_blank]
+
+Scoped enumerations are not affected: they get an https://eel.is/c++draft/dcl.enum#5[underlying type `int` if not specified, window=_blank].
 
 
 ## The long story

@@ -168,7 +168,7 @@ void test_builtin() {
 #undef OP
                                     }
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -176,7 +176,7 @@ void test_builtin() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                 }
                             }
                         }
@@ -251,7 +251,7 @@ void test_delete() {
 
 #if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP)
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -259,11 +259,11 @@ void test_delete() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#else // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#else // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
 
 #error Spaceship has not yet landed or is destroyed be builtin operator! Cannot test for fail-on-delete.
 
-#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
 
 
 #endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP)
@@ -373,7 +373,7 @@ void test_partial_order() {
 #undef OP
                                     }
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -381,7 +381,7 @@ void test_partial_order() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                 }
                             }
                         }
@@ -445,7 +445,7 @@ void test_std_less() {
 #undef OP
                                     }
 
-#if !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                     {
 #define OP <=>
                                         auto bf = v1 OP v2;
@@ -453,7 +453,7 @@ void test_std_less() {
                                         BOOST_TEST((bf == bu));
 #undef OP
                                     }
-#endif // !(BOOST_FLAGS_EMULATE_THREE_WAY_COMPARISON)
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
                                 }
                             }
                         }

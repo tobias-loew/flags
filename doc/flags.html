@@ -563,6 +563,7 @@ pre.rouge .gs {
 <li><a href="#how_to_use_boost_flags_tldr">How to use Boost.Flags? - TL;DR</a></li>
 <li><a href="#why_use_boost_flags_tldr">Why use Boost.Flags? - TL;DR</a></li>
 <li><a href="#scoped_or_unscoped_enumerations_tldr"><em>scoped</em> or <em>unscoped</em> enumerations? - TL;DR</a></li>
+<li><a href="#what_about_the_underlying_type_tldr">What about the underlying type? - TL;DR</a></li>
 <li><a href="#the_long_story">The long story</a>
 <ul class="sectlevel3">
 <li><a href="#type_safety">Type-Safety</a></li>
@@ -632,6 +633,19 @@ pre.rouge .gs {
 <li><a href="#boost_flags_rel_ops_delete">BOOST_FLAGS_REL_OPS_DELETE</a></li>
 <li><a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a></li>
 <li><a href="#boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</a></li>
+</ul>
+</li>
+<li><a href="#configuration_macros">Configuration Macros</a>
+<ul class="sectlevel3">
+<li><a href="#boost_flags_has_three_way_comparison">BOOST_FLAGS_HAS_THREE_WAY_COMPARISON</a></li>
+<li><a href="#boost_flags_has_partial_ordering">BOOST_FLAGS_HAS_PARTIAL_ORDERING</a></li>
+<li><a href="#boost_flags_has_concepts">BOOST_FLAGS_HAS_CONCEPTS</a></li>
+<li><a href="#boost_flags_has_is_scoped_enum">BOOST_FLAGS_HAS_IS_SCOPED_ENUM</a></li>
+<li><a href="#boost_flags_has_logical_traits">BOOST_FLAGS_HAS_LOGICAL_TRAITS</a></li>
+<li><a href="#boost_flags_has_inline_variables">BOOST_FLAGS_HAS_INLINE_VARIABLES</a></li>
+<li><a href="#boost_flags_define_partial_ordering_objects">BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS</a></li>
+<li><a href="#boost_flags_weak_symbol">BOOST_FLAGS_WEAK_SYMBOL</a></li>
+<li><a href="#boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</a></li>
 </ul>
 </li>
 </ul>
@@ -742,6 +756,12 @@ pre.rouge .gs {
 <p>no dependencies (only standard-library includes)</p>
 </li>
 <li>
+<p>everything is <code>constexpr</code></p>
+</li>
+<li>
+<p>already works with C++11</p>
+</li>
+<li>
 <p>zero-overhead in optimized builds</p>
 </li>
 </ul>
@@ -750,7 +770,8 @@ pre.rouge .gs {
 <div class="sect2">
 <h3 id="scoped_or_unscoped_enumerations_tldr"><em>scoped</em> or <em>unscoped</em> enumerations? - TL;DR</h3>
 <div class="paragraph">
-<p>The usage of <em>scoped</em> enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type.</p>
+<p>The usage of <em>scoped</em> enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than
+unscoped by prohibiting implicit conversion to the underlying integer type.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -764,6 +785,44 @@ pre.rouge .gs {
 </div>
 <div class="paragraph">
 <p>Instead of testing against <code>0</code> the macro <code>BOOST_FLAGS_NULL</code> or <code>nullptr</code> can be used. (For both kinds of enumerations.)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="what_about_the_underlying_type_tldr">What about the underlying type? - TL;DR</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>For unscoped enumerations absolutely REQUIRED!</strong></p>
+</li>
+<li>
+<p><strong>For language standards before C++20 as an <code>unsigned</code> type (for both scoped and unscoped enumerations)!</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement also for signed integers, even before it got mandatory with C++20
+(<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
+</div>
+<div class="paragraph">
+<p>But, defining the underlying type for unscoped enumerations is crutial! Otherwise UB is lurking around the corner for <code>constexpr</code> flag-calculations (when <code>operator ~</code> is used).<br>
+Clang has even a warning for it <code>-Wenum-constexpr-conversion</code> and <a href="https://github.com/llvm/llvm-project/issues/59036">they are planing to turn it into a hard error</a>.
+Follow the links, to read the details:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://eel.is/c++draft/expr.static.cast#10" target="_blank" rel="noopener">constant expression</a></p>
+</li>
+<li>
+<p><a href="https://eel.is/c++draft/dcl.enum#7" target="_blank" rel="noopener">enum value range</a></p>
+</li>
+<li>
+<p><a href="https://eel.is/c++draft/dcl.enum#8" target="_blank" rel="noopener">enum value range (cont.)</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Scoped enumerations are not affected: they get an <a href="https://eel.is/c++draft/dcl.enum#5" target="_blank" rel="noopener">underlying type <code>int</code> if not specified</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1431,17 +1490,21 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <li>
 <p><a href="https://github.com/foonathan/type_safe" class="bare" target="_blank" rel="noopener">https://github.com/foonathan/type_safe</a> (JM)</p>
 </li>
+<li>
+<p><a href="https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)" class="bare" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)</a> (.net, language builtin flags support - not usable with ISO-C++ !)</p>
+</li>
 </ol>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 11.1111%;">
-<col style="width: 11.1111%;">
-<col style="width: 11.1111%;">
-<col style="width: 11.1111%;">
-<col style="width: 11.1111%;">
-<col style="width: 11.1112%;">
+<col style="width: 30%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
+<col style="width: 10%;">
 </colgroup>
 <thead>
 <tr>
@@ -1452,6 +1515,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <th class="tableblock halign-center valign-top">MP</th>
 <th class="tableblock halign-center valign-top">Qt</th>
 <th class="tableblock halign-center valign-top">JM</th>
+<th class="tableblock halign-center valign-top">.net</th>
 </tr>
 </thead>
 <tbody>
@@ -1463,6 +1527,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">zero-overhead</p></td>
@@ -1471,6 +1536,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 </tr>
 <tr>
@@ -1481,6 +1547,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">operators as free functions</p></td>
@@ -1490,11 +1557,13 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">library available</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">implementation available</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
@@ -2309,6 +2378,99 @@ The following semantics apply</p>
 </div>
 <div class="paragraph">
 <p>The macro <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> has to be defined at global namespace.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="configuration_macros">Configuration Macros</h3>
+<div class="paragraph">
+<p>If not specified, all the following macros are deduced from the system, compiler, C++ version.
+(Boost.Flags is tested with all major compilers on linux (ubuntu), macos and windows.)</p>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_three_way_comparison">BOOST_FLAGS_HAS_THREE_WAY_COMPARISON</h4>
+<div class="paragraph">
+<p>Specifies, if three way comparison (&#8656;&gt;) is available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_partial_ordering">BOOST_FLAGS_HAS_PARTIAL_ORDERING</h4>
+<div class="paragraph">
+<p>Specifies, if <code>std::partial_ordering</code> is available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_concepts">BOOST_FLAGS_HAS_CONCEPTS</h4>
+<div class="paragraph">
+<p>Specifies, if the compiler supports concepts.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_is_scoped_enum">BOOST_FLAGS_HAS_IS_SCOPED_ENUM</h4>
+<div class="paragraph">
+<p>Specifies, if <code>std::is_scoped_enum</code> is available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_logical_traits">BOOST_FLAGS_HAS_LOGICAL_TRAITS</h4>
+<div class="paragraph">
+<p>Specifies, if the logical traits <code>std::conjunction</code>, <code>std::disjunction</code> and <code>std::negation</code> are available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_has_inline_variables">BOOST_FLAGS_HAS_INLINE_VARIABLES</h4>
+<div class="paragraph">
+<p>Specifies, if the <code>inline</code> variables are available (and work correctly: broken in msvc before version v142).</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_define_partial_ordering_objects">BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS</h4>
+<div class="paragraph">
+<p>Specifies, if the partial_ordering emulation is defined.<br>
+Only used, when <code>std::partial_ordering</code> is not available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_weak_symbol">BOOST_FLAGS_WEAK_SYMBOL</h4>
+<div class="paragraph">
+<p>Text used to specify a symbol with weak linkage</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>__declspec(selectany)</code> for mscv and clang-cl, ICC on windows</p>
+</li>
+<li>
+<p><code>__attribute__((weak))</code> for g and clang, except for g on mingw: in that case please define <code>BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS=1</code> in exactly one translation unit</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</h4>
+<div class="paragraph">
+<p>Text used as nodiscard attribute (e.g. <code><a id="nodiscard"></a></code>).</p>
 </div>
 </div>
 </div>
