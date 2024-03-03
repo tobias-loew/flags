@@ -39,7 +39,7 @@ and inherit from `std::true_type`.
 Example:
 [source]
 ----
-enum class my_flags {
+enum class my_flags : unsigned int {
     option_a = 0x1,
     option_b = 0x2,
 };

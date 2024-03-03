@@ -15,7 +15,7 @@
 
 // only testing for unscoped enums
 
-enum class flags_enum {};
+enum class flags_enum : unsigned int {};
 
 // enable flags_enum
 TEST_FLAGS_LINKING_PREAMBLE
@@ -25,7 +25,7 @@ TEST_FLAGS_LINKING_EPILOGUE
 
 
 
-enum class flags2_enum {};
+enum class flags2_enum : unsigned int {};
 
 // enable flags_enum
 TEST_FLAGS_LINKING_PREAMBLE

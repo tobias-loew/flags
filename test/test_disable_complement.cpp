@@ -17,7 +17,11 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
-enum class flags_enum {
+
+// Note: underlying type of flags_enum is `unsigned int` to enforce (and test)
+// the identity: (~to_underlying(value)) == (to_underlying(~value))
+// (e.g. on x86 platforms it won't hold for underlying type `uint8_t`) 
+enum class flags_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04

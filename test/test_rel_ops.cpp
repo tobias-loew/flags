@@ -18,7 +18,7 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
-enum class relops_builtin_enum {
+enum class relops_builtin_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -32,7 +32,7 @@ TEST_FLAGS_LINKING_EPILOGUE
 
 
 
-enum class relops_delete_enum {
+enum class relops_delete_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -53,7 +53,7 @@ BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
 #else // defined(_MSC_VER) && _MSC_VER <= 1900
 
-enum class relops_partial_order_enum {
+enum class relops_partial_order_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -70,7 +70,7 @@ BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
 #endif // defined(_MSC_VER) && _MSC_VER <= 1900
 
 
-enum class relops_std_less_enum {
+enum class relops_std_less_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04

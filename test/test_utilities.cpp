@@ -17,7 +17,7 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
-enum class flags_enum {
+enum class flags_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04

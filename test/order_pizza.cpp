@@ -18,7 +18,7 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
-enum class pizza_toppings {
+enum class pizza_toppings : unsigned int {
     tomato       = boost::flags::nth_bit(0), // == 0x01
     cheese       = boost::flags::nth_bit(1), // == 0x02
     salami       = boost::flags::nth_bit(2), // == 0x04
@@ -35,7 +35,7 @@ template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE pizza_toppings
 TEST_FLAGS_LINKING_EPILOGUE
 
 
-enum class ice_cream_flavours {
+enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
     chocolate    = boost::flags::nth_bit(1), // == 0x02
     strawberry   = boost::flags::nth_bit(2), // == 0x04

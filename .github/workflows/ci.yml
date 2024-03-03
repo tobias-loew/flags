@@ -389,8 +389,11 @@ jobs:
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++11 -c test/test_utilities.cpp
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/order_pizza.cpp
           ! nvcc -x cu -DTEST_COMPILE_FAIL -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_fail.cpp
+          echo failed-as-expected
           ! nvcc -x cu -DTEST_COMPILE_FAIL_WITH_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp
+          echo failed-as-expected
           ! nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp
+          echo failed-as-expected
 
 
   cuda-windows:
@@ -426,7 +429,10 @@ jobs:
           nvcc -x cu -I ./include -I ../assert/include -I ../config/include -I ../core/include -c test/order_pizza.cpp || exit /b
           nvcc -x cu -DTEST_COMPILE_FAIL -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_fail.cpp && exit /b
           (call )
+          echo failed-as-expected
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
+          echo failed-as-expected
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
+          echo failed-as-expected

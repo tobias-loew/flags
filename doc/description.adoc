@@ -29,7 +29,7 @@ Example:
 ----
 #include <boost/flags.hpp>
 
-enum class pizza_toppings {
+enum class pizza_toppings : unsigned int {
     tomato       = boost::flags::nth_bit(0), // == 0x01
     cheese       = boost::flags::nth_bit(1), // == 0x02
     salami       = boost::flags::nth_bit(2), // == 0x04
@@ -41,7 +41,7 @@ enum class pizza_toppings {
 // enable Boost.Flags for pizza_toppings
 template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
 
-enum class ice_cream_flavours {
+enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
     chocolate    = boost::flags::nth_bit(1), // == 0x02
     strawberry   = boost::flags::nth_bit(2), // == 0x04
@@ -151,7 +151,7 @@ On the other hand, enumerations, and especially scoped ones, improve the type-sa
 With Boost.Flags we get support for all bitwise operators and type-safety. E.g. the following code
 [source]
 ----
-enum class E{ a=1, b=2, c=4, d=8 };
+enum class E : unsigned int { a=1, b=2, c=4, d=8 };
 template<> struct boost_flags_enable<E> : std::true_type {};
 ----
 
@@ -182,7 +182,7 @@ Before going into details, let me tell you a little tale
 Once, there was a kingdom, where the Queen of Hearts reigned with iron fist.<br/>She had her own newspaper for proclamations, where they used a set of flags for font-styles</span>+++
 [source]
 ----
-enum font_styles {
+enum font_styles : unsigned int {
     bold      = 1,
     italic    = 2,
     underline = 4
@@ -220,7 +220,7 @@ There are two morals of this tale:
 // 
 // [source]
 // ----
-// enum process_start_options {
+// enum process_start_options : unsigned int {
 //     run_in_background = 0x1,
 //     start_with_elevated_privileges = 0x2,
 //     enable_logging = 0x4

@@ -668,7 +668,7 @@ pre.rouge .gs {
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;boost/flags.hpp&gt;</span><span class="cp">
 </span>
-<span class="k">enum</span> <span class="k">class</span> <span class="nc">pizza_toppings</span> <span class="p">{</span>
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">pizza_toppings</span> <span class="o">:</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
     <span class="n">tomato</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
     <span class="n">cheese</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
     <span class="n">salami</span>       <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
@@ -680,7 +680,7 @@ pre.rouge .gs {
 <span class="c1">// enable Boost.Flags for pizza_toppings</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">pizza_toppings</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
 
-<span class="k">enum</span> <span class="k">class</span> <span class="nc">ice_cream_flavours</span> <span class="p">{</span>
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">ice_cream_flavours</span> <span class="o">:</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
     <span class="n">vanilla</span>      <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="c1">// == 0x01</span>
     <span class="n">chocolate</span>    <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// == 0x02</span>
     <span class="n">strawberry</span>   <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">nth_bit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="c1">// == 0x04</span>
@@ -858,7 +858,7 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span><span class="p">{</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">8</span> <span class="p">};</span>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="o">:</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">8</span> <span class="p">};</span>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost_flags_enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span></code></pre>
 </div>
 </div>
@@ -893,7 +893,7 @@ Once, there was a kingdom, where the Queen of Hearts reigned with iron fist.<br/
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">font_styles</span> <span class="p">{</span>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">font_styles</span> <span class="o">:</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
     <span class="n">bold</span>      <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">italic</span>    <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">underline</span> <span class="o">=</span> <span class="mi">4</span>
@@ -1574,7 +1574,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">my_flags</span> <span class="p">{</span>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">my_flags</span> <span class="o">:</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
     <span class="n">option_a</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
     <span class="n">option_b</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
 <span class="p">};</span>
