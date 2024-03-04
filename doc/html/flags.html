@@ -958,9 +958,13 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C+20.
-So, if your compiler vendor already committed to signed two's complement, you can leave out the underlying to for scoped enums. (https://en.cppreference.com/w/cpp/language/types). +
-Furthermore, scoped enumerations always have a fixed underlying type, which is `int` is not specified (https://eel.is/c+draft/dcl.enum#5).</p>
+<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20.</p>
+</div>
+<div class="paragraph">
+<p>Furthermore, scoped enumerations always have a fixed underlying type, which is <code>int</code> if not specified (<a href="https://eel.is/c++draft/dcl.enum#5" class="bare">https://eel.is/c++draft/dcl.enum#5</a>).</p>
+</div>
+<div class="paragraph">
+<p>So, if your compiler uses signed two&#8217;s complement, you can leave out the underlying to for scoped enums (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
 </div>
 <div class="paragraph">
 <p><strong>But, defining the underlying type for unscoped enumerations is crutial!</strong></p>

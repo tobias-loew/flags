@@ -250,8 +250,11 @@ Is the the specification of the underlying type required?
 ----
 
 Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20.
-So, if your compiler vendor already committed to signed two's complement, you can leave out the underlying to for scoped enums. (https://en.cppreference.com/w/cpp/language/types). +
-Furthermore, scoped enumerations always have a fixed underlying type, which is `int` is not specified (https://eel.is/c++draft/dcl.enum#5).
+
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5).
+
+So, if your compiler uses signed two's complement, you can leave out the underlying to for scoped enums (https://en.cppreference.com/w/cpp/language/types).
+
 
 **But, defining the underlying type for unscoped enumerations is crutial!** 
 
