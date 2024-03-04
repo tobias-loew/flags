@@ -7,8 +7,7 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 
 # ToDo
 
-* put godbolt link in boost-list probing email
-* update boost-list probing email to reflect latest changes (C++11 conformance, std::less stuff, godbolt example(see below))
+* update boost-list probing email to reflect latest changes (C++11 conformance, std::less stuff, godbolt example)
 * finally, remove ToDo list
 
 [![CI](https://github.com/tobias-loew/flags/actions/workflows/ci.yml/badge.svg)](https://github.com/tobias-loew/flags/actions/workflows/ci.yml)

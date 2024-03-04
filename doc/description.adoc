@@ -140,22 +140,9 @@ Instead of testing against `0` the macro `BOOST_FLAGS_NULL` or `nullptr` can be 
 ## What about the underlying type? - TL;DR
 
 * **For unscoped enumerations absolutely REQUIRED!**
-* **For language standards before C++20 as an `unsigned` type (for both scoped and unscoped enumerations)!**
+* **For language standards before C++20 as an `unsigned` type, for both scoped and unscoped enumerations!**
 
-Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement also for signed integers, even before it got mandatory with C++20
-(https://en.cppreference.com/w/cpp/language/types).
-
-
-But, defining the underlying type for unscoped enumerations is crutial! Otherwise UB is lurking around the corner for `constexpr` flag-calculations (when `operator ~` is used). +
-Clang has even a warning for it `-Wenum-constexpr-conversion` and https://github.com/llvm/llvm-project/issues/59036[they are planing to turn it into a hard error].
-Follow the links, to read the details:
-
-* https://eel.is/c++draft/expr.static.cast#10[constant expression, window=_blank]
-* https://eel.is/c++draft/dcl.enum#7[enum value range, window=_blank] 
-* https://eel.is/c++draft/dcl.enum#8[enum value range (cont.), window=_blank]
-
-Scoped enumerations are not affected: they get an https://eel.is/c++draft/dcl.enum#5[underlying type `int` if not specified, window=_blank].
-
+(xref:underlying_type[For the detail, see below.])
 
 ## The long story
 
@@ -222,6 +209,90 @@ template<> struct boost_flags_enable<E> : std::true_type {};
 // ** `operator~(complement<E>) \-> E`
 // * the binary operators require both arguments to be of type `E` or `complement<E>` (resp. a reference of it)
 
+
+
+### What about the underlying type?
+[#underlying_type]
+
+Is the the specification of the underlying type required?
+
+[ditaa, target=underlying_type_decision_diagram]
+----
+                          /-------------\
+                          |    Start    |
+                          \------+------/
+                                 |
+                                 |
+                       +---------+---------+
+                       |{c}                |
+                       |     language      |
+          +------------+  standard version +------+
+          |            |   is 20 or later  |      |
+          |            |                   |      |
+       no |            +-------------------+      | yes
+          |                                       |
+          |                                       |
+          |                                       v
+          |                             +---------+---------+
+          |                             |{c}                |
+          |                       +-----+   enum type is    +-----+
+          |                       |     |                   |     |
+          |              unscoped |     +-------------------+     | scoped
+          |                       |                               |
+          |                       |                               |
+          v                       v                               v
+/-------------------\   /--------------------\           /-----------------\
+| underlying type   |   | underlying type    |           | underlying type |
+| required, must be |   | required, can be   |           | not required    |
+| unsigned type     |   | signed or unsigned |           |                 |
+\-------------------/   \--------------------/           \-----------------/
+
+----
+
+Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20.
+So, if your compiler vendor already committed to signed two's complement, you can leave out the underlying to for scoped enums. (https://en.cppreference.com/w/cpp/language/types). +
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` is not specified (https://eel.is/c++draft/dcl.enum#5).
+
+**But, defining the underlying type for unscoped enumerations is crutial!** 
+
+Otherwise the `operator ~` will invoke UB, which can be tracked down by the compiler, when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
+Clang has a warning for it `-Wenum-constexpr-conversion` and https://github.com/llvm/llvm-project/issues/59036[they are planing to turn it into a hard error].
+
+[NOTE]
+====
+For unscoped enums with unspecified underlying type, the compiler infers two types:
+
+* the underlying type (https://eel.is/c++draft/dcl.enum#7), which we can query using `std::underlying_type`
+* a hypothetical integer value type with minimal width such that all enumerators can be represented (https://eel.is/c++draft/dcl.enum#8) +
+  "The width of the smallest bit-field large enough to hold all the values of the enumeration type [...]." +
+  This type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.)
+
+This hypothetical integer value type is in general not the same as the underlying type. E.g.
+[source]
+----
+enum TriBool {
+    false_ = 0,
+    true_ = 1,
+    undefined = 2
+};
+----
+has underlying type `int` on all major compilers, but its valid values are just 
+`0`, `1`, `2` and `3` as the __hypothetical integer value type with minimal width__ is a 2-bit unsigned integer.
+
+====
+
+
+// Scoped enumerations are not affected: they get an https://eel.is/c++draft/dcl.enum#5[underlying type `int` if not specified, window=_blank].
+// Ensure we do not leave the valid value range: would be UB for constant expressions!
+// https://eel.is/c++draft/expr.static.cast#10
+// https://eel.is/c++draft/dcl.enum#7
+// https://eel.is/c++draft/dcl.enum#8
+// 
+// Still, for unscoped enums with unspecified underlying type, the problem is not solvable:
+// The hypothetical integer value type is in general not the same as the deduced underlying type!
+//
+// E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
+// error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
 
 ### Complementing the `complement`
 

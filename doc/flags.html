@@ -567,6 +567,7 @@ pre.rouge .gs {
 <li><a href="#the_long_story">The long story</a>
 <ul class="sectlevel3">
 <li><a href="#type_safety">Type-Safety</a></li>
+<li><a href="#what_about_the_underlying_type">What about the underlying type?</a></li>
 <li><a href="#complementing_the_complement">Complementing the <code>complement</code></a></li>
 <li><a href="#mathematical_justification_for_complement">Mathematical justification for <code>complement</code></a></li>
 <li><a href="#from_flags_to_bool">From flags to <code>bool</code></a></li>
@@ -824,12 +825,13 @@ unscoped by prohibiting implicit conversion to the underlying integer type.</p>
 <p><strong>For unscoped enumerations absolutely REQUIRED!</strong></p>
 </li>
 <li>
-<p><strong>For language standards before C++20 as an <code>unsigned</code> type (for both scoped and unscoped enumerations)!</strong></p>
+<p><strong>For language standards before C++20 as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</strong></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement also for signed integers, even before it got mandatory with C++20
+<p>(<a href="#mandatory_underlying_type">For the detail, see below.</a>)
+Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20
 (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
 </div>
 <div class="paragraph">
@@ -852,6 +854,20 @@ Follow the links, to read the details:</p>
 </div>
 <div class="paragraph">
 <p>Scoped enumerations are not affected: they get an <a href="https://eel.is/c++draft/dcl.enum#5" target="_blank" rel="noopener">underlying type <code>int</code> if not specified</a>.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// Ensure we do not leave the valid value range: would be UB for constant expressions!
+// https://eel.is/c++draft/expr.static.cast#10
+// https://eel.is/c++draft/dcl.enum#7
+// https://eel.is/c++draft/dcl.enum#8
+//
+// Still, for unscoped enums with unspecified underlying type, the problem is not solvable:
+// The hypothetical integer value type is in general not the same as the deduced underlying type!
+//
+// E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
+// error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]</pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -965,6 +981,69 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 <p>all other operators are disabled by default (cf. <a href="#overloading_relational_operators">overloading relational operators</a>)</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="what_about_the_underlying_type">What about the underlying type?</h4>
+<div class="imageblock">
+<div class="content">
+<img src="diag-ditaa-md5-b8aae024893acb91479ea4df3d29848d.png" alt="Diagram" width="560" height="364">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-ditaa-md5-6634a60eba787f2c6f5ca38a56944b14.png" alt="Diagram" width="550" height="280">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>For unscoped enumerations absolutely REQUIRED!</strong></p>
+</li>
+<li>
+<p><strong>For language standards before C++20 as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(<a href="#mandatory_underlying_type">For the detail, see below.</a>)
+Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20
+(<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
+</div>
+<div class="paragraph">
+<p>But, defining the underlying type for unscoped enumerations is crutial! Otherwise UB is lurking around the corner for <code>constexpr</code> flag-calculations (when <code>operator ~</code> is used).<br>
+Clang has even a warning for it <code>-Wenum-constexpr-conversion</code> and <a href="https://github.com/llvm/llvm-project/issues/59036">they are planing to turn it into a hard error</a>.
+Follow the links, to read the details:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://eel.is/c++draft/expr.static.cast#10" target="_blank" rel="noopener">constant expression</a></p>
+</li>
+<li>
+<p><a href="https://eel.is/c++draft/dcl.enum#7" target="_blank" rel="noopener">enum value range</a></p>
+</li>
+<li>
+<p><a href="https://eel.is/c++draft/dcl.enum#8" target="_blank" rel="noopener">enum value range (cont.)</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Scoped enumerations are not affected: they get an <a href="https://eel.is/c++draft/dcl.enum#5" target="_blank" rel="noopener">underlying type <code>int</code> if not specified</a>.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// Ensure we do not leave the valid value range: would be UB for constant expressions!
+// https://eel.is/c++draft/expr.static.cast#10
+// https://eel.is/c++draft/dcl.enum#7
+// https://eel.is/c++draft/dcl.enum#8
+//
+// Still, for unscoped enums with unspecified underlying type, the problem is not solvable:
+// The hypothetical integer value type is in general not the same as the deduced underlying type!
+//
+// E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
+// error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]</pre>
 </div>
 </div>
 </div>

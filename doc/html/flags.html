@@ -567,6 +567,7 @@ pre.rouge .gs {
 <li><a href="#the_long_story">The long story</a>
 <ul class="sectlevel3">
 <li><a href="#type_safety">Type-Safety</a></li>
+<li><a href="#what_about_the_underlying_type">What about the underlying type?</a></li>
 <li><a href="#complementing_the_complement">Complementing the <code>complement</code></a></li>
 <li><a href="#mathematical_justification_for_complement">Mathematical justification for <code>complement</code></a></li>
 <li><a href="#from_flags_to_bool">From flags to <code>bool</code></a></li>
@@ -824,34 +825,12 @@ unscoped by prohibiting implicit conversion to the underlying integer type.</p>
 <p><strong>For unscoped enumerations absolutely REQUIRED!</strong></p>
 </li>
 <li>
-<p><strong>For language standards before C++20 as an <code>unsigned</code> type (for both scoped and unscoped enumerations)!</strong></p>
+<p><strong>For language standards before C++20 as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</strong></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement also for signed integers, even before it got mandatory with C++20
-(<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
-</div>
-<div class="paragraph">
-<p>But, defining the underlying type for unscoped enumerations is crutial! Otherwise UB is lurking around the corner for <code>constexpr</code> flag-calculations (when <code>operator ~</code> is used).<br>
-Clang has even a warning for it <code>-Wenum-constexpr-conversion</code> and <a href="https://github.com/llvm/llvm-project/issues/59036">they are planing to turn it into a hard error</a>.
-Follow the links, to read the details:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://eel.is/c++draft/expr.static.cast#10" target="_blank" rel="noopener">constant expression</a></p>
-</li>
-<li>
-<p><a href="https://eel.is/c++draft/dcl.enum#7" target="_blank" rel="noopener">enum value range</a></p>
-</li>
-<li>
-<p><a href="https://eel.is/c++draft/dcl.enum#8" target="_blank" rel="noopener">enum value range (cont.)</a></p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Scoped enumerations are not affected: they get an <a href="https://eel.is/c++draft/dcl.enum#5" target="_blank" rel="noopener">underlying type <code>int</code> if not specified</a>.</p>
+<p>(<a href="#underlying_type">For the detail, see below.</a>)</p>
 </div>
 </div>
 <div class="sect2">
@@ -966,6 +945,71 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </li>
 </ul>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="what_about_the_underlying_type">What about the underlying type?</h4>
+<div id="underlying_type" class="paragraph">
+<p>Is the the specification of the underlying type required?</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="underlying_type_decision_diagram.png" alt="underlying type decision diagram" width="800" height="448">
+</div>
+</div>
+<div class="paragraph">
+<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C+20.
+So, if your compiler vendor already committed to signed two's complement, you can leave out the underlying to for scoped enums. (https://en.cppreference.com/w/cpp/language/types). +
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` is not specified (https://eel.is/c+draft/dcl.enum#5).</p>
+</div>
+<div class="paragraph">
+<p><strong>But, defining the underlying type for unscoped enumerations is crutial!</strong></p>
+</div>
+<div class="paragraph">
+<p>Otherwise the <code>operator ~</code> will invoke UB, which can be tracked down by the compiler, when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
+Clang has a warning for it <code>-Wenum-constexpr-conversion</code> and <a href="https://github.com/llvm/llvm-project/issues/59036">they are planing to turn it into a hard error</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For unscoped enums with unspecified underlying type, the compiler infers two types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare">https://eel.is/c++draft/dcl.enum#7</a>), which we can query using <code>std::underlying_type</code></p>
+</li>
+<li>
+<p>a hypothetical integer value type with minimal width such that all enumerators can be represented (<a href="https://eel.is/c++draft/dcl.enum#8" class="bare">https://eel.is/c++draft/dcl.enum#8</a>)<br>
+"The width of the smallest bit-field large enough to hold all the values of the enumeration type [&#8230;&#8203;]."<br>
+This type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This hypothetical integer value type is in general not the same as the underlying type. E.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">TriBool</span> <span class="p">{</span>
+    <span class="n">false_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">true_</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">undefined</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>has underlying type <code>int</code> on all major compilers, but its valid values are just
+<code>0</code>, <code>1</code>, <code>2</code> and <code>3</code> as the <em>hypothetical integer value type with minimal width</em> is a 2-bit unsigned integer.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
