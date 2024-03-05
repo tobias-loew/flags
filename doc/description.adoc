@@ -121,7 +121,7 @@ int main() {
 * single header-file library
 * no dependencies (only standard-library includes)
 * everything is `constexpr`
-* already works with C++11
+// * already works with C++11
 * zero-overhead in optimized builds
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
@@ -537,23 +537,38 @@ The first `&` stores its left-hand argument in an intermediate type, which the s
 ====
 
 ### Logically `and` and `or`
-Applying operator `&&` to flags turns out to be problematic.
-The semantics of its built-in versions does two things:
 
-* first convert the arguments to `bool` and  
-* then applies a Boolean AND operation to them 
+The logical `operator &&` and `operator ||` turn out to be problematic for flags in multiple ways. +
+To see why, let's first take a close look at the semantics of the builtin `operator &&`:
+
+* it converts its first arguments to `bool`, if its `false` then return `false` (short-circuit evaluation)
+* otherwise convert the second arguments to `bool` and return it
 
 This is different from the semantics of the built-in bitwise `&` operator in a boolean context
 
-* first do a bitwise AND of the arguments
-* then convert the result to `bool` 
+* perform intergral promotion on both arguments and compute their bitwise AND
+* return `false` if the outcome is equal to `0` otherwise `true`
 
-Since operators `&` and `&&` can easily get confused (which again is not detectable by a compiler), Boost.Flags disables `operator&&` and to keep symmetry also `operator||`.
+E.g. in boolean contexts `(1 && 2)` evaluates to `true`, while `(1 & 2)` evaluates to `false`.
+
+Though, for `operator ||` and `operator |` and values `v1` and `v2`, in boolean contexts `(v1 || v2)` and `(v1 | v2)` always evaluate to the same value, there is still the difference, that `operator ||` uses short-circuit evaluation and `operator |` does not.
+
+
+Since logical operators `&&` and `||` can easily get confused with their bitwise counterparts `&` and `|` Boost.Flags disables `operator&&` and  `operator||` for enabled enumerations. 
+
+To achieve short-circuit evaluation for expresions with flags, simply convert the flag-value arguments to `bool` by using e.g. `!!(\_)` or `any(_)`.
+
+
 
 [NOTE]
 ====
-Deliberately, there are no overloads for `operator&&` and `operator||`. +
-Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
+Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break exisiting code!
+
+// Furthermore, due to the precedence rules, which for historical reasons gave logical operations a higher precedence than bitwise
+// https://www.bell-labs.com/usr/dmr/www/chist.html
+
+// As already mentioned, there are no overloads for `operator&&` and `operator||`. +
+// Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
 ====
 
 

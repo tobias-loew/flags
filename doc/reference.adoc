@@ -23,6 +23,14 @@ All operators and functions in this library
 
 Most of the function signature for operators are written with trailing return type but the leading `auto` is left out for readability.
 
+## Supported language versions
+
+Boost.Flags requires at least C++11.
+
+Concepts are used if available (a not disabled using xref:BOOST_FLAGS_HAS_CONCEPTS[`BOOST_FLAGS_HAS_CONCEPTS`]), 
+otherwise `std::enable_if` with SFINAE, to control the viability of the library's functions and operators.
+
+
 ## Types
 
 ### enable<T>

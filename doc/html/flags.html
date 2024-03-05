@@ -585,6 +585,7 @@ pre.rouge .gs {
 <li><a href="#design_rationale">Design rationale</a></li>
 <li><a href="#reference">Reference</a>
 <ul class="sectlevel2">
+<li><a href="#supported_language_versions">Supported language versions</a></li>
 <li><a href="#types">Types</a>
 <ul class="sectlevel3">
 <li><a href="#enablet">enable&lt;T&gt;</a></li>
@@ -787,9 +788,6 @@ pre.rouge .gs {
 </li>
 <li>
 <p>everything is <code>constexpr</code></p>
-</li>
-<li>
-<p>already works with C++11</p>
 </li>
 <li>
 <p>zero-overhead in optimized builds</p>
@@ -1452,16 +1450,16 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 <div class="sect3">
 <h4 id="logically_and_and_or">Logically <code>and</code> and <code>or</code></h4>
 <div class="paragraph">
-<p>Applying operator <code>&amp;&amp;</code> to flags turns out to be problematic.
-The semantics of its built-in versions does two things:</p>
+<p>The logical <code>operator &amp;&amp;</code> and <code>operator ||</code> turn out to be problematic for flags in multiple ways.<br>
+To see why, let&#8217;s first take a close look at the semantics of the builtin <code>operator &amp;&amp;</code>:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>first convert the arguments to <code>bool</code> and</p>
+<p>it converts its first arguments to <code>bool</code>, if its <code>false</code> then return <code>false</code> (short-circuit evaluation)</p>
 </li>
 <li>
-<p>then applies a Boolean AND operation to them</p>
+<p>otherwise convert the second arguments to <code>bool</code> and return it</p>
 </li>
 </ul>
 </div>
@@ -1471,15 +1469,24 @@ The semantics of its built-in versions does two things:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>first do a bitwise AND of the arguments</p>
+<p>perform intergral promotion on both arguments and compute their bitwise AND</p>
 </li>
 <li>
-<p>then convert the result to <code>bool</code></p>
+<p>return <code>false</code> if the outcome is equal to <code>0</code> otherwise <code>true</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Since operators <code>&amp;</code> and <code>&amp;&amp;</code> can easily get confused (which again is not detectable by a compiler), Boost.Flags disables <code>operator&amp;&amp;</code> and to keep symmetry also <code>operator||</code>.</p>
+<p>E.g. in boolean contexts <code>(1 &amp;&amp; 2)</code> evaluates to <code>true</code>, while <code>(1 &amp; 2)</code> evaluates to <code>false</code>.</p>
+</div>
+<div class="paragraph">
+<p>Though, for <code>operator ||</code> and <code>operator |</code> and values <code>v1</code> and <code>v2</code>, in boolean contexts <code>(v1 || v2)</code> and <code>(v1 | v2)</code> always evaluate to the same value, there is still the difference, that <code>operator ||</code> uses short-circuit evaluation and <code>operator |</code> does not.</p>
+</div>
+<div class="paragraph">
+<p>Since logical operators <code>&amp;&amp;</code> and <code>||</code> can easily get confused with their bitwise counterparts <code>&amp;</code> and <code>|</code> Boost.Flags disables <code>operator&amp;&amp;</code> and  <code>operator||</code> for enabled enumerations.</p>
+</div>
+<div class="paragraph">
+<p>To achieve short-circuit evaluation for expresions with flags, simply convert the flag-value arguments to <code>bool</code> by using e.g. <code>!!(_)</code> or <code>any(_)</code>.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1489,8 +1496,7 @@ The semantics of its built-in versions does two things:</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Deliberately, there are no overloads for <code>operator&amp;&amp;</code> and <code>operator||</code>.<br>
-Those overloads would loose <em>short-circuit</em> evaluation, which could lead to runtime errors in existing code.</p>
+<p>Overloading <code>operator &amp;&amp;</code> and <code>operator ||</code> is not an option as it looses short-circuit evaluation, which would silently break exisiting code!</p>
 </div>
 </td>
 </tr>
@@ -1568,7 +1574,7 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 <p><a href="https://github.com/foonathan/type_safe" class="bare" target="_blank" rel="noopener">https://github.com/foonathan/type_safe</a> (JM)</p>
 </li>
 <li>
-<p><a href="https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)" class="bare" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)</a> (.net, language builtin flags support - not usable with ISO-C++ !)</p>
+<p><a href="https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)" class="bare" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)</a> (.net, language built-in flags support - not usable with ISO-C++ !)</p>
 </li>
 </ol>
 </div>
@@ -1699,6 +1705,16 @@ Those overloads would loose <em>short-circuit</em> evaluation, which could lead 
 </div>
 <div class="paragraph">
 <p>Most of the function signature for operators are written with trailing return type but the leading <code>auto</code> is left out for readability.</p>
+</div>
+<div class="sect2">
+<h3 id="supported_language_versions">Supported language versions</h3>
+<div class="paragraph">
+<p>Boost.Flags requires at least C++11.</p>
+</div>
+<div class="paragraph">
+<p>Concepts are used if available (a not disabled using <a href="#boost_flags_has_concepts"><code>BOOST_FLAGS_HAS_CONCEPTS</code></a>),
+otherwise <code>std::enable_if</code> with SFINAE, to control the viability of the library&#8217;s functions and operators.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="types">Types</h3>

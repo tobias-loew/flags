@@ -23,7 +23,7 @@ There are several articles and libraries on flag-like enums available. The follo
 . https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/[,window=_blank] (MP)
 . https://doc.qt.io/qt-6/qflags.html[,window=_blank] (Qt)
 . https://github.com/foonathan/type_safe[,window=_blank] (JM)
-. https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)[,window=_blank] (.net, language builtin flags support - not usable with ISO-C++ !)
+. https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)[,window=_blank] (.net, language built-in flags support - not usable with ISO-C++ !)
 
 
 [%header,cols="3,^1,^1,^1,^1,^1,^1,^1"]
