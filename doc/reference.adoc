@@ -27,13 +27,71 @@ Most of the function signature for operators are written with trailing return ty
 
 Boost.Flags requires at least C++11.
 
-Concepts are used if available (a not disabled using xref:BOOST_FLAGS_HAS_CONCEPTS[`BOOST_FLAGS_HAS_CONCEPTS`]), 
-otherwise `std::enable_if` with SFINAE, to control the viability of the library's functions and operators.
+Concepts are used if available and not disabled using xref:BOOST_FLAGS_HAS_CONCEPTS[`BOOST_FLAGS_HAS_CONCEPTS`].
+
+## Opt-in
+
+### boost_flags_enable
+
+The definition
+[source]
+----
+constexpr bool boost_flags_enable(E) { return true; }
+----
+enables Boost.Flags for an enumeration `E`.
+
+`boost_flags_enable` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+
+In case `E` is defined inside a class, a `friend` function can be used for enabling:
+
+[source]
+----
+class my_class {
+    // ...
+    enum class E:unsigned int { ... };
+    friend constexpr bool boost_flags_enable(E) { return true; }
+    // ...
+};
+----
+
+A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped/unscoped) flags_.
+
+Alternatively to using `boost_flags_enable`, the class template xref:types_enable
+[`boost::flags::enable`] can be specialized.
+
+
+### boost_flags_option_disable_complement
+
+To disable the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) for an enabled enumeration `E`, the function `boost_flags_option_disable_complement` has to be overloaded for `E` with:
+[source]
+----
+constexpr bool boost_flags_option_disable_complement(E) { return true; }
+----
+
+`boost_flags_option_disable_complement` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+
+In case `E` is defined inside a class, a `friend` function can be used for enabling:
+
+[source]
+----
+class my_class {
+    // ...
+    enum class E:unsigned int { ... };
+    friend constexpr bool boost_flags_enable(E) { return true; }
+    friend constexpr bool boost_flags_option_disable_complement(E) { return true; }
+    // ...
+};
+----
+
+Please note, that defining `constexpr bool boost_flags_option_disable_complement(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
+
+(See also xref:option_disable_complement[`option_disable_complement`].)
 
 
 ## Types
 
 ### enable<T>
+[#types_enable]
 
 To enable the Boost.Flags functionality specialize the template for an enumeration 
 
@@ -57,14 +115,8 @@ template<> struct boost::flags::enable<my_flags> : std::true_type {};
 
 A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped/unscoped) flags_.
 
-
-
-The class template `boost_flags_enable` is defined at global namespace to allow specialization
-of it in arbitrary namespaces.
-The class template `boost_flags_enable` is defined at global namespace, which allows specialization 
-of it in arbitrary namespaces with msvc (non ISO-conform behaviour!).
-
-
+When `boost::flags::enable` is specialized for `E` any definition of `boost_flags_enable` or `boost_flags_option_disable_complement` for `E` are ignored
+(cf. xref:boost_flags_enable[`boost_flags_enable`]).
 
 ### complement<T>
 
@@ -76,7 +128,7 @@ It is used to distinguish flag-values from _negative masks_.
 template<typename T> struct complement<E>; 
 ----
 
-By default the usage of `complement` is enable but can be disabled using xref:option_disable_complement[`option_disable_complement`]. 
+By default the usage of `complement` is enabled but can be disabled using xref:option_disable_complement[`option_disable_complement`]. 
 
 Boost.Flags operators and functions will always strip double `complement`s from flags.
 
@@ -99,6 +151,8 @@ template<> struct boost::flags::enable<E>
     , boost::flags::option_disable_complement 
     {};
 ----
+
+(See also xref:boost_flags_option_disable_complement[`boost_flags_option_disable_complement`].)
 
 
 ### total_order_t

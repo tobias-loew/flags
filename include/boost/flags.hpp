@@ -327,13 +327,13 @@ namespace boost {
         // used good old variadic arguments
         constexpr inline bool boost_flags_enable(...) { return false; }
 
-        constexpr inline bool boost_flags_disable_complement(...) { return false; }
+        constexpr inline bool boost_flags_option_disable_complement(...) { return false; }
 #else // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
         template<typename E>
         constexpr inline bool boost_flags_enable(E) { return false; }
 
         template<typename E>
-        constexpr inline bool boost_flags_disable_complement(E) { return false; }
+        constexpr inline bool boost_flags_option_disable_complement(E) { return false; }
 #endif // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
 
         // derive `enable` from this type to disable the `complement` template for the enabled enumeration
@@ -368,7 +368,7 @@ namespace boost {
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
                 : std::integral_constant<bool, boost_flags_enable(E{}) >
-                , std::conditional < boost_flags_disable_complement(E{}), option_disable_complement, impl::empty > ::type
+                , std::conditional < boost_flags_option_disable_complement(E{}), option_disable_complement, impl::empty > ::type
             {};
 
         }
@@ -676,25 +676,25 @@ namespace boost {
             };
 
 
-            // checking: if E1 or E2 is enabled then both are equal
-            // enforces a hard compilation error
+            // checking: if T1 or T2 is enabled then both are equalor one of them is_pseudo_and_op_type
+#if BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2>
-            struct compatibility_check {
-                using E1 = enum_type_t<T1>;
-                using E2 = enum_type_t<T2>;
-                static_assert(
-                    (!(enable<E1>::value || enable<E2>::value)
-                        || std::is_same<E1, E2>::value
-                        || is_pseudo_and_op_type<E1>::value
-                        || is_pseudo_and_op_type<E2>::value
-                        )
-                    , "calling bitwise operator with incompatible enumerations");
-                using type = void;
-            };
-
+            concept ArgumentsCompatible =
+                !(enable<enum_type_t<T1>>::value || enable<enum_type_t<T2>>::value)
+                || std::is_same<enum_type_t<T1>, enum_type_t<T2>>::value
+                || is_pseudo_and_op_type<T1>::value
+                || is_pseudo_and_op_type<T2>::value
+                ;
+#else // BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2>
-            using compatibility_check_t = typename compatibility_check<T1, T2>::type;
+            struct ArgumentsCompatible : std::integral_constant<bool,
+                !(enable<enum_type_t<T1>>::value || enable<enum_type_t<T2>>::value)
+                || std::is_same<enum_type_t<T1>, enum_type_t<T2>>::value
+                || is_pseudo_and_op_type<T1>::value
+                || is_pseudo_and_op_type<T2>::value
+            > {};
 
+#endif // BOOST_FLAGS_HAS_CONCEPTS
 
             // the standard doesn't provide a not_equal trait, so lets use our own
             template<typename B1, typename B2>
@@ -814,10 +814,10 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
             requires BinaryOperationEnabled<T1, T2, impl::conjunction>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
@@ -832,10 +832,21 @@ namespace boost {
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr unsigned int
+            operator&(T1 lhs, T2 rhs) noexcept = delete;
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
             requires BinaryOperationEnabled<T1, T2, impl::disjunction>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryOperationEnabled<T1, T2, impl::disjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
@@ -850,10 +861,21 @@ namespace boost {
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr unsigned int
+            operator|(T1 lhs, T2 rhs) noexcept = delete;
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
             requires BinaryOperationEnabled<T1, T2, impl::not_equal>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryOperationEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
@@ -866,6 +888,16 @@ namespace boost {
                 static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) ^ impl::get_underlying(rhs)))
             };
         }
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr unsigned int
+            operator^(T1 lhs, T2 rhs) noexcept = delete;
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -913,10 +945,10 @@ namespace boost {
         //
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
             requires BinaryAssignmentEnabled<T1, T2, impl::conjunction>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
@@ -926,10 +958,21 @@ namespace boost {
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr T1&
+            operator&=(T1& lhs, T2 rhs) noexcept = delete;
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
             requires BinaryAssignmentEnabled<T1, T2, impl::disjunction>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::disjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
@@ -939,10 +982,21 @@ namespace boost {
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr T1&
+            operator|=(T1& lhs, T2 rhs) noexcept = delete;
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
             requires BinaryAssignmentEnabled<T1, T2, impl::not_equal>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
@@ -950,6 +1004,16 @@ namespace boost {
             // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
             return (lhs = lhs ^ rhs), lhs;
         }
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+        requires !impl::ArgumentsCompatible<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2,
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr T1&
+            operator^=(T1& lhs, T2 rhs) noexcept = delete;
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1559,10 +1623,10 @@ namespace boost {
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>>
+        template<typename T1, typename T2>
             requires LogicalOperationEnabled<T1, T2, impl::conjunction>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2, typename Check = impl::compatibility_check_t<T1, T2>,
+        template<typename T1, typename T2,
             typename std::enable_if<LogicalOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
