@@ -244,6 +244,17 @@
 #endif // !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
 
 
+// workaround for MSVC v140 (VS 2015): constexpr function templates not recoginzed correctly
+// thus, cannot be used to construct std::integral_constants
+#if !defined(BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES)
+# if defined(_MSC_VER) && _MSC_VER < 1910
+#  define BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES 1
+# else // defined(_MSC_VER) && _MSC_VER < 1910
+#  define BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES 0
+# endif //  defined(_MSC_VER) && _MSC_VER < 1910
+#endif // !defined(BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES)
+
+
 // attribute for defining weak symbols 
 // only needed when std::partial_ordering is not present and inline variables are not supported
 #if !defined(BOOST_FLAGS_WEAK_SYMBOL) && (BOOST_FLAGS_HAS_INLINE_VARIABLES)
@@ -301,19 +312,8 @@
 
 
 
-
-
 namespace boost {
     namespace flags {
-
-        namespace impl {
-            // error tag indicating invalid/incompatible types for operation
-            struct error_tag {};
-        
-            // empty struct
-            struct empty {};
-        }
-
 
         // non-intrusive opt-in to operations of boost::flags
         // overload `boost_flags_enable` for scoped or unscoped enums with
@@ -322,36 +322,63 @@ namespace boost {
         // (alt. specialize `template<> struct boost_flags_enable<my_enum> : std::true_type {};`)
         // to enable operations for scoped or unscoped enums
 
+#if BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
+        // workaround for msvc v140 (constexpr function templates not recognized correctly)
+        // used good old variadic arguments
+        constexpr inline bool boost_flags_enable(...) { return false; }
+
+        constexpr inline bool boost_flags_disable_complement(...) { return false; }
+#else // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
         template<typename E>
         constexpr inline bool boost_flags_enable(E) { return false; }
 
         template<typename E>
         constexpr inline bool boost_flags_disable_complement(E) { return false; }
+#endif // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
 
         // derive `enable` from this type to disable the `complement` template for the enabled enumeration
         struct option_disable_complement {};
 
 
+
+        namespace impl {
+            // error tag indicating invalid/incompatible types for operation
+            struct error_tag {};
+
+            // empty struct
+            struct empty {};
+
+            // type to calculate the enabling (using concepts/SFINAE)
+            // enable helper
+
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename E>
+            template<typename E>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename E, typename = void>   // required for SFINAE        
+            template<typename E, typename = void>   // required for SFINAE        
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-        struct enable : std::false_type {};
+            struct enable_helper : std::false_type {};
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename E>
-            requires std::is_enum_v<E>
-        struct enable<E>
+            template<typename E>
+                requires std::is_enum_v<E>
+            struct enable_helper<E>
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename E>
-        struct enable<E, typename std::enable_if<std::is_enum<E>::value>::type>
+            template<typename E>
+            struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-            : std::integral_constant<bool, boost_flags_enable(E{}) >
-            , std::conditional<boost_flags_disable_complement(E{}), option_disable_complement, impl::empty > ::type
-        {};
+                : std::integral_constant<bool, boost_flags_enable(E{}) >
+                , std::conditional < boost_flags_disable_complement(E{}), option_disable_complement, impl::empty > ::type
+            {};
 
+        }
+
+
+        // main enabling template
+        // enumeration `E` will use operators and functions from this library
+        // if `enable<E>::value == true` (e.g. inherits from `std::true_type`)
+        template<typename E>
+        struct enable : impl::enable_helper<E> {};
 
 
         // explicitly disable error_tag
