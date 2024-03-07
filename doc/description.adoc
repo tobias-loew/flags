@@ -20,7 +20,7 @@ http://www.boost.org/LICENSE_1_0.txt
 * opt-in for an enumeration `E` by specializing
 
 ```cpp
-template<> struct boost_flags_enable<E> : std::true_type {};
+template<> struct boost::flags::enable<E> : std::true_type {};
 ```
 
 Example:  https://godbolt.org/z/bMrfb6Gz5[on Godbolt compiler explorer, window=_blank]
@@ -39,7 +39,7 @@ enum class pizza_toppings : unsigned int {
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
-template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
+template<> struct boost::flags::enable<pizza_toppings> : std::true_type {};
 
 enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -47,7 +47,7 @@ enum class ice_cream_flavours : unsigned int {
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
 // enable Boost.Flags for ice_cream_flavours
-template<> struct boost_flags_enable<ice_cream_flavours> : std::true_type {};
+template<> struct boost::flags::enable<ice_cream_flavours> : std::true_type {};
 
 // order selected pizza
 void order_pizza(pizza_toppings toppings) { 
@@ -190,7 +190,7 @@ With Boost.Flags we get support for all bitwise operators and type-safety. E.g. 
 [source]
 ----
 enum class E : unsigned int { a=1, b=2, c=4, d=8 };
-template<> struct boost_flags_enable<E> : std::true_type {};
+template<> struct boost::flags::enable<E> : std::true_type {};
 ----
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])

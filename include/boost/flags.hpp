@@ -42,7 +42,7 @@
         olives      = boost::flags::nth_bit(3), // == 0x08
     };
     // enable Boost.Flags for pizza_toppings
-    template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
+    static constexpr bool boost_flags_enable(pizza_toppings{}) { return true; }
 
     enum class ice_cream_flavours : unsigned int {
         vanilla     = boost::flags::nth_bit(0), // == 0x01
@@ -50,7 +50,7 @@
         strawberry  = boost::flags::nth_bit(2), // == 0x04
     };
     // enable Boost.Flags for ice_cream_flavours
-    template<> struct boost_flags_enable<ice_cream_flavours> : std::true_type {};
+    static constexpr bool boost_flags_enable(ice_cream_flavours{}) { return true; }
 
     void order_pizza(pizza_toppings toppings) { ... }
     void order_ice_cream(ice_cream_flavours flavours) { ... }
@@ -89,10 +89,10 @@
     };
 
     template<>
-    struct boost_flags_enable<flags_t> : std::true_type {};
+    struct boost::flags::enable<flags_t> : std::true_type {};
 
     template<>
-    struct boost_flags_enable<flags2_t> : std::true_type {};
+    struct boost::flags::enable<flags2_t> : std::true_type {};
 
     void foo() {
         auto ab = flags_t::a | flags_t::b;  // type: flags_t
@@ -302,33 +302,62 @@
 
 
 
-// non-intrusive opt-in to operations of boost::flags
-// specialize
-// `template<> struct boost_flags_enable<my_enum> : std::true_type {};`
-// to enable operations for scoped or unscoped enums
-//
-// note: has to be at global namespace to allow specialization in arbitrary other namespaces
-template<typename E>
-struct boost_flags_enable : std::false_type {};
-
-// error tag indicating invalid/incompatible types for operation
-namespace boost {
-    namespace flags {
-        struct error_tag {};
-    } // namespace flags
-} // namespace boost
-
-
-// explicitly disable error_tag
-// do it at global scope to make g++ with version < 7 happy
-// cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-// g++ bug: Explicit specialization in a namespace enclosing the specialized template
-template<>
-struct boost_flags_enable<boost::flags::error_tag> : std::false_type {};
-
 
 namespace boost {
     namespace flags {
+
+        namespace impl {
+            // error tag indicating invalid/incompatible types for operation
+            struct error_tag {};
+        
+            // empty struct
+            struct empty {};
+        }
+
+
+        // non-intrusive opt-in to operations of boost::flags
+        // overload `boost_flags_enable` for scoped or unscoped enums with
+        // constexpr inline bool boost_flags_enable(my_enum) { return true; }
+        // `boost_flags_enable` will be found by ADL
+        // (alt. specialize `template<> struct boost_flags_enable<my_enum> : std::true_type {};`)
+        // to enable operations for scoped or unscoped enums
+
+        template<typename E>
+        constexpr inline bool boost_flags_enable(E) { return false; }
+
+        template<typename E>
+        constexpr inline bool boost_flags_disable_complement(E) { return false; }
+
+        // derive `enable` from this type to disable the `complement` template for the enabled enumeration
+        struct option_disable_complement {};
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename E>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename E, typename = void>   // required for SFINAE        
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+        struct enable : std::false_type {};
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename E>
+            requires std::is_enum_v<E>
+        struct enable<E>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename E>
+        struct enable<E, typename std::enable_if<std::is_enum<E>::value>::type>
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            : std::integral_constant<bool, boost_flags_enable(E{}) >
+            , std::conditional<boost_flags_disable_complement(E{}), option_disable_complement, impl::empty > ::type
+        {};
+
+
+
+        // explicitly disable error_tag
+        template<>
+        struct enable<impl::error_tag> : std::false_type {};
+
         namespace impl {
 
 #if BOOST_FLAGS_HAS_IS_SCOPED_ENUM
@@ -398,7 +427,6 @@ namespace boost {
 
         } // namespace impl
 
-        struct option_disable_complement {};
 
         // class-template to indicate complemented flags
         template<typename E>
@@ -428,11 +456,11 @@ namespace boost {
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         concept IsComplementDisabled =
-            std::is_base_of_v<option_disable_complement, boost_flags_enable<enum_type_t<T>>>;
+            std::is_base_of_v<option_disable_complement, enable<enum_type_t<T>>>;
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         struct IsComplementDisabled : std::integral_constant<bool,
-            std::is_base_of<option_disable_complement, boost_flags_enable<typename enum_type<T>::type>>::value
+            std::is_base_of<option_disable_complement, enable<typename enum_type<T>::type>>::value
         > {};
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
@@ -450,7 +478,7 @@ namespace boost {
 
 
         template<typename E>
-        struct is_enabled :boost_flags_enable<enum_type_t<E>> {};
+        struct is_enabled :enable<enum_type_t<E>> {};
 
 
         // test if E is enabled
@@ -575,7 +603,7 @@ namespace boost {
                 using E1 = enum_type_t<T1>;
 
                 using type = typename std::conditional<
-                    boost_flags_enable<E1>::value,        // check if undelying enum is enabled
+                    enable<E1>::value,        // check if undelying enum is enabled
                     typename std::conditional<
 #if BOOST_FLAGS_HAS_CONCEPTS
                     IsComplementDisabled<T1>,
@@ -606,11 +634,11 @@ namespace boost {
                 // error diagnostic. The error would point here, and not to the call site. 
                 // We use the compatibility_check template instead (see below).
                 //static_assert(
-                //    (!(boost_flags_enable<E1>::value || boost_flags_enable<E2>::value) || std::is_same_v<E1, E2>)
+                //    (!(enable<E1>::value || enable<E2>::value) || std::is_same_v<E1, E2>)
                 //    );
 
                 using type = typename std::conditional<
-                    std::is_same<E1, E2>::value && boost_flags_enable<E1>::value,        // check undelying enums are the same and enabled
+                    std::is_same<E1, E2>::value&& enable<E1>::value,        // check undelying enums are the same and enabled
                     typename std::conditional<
                     BinOp<is_complement<T1>, is_complement<T2>>::value,
                     complement<E1>,
@@ -628,7 +656,7 @@ namespace boost {
                 using E1 = enum_type_t<T1>;
                 using E2 = enum_type_t<T2>;
                 static_assert(
-                    (!(boost_flags_enable<E1>::value || boost_flags_enable<E2>::value)
+                    (!(enable<E1>::value || enable<E2>::value)
                         || std::is_same<E1, E2>::value
                         || is_pseudo_and_op_type<E1>::value
                         || is_pseudo_and_op_type<E2>::value

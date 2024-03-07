@@ -52,16 +52,17 @@ enum class my_flags : unsigned int {
     option_b = 0x2,
 };
 
-template<> struct boost_flags_enable<my_flags> : std::true_type {};
+template<> struct boost::flags::enable<my_flags> : std::true_type {};
 ----
 
 A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped/unscoped) flags_.
 
-[NOTE]
-====
+
+
+The class template `boost_flags_enable` is defined at global namespace to allow specialization
+of it in arbitrary namespaces.
 The class template `boost_flags_enable` is defined at global namespace, which allows specialization 
 of it in arbitrary namespaces with msvc (non ISO-conform behaviour!).
-====
 
 
 
@@ -93,7 +94,7 @@ If the specialization of `enable` additionally inherits from `option_disable_com
 Example:
 [source]
 ----
-template<> struct boost_flags_enable<E> 
+template<> struct boost::flags::enable<E> 
     : std::true_type
     , boost::flags::option_disable_complement 
     {};
