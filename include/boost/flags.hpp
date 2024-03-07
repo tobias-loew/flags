@@ -833,7 +833,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
@@ -862,7 +862,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
@@ -891,7 +891,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
@@ -959,7 +959,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
@@ -983,7 +983,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
@@ -1007,7 +1007,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        requires !impl::ArgumentsCompatible<T1, T2>
+        requires(!impl::ArgumentsCompatible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
