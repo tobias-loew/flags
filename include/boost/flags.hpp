@@ -403,21 +403,13 @@ namespace boost {
 
             // need to jump through some hoops to work around SFINAE unfriendly old std::underlying_type
 
-            template <typename T, bool = std::is_enum<T>::value>
-            struct sfinae_friendly_underlying_type {
-                using type = typename std::underlying_type<T>::type;
-            };
+            template <typename T, bool B = std::is_enum<T>::value>
+            struct is_scoped_enum : std::false_type {};
 
             template <typename T>
-            struct sfinae_friendly_underlying_type<T, false> {
-                using type = T;
-            };
-
-            template<typename E>
-            struct is_scoped_enum : std::integral_constant<bool,
-                std::is_enum<E>::value && !std::is_convertible < E, typename sfinae_friendly_underlying_type<E>::type> ::value
-            >
-            {};
+            struct is_scoped_enum<T, true> : std::integral_constant<bool,
+                !std::is_convertible<T, typename std::underlying_type<T>::type>::value
+            > {};
 
 # endif // BOOST_FLAGS_HAS_CONCEPTS
 #endif
