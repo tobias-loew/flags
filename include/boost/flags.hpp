@@ -42,7 +42,7 @@
         olives      = boost::flags::nth_bit(3), // == 0x08
     };
     // enable Boost.Flags for pizza_toppings
-    static constexpr bool boost_flags_enable(pizza_toppings{}) { return true; }
+    static constexpr bool boost_flags_enable(pizza_toppings) { return true; }
 
     enum class ice_cream_flavours : unsigned int {
         vanilla     = boost::flags::nth_bit(0), // == 0x01
@@ -50,7 +50,7 @@
         strawberry  = boost::flags::nth_bit(2), // == 0x04
     };
     // enable Boost.Flags for ice_cream_flavours
-    static constexpr bool boost_flags_enable(ice_cream_flavours{}) { return true; }
+    static constexpr bool boost_flags_enable(ice_cream_flavours) { return true; }
 
     void order_pizza(pizza_toppings toppings) { ... }
     void order_ice_cream(ice_cream_flavours flavours) { ... }
@@ -319,7 +319,7 @@ namespace boost {
         // overload `boost_flags_enable` for scoped or unscoped enums with
         // constexpr inline bool boost_flags_enable(my_enum) { return true; }
         // `boost_flags_enable` will be found by ADL
-        // (alt. specialize `template<> struct boost_flags_enable<my_enum> : std::true_type {};`)
+        // (alt. specialize `template<> struct boost::flags::enable<my_enum> : std::true_type {};`)
         // to enable operations for scoped or unscoped enums
 
 #if BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
