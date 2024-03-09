@@ -17,6 +17,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <iterator>
 
 
 /////////////////////////////////////////////////////////////////
@@ -1632,6 +1633,133 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             inline constexpr auto nth_bit(unsigned int n) noexcept -> decltype(1 << n) {
             return 1 << n;
+        }
+
+
+
+        // flags-iterator
+        template<typename E>
+        class bits_iterator {
+            using iterator_category = std::forward_iterator_tag;
+            //using iterator_category = std::random_access_iterator_tag;
+            using difference_type = int; // std::ptrdiff_t;
+            using value_type = E;
+            using pointer = E * ;
+            using reference = E & ;
+            E value_{};
+        public:
+            explicit constexpr bits_iterator(E pos) : value_{ pos } {}
+
+            constexpr value_type operator*() const { return value_; }
+            constexpr pointer operator->() { return &value_; }
+
+            constexpr bits_iterator& operator++() {
+                value_ = static_cast<E>(get_underlying(value_) << 1);
+                return *this;
+            }
+
+            constexpr bits_iterator operator++(int) {
+                bits_iterator tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+
+            //constexpr bits_iterator& operator--() {
+            //    value_ = static_cast<E>(get_underlying(value_) >> 1);
+            //    return *this;
+            //}
+
+            //constexpr bits_iterator operator--(int) {
+            //    bits_iterator tmp = *this;
+            //    --(*this);
+            //    return tmp;
+            //}
+
+            //constexpr int& operator[](difference_type n) const {
+            //    return *(*this + n);
+            //}
+
+            //constexpr bits_iterator& operator+=(difference_type n) {
+            //    value_ = static_cast<E>(get_underlying(value_) << n);
+            //    //value_ <<= n;
+            //    return *this;
+            //}
+
+            //constexpr bits_iterator& operator-=(difference_type n) {
+            //    value_ = static_cast<E>(get_underlying(value_) >> n);
+            //    //value_ >>= n;
+            //    return *this;
+            //}
+
+            //friend constexpr int operator-(bits_iterator b, bits_iterator a) {
+            //    for (int i = 0; i < sizeof(E) * 8; ++i) {
+            //        if (a + i == b) {
+            //            return i;
+            //        }
+            //    }
+            //    return -1;
+            //}
+            //friend constexpr bits_iterator operator+(bits_iterator it, int n) {
+            //    return it += n;
+            //}
+            //friend constexpr bits_iterator operator+(int n, bits_iterator it) {
+            //    return it += n;
+            //}
+            //friend constexpr bits_iterator operator-(bits_iterator it, int n) {
+            //    return it -= n;
+            //}
+
+
+//                friend auto operator<=> (bits_iterator, bits_iterator) = default;
+
+            friend constexpr bool operator==(bits_iterator const& fir, bits_iterator const& sec) {
+                return fir.value_ == sec.value_;
+            }
+            friend constexpr bool operator!=(bits_iterator const& fir, bits_iterator const& sec) {
+                return fir.value_ != sec.value_;
+            }
+            //friend constexpr bool operator<(bits_iterator const& fir, bits_iterator const& sec) {
+            //    return fir.value_ < sec.value_;
+            //}
+            //friend constexpr bool operator<=(bits_iterator const& fir, bits_iterator const& sec) {
+            //    return fir.value_ <= sec.value_;
+            //}
+            //friend constexpr bool operator>(bits_iterator const& fir, bits_iterator const& sec) {
+            //    return fir.value_ > sec.value_;
+            //}
+            //friend constexpr bool operator>=(bits_iterator const& fir, bits_iterator const& sec) {
+            //    return fir.value_ >= sec.value_;
+            //}
+
+
+        };
+
+
+        template<typename E>
+        class bits_generator {
+            E begin_{};
+            E end_{};
+
+        public:
+            constexpr bits_generator(E begin, E end) : begin_{ begin }, end_{ end } {}
+
+            constexpr bits_iterator<E> begin() const { return bits_iterator<E>{ begin_ }; }
+            constexpr bits_iterator<E> end() const { return bits_iterator<E>{ end_ }; }
+        };
+
+        template<typename E>
+        constexpr bits_generator<E> bits_from_to(E first, E last) {
+            return bits_generator<E>{first, static_cast<E>(get_underlying(last) << 1)};
+        }
+
+        template<typename E>
+        constexpr bits_generator<E> bits_to(E last) {
+            return bits_from_to(E(1), last);
+        }
+
+        template<typename E>
+        constexpr bits_generator<E> bits_all() {
+            return bits_generator<E>{E(1), E{}};
         }
     }
 }
