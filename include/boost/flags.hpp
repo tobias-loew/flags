@@ -186,6 +186,14 @@
 #endif // !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD)
 
 
+#if !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR)
+# if (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+# else // (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR BOOST_FLAGS_ATTRIBUTE_NODISCARD
+# endif // (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#endif // !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR)
+
 
 // adapted from boost/asio/detail/config.hpp
 // Support concepts on compilers known to allow them.
@@ -1637,75 +1645,76 @@ namespace boost {
 
 
 
-        // flags-iterator
-        template<typename E>
-        class bits_iterator {
-            using iterator_category = std::forward_iterator_tag;
-            //using iterator_category = std::random_access_iterator_tag;
-            using difference_type = int; // std::ptrdiff_t;
-            using value_type = E;
-            using pointer = E * ;
-            using reference = E & ;
-            E value_{};
-        public:
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                explicit constexpr bits_iterator(E pos) : value_{ pos } {}
 
-            constexpr value_type operator*() const { return value_; }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-// before C++14 constexpr member functions were implicitly const
-#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-            constexpr 
-#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-                pointer operator->() { return &value_; }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                // before C++14 constexpr member functions were implicitly const
-#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-                constexpr
-#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-                bits_iterator& operator++() {
-                value_ = static_cast<E>(get_underlying(value_) << 1);
-                return *this;
-            }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                // before C++14 constexpr member functions were implicitly const
-#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-                constexpr
-#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
-                bits_iterator operator++(int) {
-                bits_iterator tmp = *this;
-                ++(*this);
-                return tmp;
-            }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                friend constexpr bool operator==(bits_iterator const& fir, bits_iterator const& sec) {
-                return fir.value_ == sec.value_;
-            }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                friend constexpr bool operator!=(bits_iterator const& fir, bits_iterator const& sec) {
-                return fir.value_ != sec.value_;
-            }
-        };
-
-
+        // bits-generator
         template<typename E>
         class bits_generator {
             E begin_{};
             E end_{};
 
+            // flags-iterator
+            class bits_iterator {
+                using iterator_category = std::forward_iterator_tag;
+                //using iterator_category = std::random_access_iterator_tag;
+                using difference_type = int; // std::ptrdiff_t;
+                using value_type = E;
+                using pointer = E * ;
+                using reference = E & ;
+                E value_{};
+            public:
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                    explicit constexpr bits_iterator(E pos) : value_{ pos } {}
+
+                constexpr value_type operator*() const { return value_; }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    pointer operator->() { return &value_; }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    bits_iterator& operator++() {
+                    value_ = static_cast<E>(get_underlying(value_) << 1);
+                    return *this;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    bits_iterator operator++(int) {
+                    bits_iterator tmp = *this;
+                    ++(*this);
+                    return tmp;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    friend constexpr bool operator==(bits_iterator const& fir, bits_iterator const& sec) {
+                    return fir.value_ == sec.value_;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    friend constexpr bool operator!=(bits_iterator const& fir, bits_iterator const& sec) {
+                    return fir.value_ != sec.value_;
+                }
+            };
+
+
         public:
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr bits_generator(E begin, E end) : begin_{ begin }, end_{ end } {}
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr bits_iterator<E> begin() const { return bits_iterator<E>{ begin_ }; }
+                constexpr bits_iterator begin() const { return bits_iterator{ begin_ }; }
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr bits_iterator<E> end() const { return bits_iterator<E>{ end_ }; }
+                constexpr bits_iterator end() const { return bits_iterator{ end_ }; }
         };
 
         template<typename E>
