@@ -17,6 +17,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <iterator>
 
 
 /////////////////////////////////////////////////////////////////
@@ -184,6 +185,14 @@
 # endif
 #endif // !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD)
 
+
+#if !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR)
+# if (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+# else // (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#  define BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR BOOST_FLAGS_ATTRIBUTE_NODISCARD
+# endif // (defined(__clang_major__) && (__clang_major__ < 10)) || (defined(__GNUC__) && (__GNUC__ < 10))
+#endif // !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR)
 
 
 // adapted from boost/asio/detail/config.hpp
@@ -403,21 +412,13 @@ namespace boost {
 
             // need to jump through some hoops to work around SFINAE unfriendly old std::underlying_type
 
-            template <typename T, bool = std::is_enum<T>::value>
-            struct sfinae_friendly_underlying_type {
-                using type = typename std::underlying_type<T>::type;
-            };
+            template <typename T, bool B = std::is_enum<T>::value>
+            struct is_scoped_enum : std::false_type {};
 
             template <typename T>
-            struct sfinae_friendly_underlying_type<T, false> {
-                using type = T;
-            };
-
-            template<typename E>
-            struct is_scoped_enum : std::integral_constant<bool,
-                std::is_enum<E>::value && !std::is_convertible < E, typename sfinae_friendly_underlying_type<E>::type> ::value
-            >
-            {};
+            struct is_scoped_enum<T, true> : std::integral_constant<bool,
+                !std::is_convertible<T, typename std::underlying_type<T>::type>::value
+            > {};
 
 # endif // BOOST_FLAGS_HAS_CONCEPTS
 #endif
@@ -709,15 +710,16 @@ namespace boost {
                 typename std::enable_if<std::is_enum<T>::value, int*>::type = nullptr>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr auto get_underlying(T value) noexcept -> typename std::underlying_type<T>::type {
+                constexpr auto get_underlying_impl(T value) noexcept -> typename std::underlying_type<T>::type {
                 using underlying = typename std::underlying_type<T>::type;
                 return static_cast<underlying>(value);
             }
 
             template<typename T>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr auto get_underlying(complement<T> value) noexcept -> decltype(get_underlying(value.value)) {
-                return get_underlying(value.value);
+                constexpr auto get_underlying_impl(complement<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
+                //decltype(get_underlying_impl(value.value)) {
+                return get_underlying_impl(value.value);
             }
 
 
@@ -825,9 +827,9 @@ namespace boost {
             operator&(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::conjunction>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::conjunction>::type;
 
-            using underlying_type = decltype(impl::get_underlying(lhs));
+            using underlying_type = decltype(impl::get_underlying_impl(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) & impl::get_underlying(rhs)))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying_impl(lhs) & impl::get_underlying_impl(rhs)))
             };
         }
 
@@ -854,9 +856,9 @@ namespace boost {
             operator|(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::disjunction>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::disjunction>::type;
 
-            using underlying_type = decltype(impl::get_underlying(lhs));
+            using underlying_type = decltype(impl::get_underlying_impl(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) | impl::get_underlying(rhs)))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying_impl(lhs) | impl::get_underlying_impl(rhs)))
             };
         }
 
@@ -883,9 +885,9 @@ namespace boost {
             operator^(T1 lhs, T2 rhs) noexcept -> typename impl::binary_operation_result<T1, T2, impl::not_equal>::type {
             using result_t = typename impl::binary_operation_result<T1, T2, impl::not_equal>::type;
 
-            using underlying_type = decltype(impl::get_underlying(lhs));
+            using underlying_type = decltype(impl::get_underlying_impl(lhs));
             return result_t{
-                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying(lhs) ^ impl::get_underlying(rhs)))
+                static_cast<enum_type_t<T1>>(static_cast<underlying_type>(impl::get_underlying_impl(lhs) ^ impl::get_underlying_impl(rhs)))
             };
         }
 
@@ -923,9 +925,9 @@ namespace boost {
             // E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
             // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
 
-            using underlying_type = decltype(impl::get_underlying(value));
+            using underlying_type = decltype(impl::get_underlying_impl(value));
             return result_t{
-                static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying(value)))
+                static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying_impl(value)))
             };
         }
 
@@ -1026,7 +1028,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!(T e) noexcept {
-            return !impl::get_underlying(e);
+            return !impl::get_underlying_impl(e);
         }
 
         // test for == 0 / != 0
@@ -1040,7 +1042,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, std::nullptr_t) noexcept {
-            return impl::get_underlying(value) == 0;
+            return impl::get_underlying_impl(value) == 0;
         }
 
 #if __cplusplus < 202002
@@ -1056,7 +1058,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(std::nullptr_t, T value) noexcept {
-            return impl::get_underlying(value) == 0;
+            return impl::get_underlying_impl(value) == 0;
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1069,7 +1071,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(T value, std::nullptr_t) noexcept {
-            return !(impl::get_underlying(value) == 0);
+            return !(impl::get_underlying_impl(value) == 0);
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1082,7 +1084,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(std::nullptr_t, T value) noexcept {
-            return !(impl::get_underlying(value) == 0);
+            return !(impl::get_underlying_impl(value) == 0);
         }
 #endif
 
@@ -1098,7 +1100,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(T value, impl::null_tag) noexcept {
-            return impl::get_underlying(value) == 0;
+            return impl::get_underlying_impl(value) == 0;
         }
 
 #if __cplusplus < 202002
@@ -1114,7 +1116,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator==(impl::null_tag, T value) noexcept {
-            return impl::get_underlying(value) == 0;
+            return impl::get_underlying_impl(value) == 0;
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1127,7 +1129,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(T value, impl::null_tag) noexcept {
-            return !(impl::get_underlying(value) == 0);
+            return !(impl::get_underlying_impl(value) == 0);
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1140,7 +1142,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator!=(impl::null_tag, T value) noexcept {
-            return !(impl::get_underlying(value) == 0);
+            return !(impl::get_underlying_impl(value) == 0);
         }
 #endif
 
@@ -1157,8 +1159,8 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
-            get_underlying(T value) noexcept -> decltype(impl::get_underlying(value)) {
-            return impl::get_underlying(value);
+            get_underlying(T value) noexcept -> decltype(impl::get_underlying_impl(value)) {
+            return impl::get_underlying_impl(value);
         }
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1470,7 +1472,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             any(T e) noexcept {
-            return impl::get_underlying(e) != 0;
+            return impl::get_underlying_impl(e) != 0;
         }
 
         // test if no bit is set
@@ -1528,7 +1530,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             intersect(T1 lhs, T2 rhs) noexcept {
-            return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) != 0;
+            return (impl::get_underlying_impl(lhs) & impl::get_underlying_impl(rhs)) != 0;
         }
 
 
@@ -1543,7 +1545,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             disjoint(T1 lhs, T2 rhs) noexcept {
-            return (impl::get_underlying(lhs) & impl::get_underlying(rhs)) == 0;
+            return (impl::get_underlying_impl(lhs) & impl::get_underlying_impl(rhs)) == 0;
         }
 
 
@@ -1574,7 +1576,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T>
             make_if(T e, bool set) noexcept {
-            return static_cast<enum_type_t<T>>(set ? impl::get_underlying(e) : 0);
+            return static_cast<enum_type_t<T>>(set ? impl::get_underlying_impl(e) : 0);
         }
 
         // return a copy of value with all
@@ -1632,7 +1634,7 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
             operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
-            return (impl::get_underlying(lhs.value) & impl::get_underlying(rhs)) != 0;
+            return (impl::get_underlying_impl(lhs.value) & impl::get_underlying_impl(rhs)) != 0;
         }
 
 
@@ -1640,6 +1642,97 @@ namespace boost {
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             inline constexpr auto nth_bit(unsigned int n) noexcept -> decltype(1 << n) {
             return 1 << n;
+        }
+
+
+
+
+        // bits-generator
+        template<typename E>
+        class flag_generator {
+            E begin_{};
+            E end_{};
+
+            // flags-iterator
+            class iterator {
+                using iterator_category = std::forward_iterator_tag;
+                using difference_type = int;
+                using value_type = E;
+                using pointer = E const* ;
+                using reference = E const& ;
+                E value_{};
+            public:
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                    explicit constexpr iterator(E pos) : value_{ pos } {}
+
+                constexpr value_type operator*() const { return value_; }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    pointer operator->() { return &value_; }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    iterator& operator++() {
+                    value_ = static_cast<E>(get_underlying(value_) << 1);
+                    return *this;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    // before C++14 constexpr member functions were implicitly const
+#if defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    constexpr
+#endif // defined(__cplusplus) && __cplusplus >= 201402L // (C++14)
+                    iterator operator++(int) {
+                    iterator tmp = *this;
+                    ++(*this);
+                    return tmp;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    friend constexpr bool operator==(iterator const& fir, iterator const& sec) {
+                    return fir.value_ == sec.value_;
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    friend constexpr bool operator!=(iterator const& fir, iterator const& sec) {
+                    return fir.value_ != sec.value_;
+                }
+            };
+
+
+        public:
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                constexpr flag_generator(E begin, E end) : begin_{ begin }, end_{ end } {}
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr iterator begin() const { return iterator{ begin_ }; }
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr iterator end() const { return iterator{ end_ }; }
+        };
+
+        template<typename E>
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            constexpr flag_generator<E> flags_from_to(E first, E last) {
+            return flag_generator<E>{first, static_cast<E>(get_underlying(last) << 1)};
+        }
+
+        template<typename E>
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            constexpr flag_generator<E> flags_to(E last) {
+            return flags_from_to(E(1), last);
+        }
+
+        template<typename E>
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            constexpr flag_generator<E> flags_all() {
+            return flag_generator<E>{E(1), E{}};
         }
     }
 }
@@ -1675,6 +1768,8 @@ using boost::flags::make_null;
 using boost::flags::make_if;
 using boost::flags::modify;
 using boost::flags::modify_inplace;
+using boost::flags::get_underlying;
+using boost::flags::from_underlying;
 
 
 
