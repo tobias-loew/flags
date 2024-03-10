@@ -558,15 +558,17 @@ pre.rouge .gs {
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#description">Fun with Boost.Flags</a>
+<li><a href="#description">Type-safe bitwise operations</a>
 <ul class="sectlevel2">
 <li><a href="#how_to_use_boost_flags_tldr">How to use Boost.Flags? - TL;DR</a></li>
 <li><a href="#why_use_boost_flags_tldr">Why use Boost.Flags? - TL;DR</a></li>
 <li><a href="#opt_in">Opt-in</a></li>
 <li><a href="#scoped_or_unscoped_enumerations_tldr"><em>scoped</em> or <em>unscoped</em> enumerations? - TL;DR</a></li>
 <li><a href="#what_about_the_underlying_type_tldr">What about the underlying type? - TL;DR</a></li>
+</ul>
+</li>
 <li><a href="#the_long_story">The long story</a>
-<ul class="sectlevel3">
+<ul class="sectlevel2">
 <li><a href="#type_safety">Type-Safety</a></li>
 <li><a href="#what_about_the_underlying_type">What about the underlying type?</a></li>
 <li><a href="#complementing_the_complement">Complementing the <code>complement</code></a></li>
@@ -578,10 +580,17 @@ pre.rouge .gs {
 <li><a href="#logically_and_and_or">Logically <code>and</code> and <code>or</code></a></li>
 </ul>
 </li>
-<li><a href="#utility_functions">Utility functions</a></li>
-<li><a href="#summary">Summary</a></li>
+<li><a href="#utilities">Utilities</a>
+<ul class="sectlevel2">
+<li><a href="#functions">Functions</a></li>
+<li><a href="#flags_generator">Flags generator</a>
+<ul class="sectlevel3">
+<li><a href="#flag_generator">flag_generator</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a href="#summary">Summary</a></li>
 <li><a href="#other_implementations">Other flags-like enum implementations</a></li>
 <li><a href="#design_rationale">Design rationale</a></li>
 <li><a href="#reference">Reference</a>
@@ -627,13 +636,23 @@ pre.rouge .gs {
 <li><a href="#subset">subset</a></li>
 </ul>
 </li>
-<li><a href="#utility_functions_2">Utility functions</a>
+<li><a href="#utility_functions">Utility functions</a>
 <ul class="sectlevel3">
 <li><a href="#make_null">make_null</a></li>
 <li><a href="#make_if">make_if</a></li>
 <li><a href="#modify">modify</a></li>
 <li><a href="#modify_inplace">modify_inplace</a></li>
+<li><a href="#get_underlying">get_underlying</a></li>
+<li><a href="#from_underlying">from_underlying</a></li>
 <li><a href="#nth_bit">nth_bit</a></li>
+</ul>
+</li>
+<li><a href="#flags_generator_2">Flags generator</a>
+<ul class="sectlevel3">
+<li><a href="#flag_generator_2">flag_generator</a></li>
+<li><a href="#flags_from_to">flags_from_to</a></li>
+<li><a href="#flags_to">flags_to</a></li>
+<li><a href="#flags_all">flags_all</a></li>
 </ul>
 </li>
 <li><a href="#macros">Macros</a>
@@ -656,6 +675,7 @@ pre.rouge .gs {
 <li><a href="#boost_flags_define_partial_ordering_objects">BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS</a></li>
 <li><a href="#boost_flags_weak_symbol">BOOST_FLAGS_WEAK_SYMBOL</a></li>
 <li><a href="#boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</a></li>
+<li><a href="#boost_flags_attribute_nodiscard_ctor">BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR</a></li>
 </ul>
 </li>
 </ul>
@@ -666,7 +686,7 @@ pre.rouge .gs {
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="description">Fun with Boost.Flags</h2>
+<h2 id="description">Type-safe bitwise operations</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="how_to_use_boost_flags_tldr">How to use Boost.Flags? - TL;DR</h3>
@@ -832,6 +852,14 @@ Best practice would be defining <code>constexpr bool boost_flags_enable(E) { ret
 <div class="paragraph">
 <p>Instead of defining <code>boost_flags_enable</code> the class template <a href="#types_enable"><code>boost::flags::enable</code></a> can be specialized for enabling.</p>
 </div>
+<div class="paragraph">
+<p>In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">static_assert</span><span class="p">(</span><span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span> <span class="s">"Please check if E is enabled correctly and boost/flags.hpp is included."</span><span class="p">);</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="scoped_or_unscoped_enumerations_tldr"><em>scoped</em> or <em>unscoped</em> enumerations? - TL;DR</h3>
@@ -866,11 +894,14 @@ unscoped by prohibiting implicit conversion to the underlying integer type.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>(<a href="#underlying_type">For the detail, see below.</a>)</p>
+<p>(For details <a href="#underlying_type">see below.</a>)</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="the_long_story">The long story</h3>
+</div>
+</div>
+<div class="sect1">
+<h2 id="the_long_story">The long story</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Why do we use the bits of integer types for boolean options?</p>
 </div>
@@ -905,8 +936,8 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <div class="paragraph">
 <p>C++ has everything needed to work with flags, so why do we need Boost.Flags?</p>
 </div>
-<div class="sect3">
-<h4 id="type_safety">Type-Safety</h4>
+<div class="sect2">
+<h3 id="type_safety">Type-Safety</h3>
 <div class="paragraph">
 <p>For flags based on integer-types or enumerations all values are implicitly convertible to <code>int</code>. The compiler can&#8217;t help, when we accidentally apply bitwise operators to unrelated flags.</p>
 </div>
@@ -919,8 +950,7 @@ If we forget the leading <code>L</code> of <code>LBS_NOTIFY</code> and write<br>
 <code>if (listbox_styles &amp; BS_NOTIFY) { &#8230;&#8203; }</code><br>
 instead, we produced semantically wrong but syntactically correct code.</p>
 </div>
-<div class="sect4">
-<h5 id="switching_to_enumerations_makes_it_even_worse">Switching to enumerations makes it even worse</h5>
+<h4 id="switching_to_enumerations_makes_it_even_worse" class="discrete">Switching to enumerations makes it even worse</h4>
 <div class="paragraph">
 <p>If the Windows team had decided to use unscoped enumerations instead of macros it wouldn&#8217;t have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration&#8217;s "semantic overhead". Even worse:</p>
 </div>
@@ -937,9 +967,7 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </li>
 </ul>
 </div>
-</div>
-<div class="sect4">
-<h5 id="but_enumerations_provide_type_safety">But enumerations provide type-safety</h5>
+<h4 id="but_enumerations_provide_type_safety" class="discrete">But enumerations provide type-safety</h4>
 <div class="paragraph">
 <p>On the other hand, enumerations, and especially scoped ones, improve the type-safety of our code:</p>
 </div>
@@ -953,9 +981,7 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </li>
 </ul>
 </div>
-</div>
-<div class="sect4">
-<h5 id="with_boost_flags_you_can_get_both">With Boost.Flags you can get both!</h5>
+<h4 id="with_boost_flags_you_can_get_both" class="discrete">With Boost.Flags you can get both!</h4>
 <div class="paragraph">
 <p>With Boost.Flags we get support for all bitwise operators and type-safety. E.g. the following code</p>
 </div>
@@ -982,9 +1008,8 @@ instead, we produced semantically wrong but syntactically correct code.</p>
 </ul>
 </div>
 </div>
-</div>
-<div class="sect3">
-<h4 id="what_about_the_underlying_type">What about the underlying type?</h4>
+<div class="sect2">
+<h3 id="what_about_the_underlying_type">What about the underlying type?</h3>
 <div id="underlying_type" class="paragraph">
 <p>Is the the specification of the underlying type required?</p>
 </div>
@@ -1052,8 +1077,8 @@ This type is not deducible from the type of the enumeration. (It requires to kno
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="complementing_the_complement">Complementing the <code>complement</code></h4>
+<div class="sect2">
+<h3 id="complementing_the_complement">Complementing the <code>complement</code></h3>
 <div class="paragraph">
 <p>Before going into details, let me tell you a little tale</p>
 </div>
@@ -1128,8 +1153,8 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 Thus, sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="mathematical_justification_for_complement">Mathematical justification for <code>complement</code></h4>
+<div class="sect2">
+<h3 id="mathematical_justification_for_complement">Mathematical justification for <code>complement</code></h3>
 <div class="paragraph">
 <p>This section provides a mathematical explanation, why <code>complement</code> is required. It can easily be <a href="#from_flags_to_bool">skipped</a>.</p>
 </div>
@@ -1233,8 +1258,8 @@ Thus, sets of flags resemble the semantics of <a href="https://en.wikipedia.org/
 <p>there exists <a href="#boost_flags_option_disable_complement">boost_flags_option_disable_complement</a> which disables the usage of <code>complement</code> and sets <code>operator~(E) -&gt; E</code>.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="from_flags_to_bool">From flags to <code>bool</code></h4>
+<div class="sect2">
+<h3 id="from_flags_to_bool">From flags to <code>bool</code></h3>
 <div class="paragraph">
 <p>Since scoped enumerations prevent implicit conversion to <code>bool</code>, Boost.Flags provides the following functions:</p>
 </div>
@@ -1264,8 +1289,8 @@ Thus, sets of flags resemble the semantics of <a href="https://en.wikipedia.org/
 <p>But usually, we prefer to use operators.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="not_not_not_why_not"><code>not</code>, <code>not not</code>, why not?</h4>
+<div class="sect2">
+<h3 id="not_not_not_why_not"><code>not</code>, <code>not not</code>, why not?</h3>
 <div class="paragraph">
 <p>Instead of calling <code>any</code> and <code>none</code> we can use <code>!(e) -&gt; bool</code></p>
 </div>
@@ -1280,8 +1305,8 @@ Thus, sets of flags resemble the semantics of <a href="https://en.wikipedia.org/
 </ul>
 </div>
 </div>
-<div class="sect3">
-<h4 id="everything_in_order">Everything in order?</h4>
+<div class="sect2">
+<h3 id="everything_in_order">Everything in order?</h3>
 <div id="overloading_relational_operators" class="paragraph">
 <p>Let&#8217;s take a look at the relational operators <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code>.</p>
 </div>
@@ -1443,8 +1468,8 @@ You can enable relational operators using the <code>BOOST_FLAGS_REL_OPS_PARTIAL_
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="flags_and_flags">Flags <code>and</code> Flags</h4>
+<div class="sect2">
+<h3 id="flags_and_flags">Flags <code>and</code> Flags</h3>
 <div class="paragraph">
 <p>Instead of <code>disjoint</code> and <code>intersect</code> we can write:</p>
 </div>
@@ -1485,8 +1510,8 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="logically_and_and_or">Logically <code>and</code> and <code>or</code></h4>
+<div class="sect2">
+<h3 id="logically_and_and_or">Logically <code>and</code> and <code>or</code></h3>
 <div class="paragraph">
 <p>The logical <code>operator &amp;&amp;</code> and <code>operator ||</code> turn out to be problematic for flags in multiple ways.<br>
 To see why, let&#8217;s first take a close look at the semantics of the builtin <code>operator &amp;&amp;</code>:</p>
@@ -1542,10 +1567,14 @@ To see why, let&#8217;s first take a close look at the semantics of the builtin 
 </div>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="utilities">Utilities</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="utility_functions">Utility functions</h3>
+<h3 id="functions">Functions</h3>
 <div class="paragraph">
-<p>Additionally, Boost.Flags provides the following functions for an enabled enumeration <code>E</code>:</p>
+<p>Boost.Flags provides the following functions for an enabled enumeration <code>E</code>:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1564,11 +1593,55 @@ To see why, let&#8217;s first take a close look at the semantics of the builtin 
 <li>
 <p><code>nth_bit(unsigned int n) -&gt; unsigned int { return 1 &lt;&lt; n; }</code></p>
 </li>
+<li>
+<p>get_underlying(E e) -&gt; typename underlying_type&lt;E&gt;::type { return static_cast&lt;typename underlying_type&lt;E&gt;::type&gt;(e); }</p>
+</li>
+<li>
+<p>from_underlying(typename underlying_type&lt;E&gt;::type u) -&gt; E { return static_cast&lt;E&gt;(u); }</p>
+</li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="summary">Summary</h3>
+<h3 id="flags_generator">Flags generator</h3>
+<div class="paragraph">
+<p>Boost.Flags provides a <code>flag_generator</code> class template to iterate over the bits of e flag-enum. The class template is usually not create directly but through a call the one of the functions</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_from_to</span><span class="p">(</span><span class="n">E</span> <span class="n">first</span><span class="p">,</span> <span class="n">E</span> <span class="n">last</span><span class="p">);</span>	<span class="c1">// generates from first to last (incl.)</span>
+    <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_to</span><span class="p">(</span><span class="n">E</span> <span class="n">last</span><span class="p">);</span>               <span class="c1">// generates from E(1) to last (incl.)</span>
+    <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_all</span><span class="p">();</span>					<span class="c1">// generates all bits of the underlying type of E, starting from E(1)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="sect3">
+<h4 id="flag_generator">flag_generator</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// using enum pizza_toppings from example above</span>
+    <span class="k">auto</span> <span class="n">favourite_toppings</span> <span class="o">=</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">tomato</span> <span class="o">|</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">cheese</span> <span class="o">|</span> <span class="n">pizza_toppings</span><span class="o">::</span><span class="n">salami</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">f</span> <span class="o">:</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">bits_to</span><span class="p">(</span><span class="n">pizza_toppings</span><span class="o">::</span><span class="n">garlic</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">f</span> <span class="o">&amp;</span> <span class="n">favourite_toppings</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">get_underlying</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>template&lt;typename E&gt; flag_generator</code> provides an internal iterator and member functions <code>begin()</code> and <code>end()</code> returning the resp. iterators.<br>
+It is contructed with the lowest and highest flag that shall be iterated over.
+If <code>flag_generator</code> is constructor with flags not having exactly one bit set, then the behaviour is undefined.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="summary">Summary</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
@@ -1584,7 +1657,6 @@ To see why, let&#8217;s first take a close look at the semantics of the builtin 
 <p>Boost.Flags is zero-overhead.</p>
 </li>
 </ul>
-</div>
 </div>
 </div>
 </div>
@@ -2452,7 +2524,7 @@ The built-in semantics for relational operators compare the underlying numerical
 </div>
 </div>
 <div class="sect2">
-<h3 id="utility_functions_2">Utility functions</h3>
+<h3 id="utility_functions">Utility functions</h3>
 <div class="sect3">
 <h4 id="make_null">make_null</h4>
 <div class="listingblock">
@@ -2502,6 +2574,32 @@ The built-in semantics for relational operators compare the underlying numerical
 </div>
 </div>
 <div class="sect3">
+<h4 id="get_underlying">get_underlying</h4>
+<div class="paragraph">
+<p>Returns the underlying value.<br>
+Let <code>U</code> be the underlying type of enabled enum <code>E</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="k">constexpr</span> <span class="n">U</span> <span class="nf">get_underlying</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="from_underlying">from_underlying</h4>
+<div class="paragraph">
+<p>Casts an value from underlying value the an enabled enum.<br>
+Let <code>U</code> be the underlying type of enabled enum <code>E</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="k">constexpr</span> <span class="n">E</span> <span class="nf">from_underlying</span><span class="p">(</span><span class="n">U</span> <span class="n">u</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">u</span><span class="p">);</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
 <h4 id="nth_bit">nth_bit</h4>
 <div class="listingblock">
 <div class="content">
@@ -2511,6 +2609,59 @@ The built-in semantics for relational operators compare the underlying numerical
 </div>
 <div class="paragraph">
 <p>Returns an <code>unsigned int</code> with the n-th bit from the right set (zero-based) set.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="flags_generator_2">Flags generator</h3>
+<div class="sect3">
+<h4 id="flag_generator_2">flag_generator</h4>
+<div class="paragraph">
+<p>The <code>template&lt;typename E&gt; flag_generator</code> provides an internal iterator and member functions <code>begin()</code> and <code>end()</code> returning the resp. iterators.<br>
+It is contructed with the lowest and highest flag that shall be iterated over.
+If <code>flag_generator</code> is constructor with flags not having exactly one bit set, then the behaviour is undefined.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="flags_from_to">flags_from_to</h4>
+<div class="paragraph">
+<p>The function</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_from_to</span><span class="p">(</span><span class="n">E</span> <span class="n">first</span><span class="p">,</span> <span class="n">E</span> <span class="n">last</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>returns a <code>flag_generator</code> instance iterating from <code>first</code> to <code>last</code> (incl.).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="flags_to">flags_to</h4>
+<div class="paragraph">
+<p>The function</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_to</span><span class="p">(</span><span class="n">E</span> <span class="n">last</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>returns a <code>flag_generator</code> instance iterating from <code>E(1)</code> to <code>last</code> (incl.).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="flags_all">flags_all</h4>
+<div class="paragraph">
+<p>The function</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">flag_generator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">flags_all</span><span class="p">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>returns a <code>flag_generator</code> instance iterating from <code>E(1)</code> to the most significant bit of the underlying type of <code>E</code> (incl.), i.e. all bits of the underlying type.</p>
 </div>
 </div>
 </div>
@@ -2689,7 +2840,13 @@ Only used, when <code>std::partial_ordering</code> is not available.</p>
 <div class="sect3">
 <h4 id="boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</h4>
 <div class="paragraph">
-<p>Text used as nodiscard attribute (e.g. <code><a id="nodiscard"></a></code>).</p>
+<p>Text used as nodiscard attribute (e.g. <code>[[nodiscard]]</code>).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_attribute_nodiscard_ctor">BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR</h4>
+<div class="paragraph">
+<p>Text used as nodiscard attribute for constructors (e.g. <code>[[nodiscard]]</code>).</p>
 </div>
 </div>
 </div>

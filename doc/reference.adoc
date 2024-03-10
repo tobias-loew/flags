@@ -555,6 +555,23 @@ Similar to `modify` but applies the `mod` to `e` and returns it as reference.
 
 
 
+### get_underlying
+Returns the underlying value. +
+Let `U` be the underlying type of enabled enum `E`
+[source]
+----
+    // pseudo code
+    constexpr U get_underlying(E e) noexcept { return static_cast<U>(e); }
+----
+
+### from_underlying
+Casts an value from underlying value the an enabled enum. +
+Let `U` be the underlying type of enabled enum `E`
+[source]
+----
+    // pseudo code
+    constexpr E from_underlying(U u) noexcept { return static_cast<E>(u); }
+----
 
 
 ### nth_bit
@@ -569,8 +586,38 @@ Returns an `unsigned int` with the n-th bit from the right set (zero-based) set.
 
 
 
+## Flags generator
 
+### flag_generator
 
+The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
+It is contructed with the lowest and highest flag that shall be iterated over.
+If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
+
+### flags_from_to
+The function
+[source]
+----
+    [[nodiscard]] constexpr flag_generator<E> flags_from_to(E first, E last);
+----
+returns a `flag_generator` instance iterating from `first` to `last` (incl.).
+    
+### flags_to
+The function
+[source]
+----
+    [[nodiscard]] constexpr flag_generator<E> flags_to(E last);
+----
+returns a `flag_generator` instance iterating from `E(1)` to `last` (incl.).
+    
+### flags_all
+The function
+[source]
+----
+    [[nodiscard]] constexpr flag_generator<E> flags_all();
+----
+returns a `flag_generator` instance iterating from `E(1)` to the most significant bit of the underlying type of `E` (incl.), i.e. all bits of the underlying type.
+    
 
 
 ## Macros
@@ -705,5 +752,9 @@ Text used to specify a symbol with weak linkage
 
 ### BOOST_FLAGS_ATTRIBUTE_NODISCARD
 
-Text used as nodiscard attribute (e.g. `[[nodiscard]]`).
+Text used as nodiscard attribute (e.g. `\[[nodiscard]]`).
+
+### BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+
+Text used as nodiscard attribute for constructors (e.g. `\[[nodiscard]]`).
 

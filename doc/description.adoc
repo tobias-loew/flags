@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :source-language: cpp
 
 [#description]
-# Fun with Boost.Flags
+# Type-safe bitwise operations
 :toc:
 :toc-title: 
 :idprefix:
@@ -151,6 +151,11 @@ class my_class {
 
 Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling.
 
+In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with
+[source]
+----
+static_assert(boost::flags::enable<E>::value, "Please check if E is enabled correctly and boost/flags.hpp is included.");
+----
 
 ## _scoped_ or _unscoped_ enumerations? - TL;DR
 
@@ -168,9 +173,9 @@ Instead of testing against `0` the macro `BOOST_FLAGS_NULL` or `nullptr` can be 
 * **For unscoped enumerations absolutely REQUIRED!**
 * **For language standards before C++20 as an `unsigned` type, for both scoped and unscoped enumerations!**
 
-(xref:underlying_type[For the detail, see below.])
+(For details xref:underlying_type[see below.])
 
-## The long story
+# The long story
 
 Why do we use the bits of integer types for boolean options?
 
@@ -184,7 +189,7 @@ Boolean arguments loudly declare that the function does more than one thing. The
 
 C++ has everything needed to work with flags, so why do we need Boost.Flags? 
 
-### Type-Safety
+## Type-Safety
 
 For flags based on integer-types or enumerations all values are implicitly convertible to `int`. The compiler can't help, when we accidentally apply bitwise operators to unrelated flags. 
 
@@ -196,7 +201,8 @@ If we forget the leading `L` of `LBS_NOTIFY` and write +
 `if (listbox_styles & BS_NOTIFY) { ... }` +
 instead, we produced semantically wrong but syntactically correct code. 
 
-#### Switching to enumerations makes it even worse
+[discrete]
+### Switching to enumerations makes it even worse
 If the Windows team had decided to use unscoped enumerations instead of macros it wouldn't have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration's "semantic overhead". Even worse:
 
 
@@ -205,13 +211,15 @@ If the Windows team had decided to use unscoped enumerations instead of macros i
 * Scoped enumerations (which didn't exist when `Windows.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
 
 
-#### But enumerations provide type-safety
+[discrete]
+### But enumerations provide type-safety
 On the other hand, enumerations, and especially scoped ones, improve the type-safety of our code:
 
 * variables and arguments of enumeration type can only by assigned (resp. invoked) with a value of the same type
 * no implicit integer promotion for scoped enumerations
 
-#### With Boost.Flags you can get both! 
+[discrete]
+### With Boost.Flags you can get both! 
 With Boost.Flags we get support for all bitwise operators and type-safety. E.g. the following code
 [source]
 ----
@@ -237,7 +245,7 @@ constexpr bool boost_flags_enable(E) { return true; }
 
 
 
-### What about the underlying type?
+## What about the underlying type?
 [#underlying_type]
 
 Is the the specification of the underlying type required?
@@ -323,7 +331,7 @@ has underlying type `int` on all major compilers, but its valid values are just
 // E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
 // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
 
-### Complementing the `complement`
+## Complementing the `complement`
 
 Before going into details, let me tell you a little tale
 
@@ -387,7 +395,7 @@ In a nutshell: the following two operations on sets of flags return another set 
 but negation (`operator~`) in general *does not*. +
 Thus, sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank].
 
-### Mathematical justification for `complement`
+## Mathematical justification for `complement`
 
 This section provides a mathematical explanation, why `complement` is required. It can easily be xref:from_flags_to_bool[skipped].
 
@@ -428,7 +436,7 @@ For the rare case where
 there exists xref:boost_flags_option_disable_complement[boost_flags_option_disable_complement] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
-### From flags to `bool`
+## From flags to `bool`
 
 Since scoped enumerations prevent implicit conversion to `bool`, Boost.Flags provides the following functions:
 
@@ -441,13 +449,13 @@ Since scoped enumerations prevent implicit conversion to `bool`, Boost.Flags pro
 
 But usually, we prefer to use operators.
 
-### `not`, `not not`, why not?
+## `not`, `not not`, why not?
 Instead of calling `any` and `none` we can use `!(e) \-> bool`
 
 * `!e` : equivalent to `none(e)`
 * `!!e` : equivalent to `any(e)`
 
-### Everything in order?
+## Everything in order?
 [#overloading_relational_operators]
 Let's take a look at the relational operators `<`, `\<=`, `>` and `>=`.
 
@@ -545,7 +553,7 @@ You can enable relational operators using the `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER
 
 ====
 
-### Flags `and` Flags
+## Flags `and` Flags
 Instead of `disjoint` and `intersect` we can write:
 
 * `!(e1 & e2)` : equivalent to `disjoint(e1, e2)`
@@ -562,7 +570,7 @@ Therefore, Boost.Flags provides a pseudo operator `BOOST_FLAGS_AND` with the sam
 The first `&` stores its left-hand argument in an intermediate type, which the second `&` evaluates with its right-hand argument.
 ====
 
-### Logically `and` and `or`
+## Logically `and` and `or`
 
 The logical `operator &&` and `operator ||` turn out to be problematic for flags in multiple ways. +
 To see why, let's first take a close look at the semantics of the builtin `operator &&`:
@@ -598,17 +606,53 @@ Overloading `operator &&` and `operator ||` is not an option as it looses short-
 ====
 
 
-## Utility functions
+# Utilities
 
-Additionally, Boost.Flags provides the following functions for an enabled enumeration `E`:
+## Functions
+
+Boost.Flags provides the following functions for an enabled enumeration `E`:
 
 * `make_null(E) \-> E { return E{}; }`
 * `make_if(E e, bool set) \-> E { return set ? e : E{}; }`
 * `modify(E e, E mod, bool set)  \-> E { return set ? e | mod : e & ~mod; }`
 * `modify_inplace(E& e, E mod, bool set)  \-> E&`   equivalent to   `e = modify(e, mod, set)`
 * `nth_bit(unsigned int n) \-> unsigned int { return 1 << n; }`
+* get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }
+* from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }
 
-## Summary
+
+## Flags generator
+
+Boost.Flags provides a `flag_generator` class template to iterate over the bits of e flag-enum. The class template is usually not create directly but through a call the one of the functions
+[source]
+----
+    constexpr flag_generator<E> flags_from_to(E first, E last);	// generates from first to last (incl.)
+    constexpr flag_generator<E> flags_to(E last);               // generates from E(1) to last (incl.)
+    constexpr flag_generator<E> flags_all();					// generates all bits of the underlying type of E, starting from E(1)
+----
+
+Example:
+
+### flag_generator
+[source]
+----
+    // using enum pizza_toppings from example above
+    auto favourite_toppings = pizza_toppings::tomato | pizza_toppings::cheese | pizza_toppings::salami;
+    for (auto f : boost::flags::bits_to(pizza_toppings::garlic)) {
+        if (any(f & favourite_toppings)) {
+            std::cout << get_underlying(f) << "\n";
+        }
+    }
+----
+
+
+
+The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
+It is contructed with the lowest and highest flag that shall be iterated over.
+If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
+
+
+# Summary
 
 * Boost.Flags makes bitwise operations type-safe.
 * For existing flag-sets, Boost.Flags provides an (almost) unintrusive way to detect semantical errors. The flag-sets can be turned into Boost.Flags enabled unscoped, or even better scoped, enumeration with almost no adjustments to the existing code required. 
