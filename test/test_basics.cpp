@@ -29,9 +29,7 @@ enum
 };
 
 // enable flags_enum
-TEST_FLAGS_LINKING_PREAMBLE
-template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE flags_enum> : std::true_type {};
-TEST_FLAGS_LINKING_EPILOGUE
+constexpr inline bool boost_flags_enable(flags_enum) { return true; }
 
 
 
@@ -226,11 +224,81 @@ void test_bfand() {
 
     BOOST_TEST(!(a BOOST_FLAGS_AND b));
     BOOST_TEST(((a | b) BOOST_FLAGS_AND b));
-    BOOST_TEST((a | b) BOOST_FLAGS_AND (b | c));
-    
-    BOOST_TEST((a | b) BOOST_FLAGS_AND (b | c));
-    BOOST_TEST(!((a | b) BOOST_FLAGS_AND (b & c)));
-    BOOST_TEST(!((a | b) BOOST_FLAGS_AND (c | d)));
+    BOOST_TEST((a | b) BOOST_FLAGS_AND(b | c));
+
+    BOOST_TEST((a | b) BOOST_FLAGS_AND(b | c));
+    BOOST_TEST(!((a | b) BOOST_FLAGS_AND(b & c)));
+    BOOST_TEST(!((a | b) BOOST_FLAGS_AND(c | d)));
+}
+
+
+
+namespace test_in_class_ns {
+    namespace test_1_ns {
+        struct s {
+            enum
+#ifndef TEST_COMPILE_UNSCOPED
+                class
+#endif // TEST_COMPILE_UNSCOPED
+            flags_enum: unsigned int {
+                a = boost::flags::nth_bit(0), // == 0x01
+                b = boost::flags::nth_bit(1), // == 0x02
+                c = boost::flags::nth_bit(2), // == 0x04
+                d = boost::flags::nth_bit(3), // == 0x08
+            };
+
+        };
+        // enable flags_enum
+        constexpr bool boost_flags_enable(s::flags_enum) { return true; }
+    }
+
+    namespace test_2_ns {
+        struct s {
+            enum
+#ifndef TEST_COMPILE_UNSCOPED
+                class
+#endif // TEST_COMPILE_UNSCOPED
+            flags_enum: unsigned int {
+            a = boost::flags::nth_bit(0), // == 0x01
+                b = boost::flags::nth_bit(1), // == 0x02
+                c = boost::flags::nth_bit(2), // == 0x04
+                d = boost::flags::nth_bit(3), // == 0x08
+            };
+
+            // enable flags_enum
+            friend constexpr bool boost_flags_enable(flags_enum) { return true; }
+        };
+    }
+
+}
+
+
+void test_in_class() {
+
+    {
+#ifdef TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_1_ns::s;
+#else // TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_1_ns::s::flags_enum;
+#endif // TEST_COMPILE_UNSCOPED
+
+        // check De Morgan's laws
+        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+    }
+
+    {
+#ifdef TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_2_ns::s;
+#else // TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_2_ns::s::flags_enum;
+#endif // TEST_COMPILE_UNSCOPED
+
+        // check De Morgan's laws
+        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+    }
+
 }
 
 
@@ -244,6 +312,7 @@ int main() {
     test_binary_assignment();
     test_null();
     test_bfand();
+    test_in_class();
 
     return boost::report_errors();
 }

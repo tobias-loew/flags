@@ -25,9 +25,7 @@ enum class flags_enum : unsigned int {
 };
 
 // enable flags_enum
-TEST_FLAGS_LINKING_PREAMBLE
-template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE flags_enum> : std::true_type {};
-TEST_FLAGS_LINKING_EPILOGUE
+constexpr inline bool boost_flags_enable(flags_enum) { return true; }
 
 
 // helpers

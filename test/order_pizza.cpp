@@ -28,11 +28,8 @@ enum class pizza_toppings : unsigned int {
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
 
-
 // enable Boost.Flags for pizza_toppings
-TEST_FLAGS_LINKING_PREAMBLE
-template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE pizza_toppings> : std::true_type {};
-TEST_FLAGS_LINKING_EPILOGUE
+constexpr inline bool boost_flags_enable(pizza_toppings) { return true; }
 
 
 enum class ice_cream_flavours : unsigned int {
@@ -40,10 +37,9 @@ enum class ice_cream_flavours : unsigned int {
     chocolate    = boost::flags::nth_bit(1), // == 0x02
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
+
 // enable Boost.Flags for ice_cream_flavours
-TEST_FLAGS_LINKING_PREAMBLE
-template<> struct boost_flags_enable<TEST_FLAGS_LINKING_NAMESPACE ice_cream_flavours> : std::true_type {};
-TEST_FLAGS_LINKING_EPILOGUE
+constexpr inline bool boost_flags_enable(ice_cream_flavours) { return true; }
 
 
 void order_pizza(pizza_toppings /*toppings*/) { 

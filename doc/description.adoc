@@ -17,10 +17,10 @@ http://www.boost.org/LICENSE_1_0.txt
 ## How to use Boost.Flags? - TL;DR
 
 * include the header ``<boost/flags.hpp>``
-* opt-in for an enumeration `E` by specializing
+* opt-in for an enumeration `E` by defining
 
 ```cpp
-template<> struct boost_flags_enable<E> : std::true_type {};
+constexpr bool boost_flags_enable(E) { return true; }
 ```
 
 Example:  https://godbolt.org/z/bMrfb6Gz5[on Godbolt compiler explorer, window=_blank]
@@ -39,7 +39,7 @@ enum class pizza_toppings : unsigned int {
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
-template<> struct boost_flags_enable<pizza_toppings> : std::true_type {};
+constexpr bool boost_flags_enable(pizza_toppings) { return true; }
 
 enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -47,7 +47,7 @@ enum class ice_cream_flavours : unsigned int {
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
 // enable Boost.Flags for ice_cream_flavours
-template<> struct boost_flags_enable<ice_cream_flavours> : std::true_type {};
+constexpr bool boost_flags_enable(ice_cream_flavours) { return true; }
 
 // order selected pizza
 void order_pizza(pizza_toppings toppings) { 
@@ -126,6 +126,32 @@ int main() {
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
 
+## Opt-in
+
+To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to overload `boost_flags_enable` for `E`:
+[source]
+----
+constexpr bool boost_flags_enable(E) { return true; }
+----
+
+As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+Best practice would be defining `constexpr bool boost_flags_enable(E) { return true; }` right after the enumeration in the same namespace.
+
+In case the enumeration `E` is defined inside a class, a `friend` function can be used for enabling:
+
+[source]
+----
+class my_class {
+    // ...
+    enum class E:unsigned int { ... };
+    friend constexpr bool boost_flags_enable(E) { return true; }
+    // ...
+};
+----
+
+Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling.
+
+
 ## _scoped_ or _unscoped_ enumerations? - TL;DR
 
 The usage of _scoped_ enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than 
@@ -190,7 +216,7 @@ With Boost.Flags we get support for all bitwise operators and type-safety. E.g. 
 [source]
 ----
 enum class E : unsigned int { a=1, b=2, c=4, d=8 };
-template<> struct boost_flags_enable<E> : std::true_type {};
+constexpr bool boost_flags_enable(E) { return true; }
 ----
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])
@@ -399,7 +425,7 @@ For the rare case where
 * the set of flags semantically forms a Boolean algebra and additionally
 * all bits of the underlying type correspond to flags
 
-there exists xref:option_disable_complement[_option_disable_complement_] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
+there exists xref:boost_flags_option_disable_complement[boost_flags_option_disable_complement] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
 ### From flags to `bool`
