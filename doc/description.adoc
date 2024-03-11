@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt
 constexpr bool boost_flags_enable(E) { return true; }
 ```
 
-Example:  https://godbolt.org/z/bMrfb6Gz5[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/4efs43hYn[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
