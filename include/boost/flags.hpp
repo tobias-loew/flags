@@ -590,17 +590,6 @@ namespace boost {
         concept IsCompatibleFlagsOrComplement = IsCompatible<T1, T2> &&
             ((IsFlags<T1>&& IsFlags<T2>) || (IsComplement<T1> && IsComplement<T2>));
 
-        template<typename T1, typename T2>
-        concept LeftEnabledRightIncompatibleIntegral =
-            IsEnabled<T1> && !IsCompatible<T1, T2> &&
-            (std::is_integral<T2>::value || std::is_enum<T2>::value);
-
-        template<typename T1, typename T2>
-        concept IsEnabledWithIncompatibleIntegral =
-            LeftEnabledRightIncompatibleIntegral<T1, T2> ||
-            LeftEnabledRightIncompatibleIntegral<T2, T1>;
-
-
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename E>
         struct IsFlags : std::integral_constant<bool,
@@ -639,18 +628,6 @@ namespace boost {
         struct IsCompatibleFlagsOrComplement : std::integral_constant<bool,
             IsCompatible<T1, T2>::value &&
             ((IsFlags<T1>::value&& IsFlags<T2>::value) || (IsComplement<T1>::value && IsComplement<T2>::value))
-        > {};
-
-        template<typename T1, typename T2>
-        struct LeftEnabledRightIncompatibleIntegral : std::integral_constant<bool,
-            IsEnabled<T1>::value && !IsCompatible<T1, T2>::value &&
-            (std::is_integral<T2>::value || std::is_enum<T2>::value)
-        > {};
-
-        template<typename T1, typename T2>
-        struct IsEnabledWithIncompatibleIntegral : std::integral_constant<bool,
-            LeftEnabledRightIncompatibleIntegral<T1, T2>::value ||
-            LeftEnabledRightIncompatibleIntegral<T2, T1>::value
         > {};
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -736,7 +713,7 @@ namespace boost {
             };
 
 
-            // checking: if T1 or T2 is enabled then both are equalor one of them is_pseudo_and_op_type
+            // checking: if T1 or T2 are enabled then both are equal or one of them is_pseudo_and_op_type
 #if BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2>
             concept ArgumentsCompatible =
@@ -745,6 +722,17 @@ namespace boost {
                 || is_pseudo_and_op_type<T1>::value
                 || is_pseudo_and_op_type<T2>::value
                 ;
+
+            template<typename T>
+            concept ImplicitIntegralConvertible =
+                std::is_convertible<T, int>
+                ;
+
+            template<typename T1, typename T2>
+            concept BothImplicitIntegralConvertible =
+                ImplicitIntegralConvertible<T1> && ImplicitIntegralConvertible<T2>
+                ;
+
 #else // BOOST_FLAGS_HAS_CONCEPTS
             template<typename T1, typename T2>
             struct ArgumentsCompatible : std::integral_constant<bool,
@@ -752,6 +740,16 @@ namespace boost {
                 || std::is_same<enum_type_t<T1>, enum_type_t<T2>>::value
                 || is_pseudo_and_op_type<T1>::value
                 || is_pseudo_and_op_type<T2>::value
+            > {};
+
+            template<typename T>
+            struct ImplicitIntegralConvertible : std::integral_constant<bool,
+                std::is_convertible<T, int>::value
+            > {};
+
+            template<typename T1, typename T2>
+            struct BothImplicitIntegralConvertible : std::integral_constant<bool,
+                ImplicitIntegralConvertible<T1>::value && ImplicitIntegralConvertible<T2>::value
             > {};
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -908,10 +906,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
+            requires(!impl::ArgumentsCompatible<T1, T2> && impl::BothImplicitIntegralConvertible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr unsigned int
             operator&(T1 lhs, T2 rhs) noexcept = delete;
@@ -937,10 +935,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
+            requires(!impl::ArgumentsCompatible<T1, T2> && impl::BothImplicitIntegralConvertible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr unsigned int
             operator|(T1 lhs, T2 rhs) noexcept = delete;
@@ -966,10 +964,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
+            requires(!impl::ArgumentsCompatible<T1, T2> && impl::BothImplicitIntegralConvertible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
+            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr unsigned int
             operator^(T1 lhs, T2 rhs) noexcept = delete;
@@ -1032,16 +1030,6 @@ namespace boost {
             return (lhs = lhs & rhs), lhs;
         }
 
-#if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
-#else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-        constexpr T1&
-            operator&=(T1& lhs, T2 rhs) noexcept = delete;
-
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
@@ -1056,16 +1044,6 @@ namespace boost {
             return (lhs = lhs | rhs), lhs;
         }
 
-#if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
-#else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-        constexpr T1&
-            operator|=(T1& lhs, T2 rhs) noexcept = delete;
-
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
@@ -1079,16 +1057,6 @@ namespace boost {
             // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
             return (lhs = lhs ^ rhs), lhs;
         }
-
-#if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-            requires(!impl::ArgumentsCompatible<T1, T2>)
-#else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2,
-            typename std::enable_if<!impl::ArgumentsCompatible<T1, T2>::value, int*>::type = nullptr>
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-        constexpr T1&
-            operator^=(T1& lhs, T2 rhs) noexcept = delete;
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1329,22 +1297,23 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires ((IsEnabled<T1> || IsEnabled<T2>) && (!LogicalAndEnabled<T1, T2>) && IsEnabledWithIncompatibleIntegral<T1,T2>)
+            requires ((IsEnabled<T1> || IsEnabled<T2>) && (!LogicalAndEnabled<T1, T2>) && impl::BothImplicitIntegralConvertible<T1,T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && (!LogicalAndEnabled<T1, T2>::value&& IsEnabledWithIncompatibleIntegral<T1, T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
+            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && (!LogicalAndEnabled<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator&& (T1, T2) = delete;
 
 
 
-        // disable logical or
+        // if at least one argument is enabled and both are integral-convertible
+        // disable logical or (to avoid builtin operator ||)
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires (IsEnabled<T1> || IsEnabled<T2>) // && (!IsCompatibleFlags<T1, T2>)
+            requires ((IsEnabled<T1> || IsEnabled<T2>) && impl::BothImplicitIntegralConvertible<T1, T2>))
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
+            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
