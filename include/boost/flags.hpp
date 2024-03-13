@@ -313,6 +313,21 @@
 #endif // !defined(BOOST_FLAGS_WEAK_SYMBOL)
 
 
+// operator rewritten candidates
+#if !defined(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
+# if __cplusplus < 202002L
+
+#  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 0
+
+# else // __cplusplus < 202002L
+
+#  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 1
+
+# endif // __cplusplus < 202002L
+
+#endif // !defined(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 #include <compare>
@@ -1103,7 +1118,7 @@ namespace boost {
             return impl::get_underlying_impl(value) == 0;
         }
 
-#if __cplusplus < 202002
+#if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
         // no rewritten candidates
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1144,7 +1159,7 @@ namespace boost {
             operator!=(std::nullptr_t, T value) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
-#endif
+#endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 
         // test for == 0 / != 0
@@ -1161,7 +1176,7 @@ namespace boost {
             return impl::get_underlying_impl(value) == 0;
         }
 
-#if __cplusplus < 202002
+#if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
         // no rewritten candidates
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1202,7 +1217,7 @@ namespace boost {
             operator!=(impl::null_tag, T value) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
-#endif
+#endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 
 
@@ -1882,9 +1897,9 @@ using boost::flags::operator&=;
 using boost::flags::operator^=;
 using boost::flags::operator!;
 using boost::flags::operator==;
-#if __cplusplus < 202002
+#if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 using boost::flags::operator!=;
-#endif
+#endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 using boost::flags::operator<=>;
