@@ -8,20 +8,21 @@ http://www.boost.org/LICENSE_1_0.txt
 :source-language: cpp
 
 [#description]
-# Type-safe bitwise operations
+# Type-safe bitwise operations - TL;DR
 :toc:
 :toc-title: 
 :idprefix:
 :stem: latexmath
 
-## How to use Boost.Flags? - TL;DR
+## How to use Boost.Flags?
 
 * include the header ``<boost/flags.hpp>``
 * opt-in for an enumeration `E` by defining
-
-```cpp
+[source]
+----
 constexpr bool boost_flags_enable(E) { return true; }
-```
+----
+in the same namespace as `E`.
 
 Example:  https://godbolt.org/z/bMrfb6Gz5[on Godbolt compiler explorer, window=_blank]
 
@@ -111,18 +112,21 @@ int main() {
 ----
 // "
 
-## Why use Boost.Flags? - TL;DR
+## Why use Boost.Flags?
 
 * provides type-safe bitwise operations for flag-like scoped / unscoped enumerations
 * turns undetected logical errors into type errors
 // ** when applying bitwise operators to incompatible enumerations
 // ** when accidentally converting bitmasks (negation of flags) to `bool`
-* is non-intrusive - only template specializations required
+
+## Characteristics of Boost.Flags
+
+* is non-intrusive - only a function overload or a template specializations required
 * single header-file library
 * no dependencies (only standard-library includes)
 * everything is `constexpr`
-// * already works with C++11
 * zero-overhead in optimized builds
+* requires at least C++11, uses newer features if available
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
 
@@ -157,7 +161,7 @@ In case you want to ensure that an enumeration is enabled for Boost.Flags, you c
 static_assert(boost::flags::enable<E>::value, "Please check if E is enabled correctly and boost/flags.hpp is included.");
 ----
 
-## _scoped_ or _unscoped_ enumerations? - TL;DR
+## _scoped_ or _unscoped_ enumerations?
 
 The usage of _scoped_ enumeration is strongly recommended, also for existing code-bases. Scoped enumerations provide more type safety than 
 unscoped by prohibiting implicit conversion to the underlying integer type.
@@ -168,7 +172,7 @@ unscoped by prohibiting implicit conversion to the underlying integer type.
 Instead of testing against `0` the macro `BOOST_FLAGS_NULL` or `nullptr` can be used. (For both kinds of enumerations.)
 
 
-## What about the underlying type? - TL;DR
+## What about the underlying type?
 
 * **For unscoped enumerations absolutely REQUIRED!**
 * **For language standards before C++20 as an `unsigned` type, for both scoped and unscoped enumerations!**
@@ -572,38 +576,64 @@ The first `&` stores its left-hand argument in an intermediate type, which the s
 
 ## Logically `and` and `or`
 
-The logical `operator &&` and `operator ||` turn out to be problematic for flags in multiple ways. +
-To see why, let's first take a close look at the semantics of the builtin `operator &&`:
+The logical `operator &&` and `operator ||` have to handled with care, as they are the only ones to support short-circuit evaluation for the builtin versions.
 
-* it converts its first arguments to `bool`, if its `false` then return `false` (short-circuit evaluation)
-* otherwise convert the second arguments to `bool` and return it
+Let's first take a look at the semantics of the builtin `operator &&`:
 
-This is different from the semantics of the built-in bitwise `&` operator in a boolean context
+* it converts its first arguments to `bool`, if its `false` then returns `false` (short-circuit evaluation)
+* otherwise converts the second arguments to `bool` and returns it
 
-* perform intergral promotion on both arguments and compute their bitwise AND
-* return `false` if the outcome is equal to `0` otherwise `true`
+This is quite different from the semantics of the built-in bitwise `&` operator in a boolean context:
+
+* it performs intergral promotion on both arguments and compute their bitwise AND
+* returns `false` if the outcome is equal to `0` otherwise `true`
 
 E.g. in boolean contexts `(1 && 2)` evaluates to `true`, while `(1 & 2)` evaluates to `false`.
 
 Though, for `operator ||` and `operator |` and values `v1` and `v2`, in boolean contexts `(v1 || v2)` and `(v1 | v2)` always evaluate to the same value, there is still the difference, that `operator ||` uses short-circuit evaluation and `operator |` does not.
 
+Furthermore, `operator &&` and `operator ||` have lower precedences than `operator &` and `operator |` (cf. https://en.cppreference.com/w/cpp/language/operator_precedence[C++ Operator Precedence, window=_blank]), which is another source for errors.
 
-Since logical operators `&&` and `||` can easily get confused with their bitwise counterparts `&` and `|` Boost.Flags disables `operator&&` and  `operator||` for enabled enumerations. 
+Since logical operators `&&` and `||` can easily get confused with their bitwise counterparts `&` and `|`, by default Boost.Flags disables `operator&&` and  `operator||`, when both arguments are implicitly convertible to integral types, to prevent accidentally calling the builtin versions.
 
-To achieve short-circuit evaluation for expresions with flags, simply convert the flag-value arguments to `bool` by using e.g. `!!(\_)` or `any(_)`.
+Nevertheless, sometimes `operator &&` comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. When for an enabled enumeration `E`
+[source]
+----
+constexpr bool boost_flags_option_logical_and(E){ return true; }
+----
+or `boost::flags::enable<E>` inherits from `boost::flags::option_logical_and`, then `operator &&` is overloaded for `E` with the semantics
+[source]
+----
+    operator&&(e1, e2) -> bool { return !!(e1 & e2); } 
+----
+And once more, there is no short-circuit evaluation!
 
+[WARNING]
+====
+When applying Boost.Flags to existing code, please be cautious enabling `operator&&` 
 
+* it evaluates differently than the builtin version and doesn't provide short-circuit evaluation
+* the usage of `operator&&` may have been wrong and `operator&` was intended
+
+So, before enabling `operator&&`, it is best to compile the code without it and check whether the uses of `operator&&` are correct.
+====
 
 [NOTE]
 ====
-Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break exisiting code!
-
-// Furthermore, due to the precedence rules, which for historical reasons gave logical operations a higher precedence than bitwise
-// https://www.bell-labs.com/usr/dmr/www/chist.html
-
-// As already mentioned, there are no overloads for `operator&&` and `operator||`. +
-// Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
+To achieve short-circuit evaluation for expresions with flags, convert the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
 ====
+
+
+// [NOTE]
+// ====
+// Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break exisiting code!
+// 
+// // Furthermore, due to the precedence rules, which for historical reasons gave logical operations a higher precedence than bitwise
+// // https://www.bell-labs.com/usr/dmr/www/chist.html
+// 
+// // As already mentioned, there are no overloads for `operator&&` and `operator||`. +
+// // Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
+// ====
 
 
 # Utilities
@@ -620,33 +650,40 @@ Boost.Flags provides the following functions for an enabled enumeration `E`:
 * `add_if_inplace(E& e, E mod, bool add)  \-> E&`   equivalent to   `e = add_if(e, mod, add)`
 * `remove_if(E e, E mod, bool remove)  \-> E { return remove ? e & ~mod : e; }`
 * `remove_if_inplace(E& e, E mod, bool remove)  \-> E&`   equivalent to   `e = remove_if(e, mod, remove)`
-* `nth_bit(unsigned int n) \-> unsigned int { return 1 << n; }`
-* get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }
-* from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }
+* `get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }`
+* `from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }`
 
+and for generating the values of enumerators:
+
+* `template<typename T = int> nth_bit(unsigned int n) \-> T { return 1 << n; }` +
+  where type `T` can be either integral or an enumeration
+* `template<typename T> next_bit(T v) \-> T { return v << 1; }`
 
 ## Flags generator
 
-Boost.Flags provides a `flag_generator` class template to iterate over the bits of e flag-enum. The class template is usually not create directly but through a call the one of the functions
+Boost.Flags provides a `flag_generator` class template to iterate over the bits of a flag-enum. The class template is usually not create directly but through a call the one of the following functions
 [source]
 ----
-    constexpr flag_generator<E> flags_from_to(E first, E last);	// generates from first to last (incl.)
-    constexpr flag_generator<E> flags_to(E last);               // generates from E(1) to last (incl.)
-    constexpr flag_generator<E> flags_all();					// generates all bits of the underlying type of E, starting from E(1)
+    // generates from first to last (incl.)
+    constexpr flag_generator<E> flags_from_to(E first, E last);	
+
+    // generates from E(1) to last (incl.)
+    constexpr flag_generator<E> flags_to(E last);               
+
+    // generates all bits of the underlying type of E, starting from E(1)
+    constexpr flag_generator<E> flags_all();					
 ----
 
 Example:
-
-### flag_generator
 [source]
 ----
-    // using enum pizza_toppings from example above
-    auto favourite_toppings = pizza_toppings::tomato | pizza_toppings::cheese | pizza_toppings::salami;
-    for (auto f : boost::flags::bits_to(pizza_toppings::garlic)) {
-        if (any(f & favourite_toppings)) {
-            std::cout << get_underlying(f) << "\n";
-        }
+// using enum pizza_toppings from example above
+auto base_toppings = pizza_toppings::tomato | pizza_toppings::cheese;
+for (auto f : boost::flags::bits_to(pizza_toppings::garlic)) {
+    if (any(f & base_toppings)) {
+        std::cout << get_underlying(f) << "\n";
     }
+}
 ----
 
 
