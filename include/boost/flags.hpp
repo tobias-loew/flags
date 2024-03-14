@@ -725,7 +725,7 @@ namespace boost {
 
             template<typename T>
             concept ImplicitIntegralConvertible =
-                std::is_convertible<T, int>
+                std::is_convertible<T, int>::value
                 ;
 
             template<typename T1, typename T2>
@@ -1026,7 +1026,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator&=(T1& lhs, T2 rhs) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            // comma operator used to only have a return statement in the function (required for C++11)
             return (lhs = lhs & rhs), lhs;
         }
 
@@ -1040,7 +1040,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator|=(T1& lhs, T2 rhs) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            // comma operator used to only have a return statement in the function (required for C++11)
             return (lhs = lhs | rhs), lhs;
         }
 
@@ -1054,7 +1054,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             operator^=(T1& lhs, T2 rhs) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            // comma operator used to only have a return statement in the function (required for C++11)
             return (lhs = lhs ^ rhs), lhs;
         }
 
@@ -1664,7 +1664,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             modify_inplace(T1& value, T2 modification, bool set) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            // comma operator used to only have a return statement in the function (required for C++11)
             return (value = set ? (value | modification) : (value & ~modification)), value;
         }
 
@@ -1679,8 +1679,8 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr enum_type_t<T1>
-            add_if(T1 value, T2 modification, bool set) noexcept {
-            return set ? (value | modification) : value;
+            add_if(T1 value, T2 modification, bool add) noexcept {
+            return add ? (value | modification) : value;
         }
 
         // sets resp. clears the bits of modification
@@ -1693,9 +1693,9 @@ namespace boost {
             typename std::enable_if<IsCompatibleFlags<T1, T2>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
-            add_if_inplace(T1& value, T2 modification, bool set) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
-            return (value = set ? (value | modification) : value), value;
+            add_if_inplace(T1& value, T2 modification, bool add) noexcept {
+            // comma operator used to only have a return statement in the function (required for C++11)
+            return (value = add ? (value | modification) : value), value;
         }
 
         // return a copy of value with all
@@ -1724,7 +1724,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T1&
             remove_if_inplace(T1& value, T2 modification, bool remove) noexcept {
-            // comma operator used to only have a return statement in the function (required by C++11, remember those days?)
+            // comma operator used to only have a return statement in the function (required for C++11)
             return (value = remove ? (value & ~modification) : value), value;
         }
 
@@ -1757,11 +1757,29 @@ namespace boost {
         }
 
 
+        namespace impl {
+            template <typename T, bool B = std::is_enum<T>::value>
+            struct underlying_or_identity {
+                using type = T;
+            };
+
+            template <typename T>
+            struct underlying_or_identity<T, true> {
+                using type = typename std::underlying_type<T>::type;
+            };
+        }
+
         // returns a value with the n-th (zero-indexed) bit set
         template<typename T = int>
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            inline constexpr auto nth_bit(unsigned int n) noexcept -> T {
-            return static_cast<T>(1) << n;
+            inline constexpr auto nth_bit(unsigned int n) noexcept -> typename impl::underlying_or_identity<T>::type {
+            return static_cast<typename impl::underlying_or_identity<T>::type>(1) << n;
+        }
+
+        template<typename T>
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            inline constexpr auto next_bit(T n) noexcept -> T {
+            return n << 1;
         }
 
 

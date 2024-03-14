@@ -616,6 +616,10 @@ Boost.Flags provides the following functions for an enabled enumeration `E`:
 * `make_if(E e, bool set) \-> E { return set ? e : E{}; }`
 * `modify(E e, E mod, bool set)  \-> E { return set ? e | mod : e & ~mod; }`
 * `modify_inplace(E& e, E mod, bool set)  \-> E&`   equivalent to   `e = modify(e, mod, set)`
+* `add_if(E e, E mod, bool add)  \-> E { return add ? e | mod : e; }`
+* `add_if_inplace(E& e, E mod, bool add)  \-> E&`   equivalent to   `e = add_if(e, mod, add)`
+* `remove_if(E e, E mod, bool remove)  \-> E { return remove ? e & ~mod : e; }`
+* `remove_if_inplace(E& e, E mod, bool remove)  \-> E&`   equivalent to   `e = remove_if(e, mod, remove)`
 * `nth_bit(unsigned int n) \-> unsigned int { return 1 << n; }`
 * get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }
 * from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }

@@ -642,6 +642,10 @@ pre.rouge .gs {
 <li><a href="#make_if">make_if</a></li>
 <li><a href="#modify">modify</a></li>
 <li><a href="#modify_inplace">modify_inplace</a></li>
+<li><a href="#add_if">add_if</a></li>
+<li><a href="#add_if_inplace">add_if_inplace</a></li>
+<li><a href="#remove_if">remove_if</a></li>
+<li><a href="#remove_if_inplace">remove_if_inplace</a></li>
 <li><a href="#get_underlying">get_underlying</a></li>
 <li><a href="#from_underlying">from_underlying</a></li>
 <li><a href="#nth_bit">nth_bit</a></li>
@@ -1591,6 +1595,18 @@ To see why, let&#8217;s first take a close look at the semantics of the builtin 
 <p><code>modify_inplace(E&amp; e, E mod, bool set)  -&gt; E&amp;</code>   equivalent to   <code>e = modify(e, mod, set)</code></p>
 </li>
 <li>
+<p><code>add_if(E e, E mod, bool add)  -&gt; E { return add ? e | mod : e; }</code></p>
+</li>
+<li>
+<p><code>add_if_inplace(E&amp; e, E mod, bool add)  -&gt; E&amp;</code>   equivalent to   <code>e = add_if(e, mod, add)</code></p>
+</li>
+<li>
+<p><code>remove_if(E e, E mod, bool remove)  -&gt; E { return remove ? e &amp; ~mod : e; }</code></p>
+</li>
+<li>
+<p><code>remove_if_inplace(E&amp; e, E mod, bool remove)  -&gt; E&amp;</code>   equivalent to   <code>e = remove_if(e, mod, remove)</code></p>
+</li>
+<li>
 <p><code>nth_bit(unsigned int n) -&gt; unsigned int { return 1 &lt;&lt; n; }</code></p>
 </li>
 <li>
@@ -1809,7 +1825,7 @@ If <code>flag_generator</code> is constructor with flags not having exactly one 
 <p>are <code>constexpr</code> and <code>noexcept</code></p>
 </li>
 <li>
-<p>use attribute <code>[[nodiscard]]</code> except for assignment operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> and function <code>modify_inplace</code></p>
+<p>use attribute <code>[[nodiscard]]</code> except for assignment operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> and functions <code>modify_inplace</code>, <code>add_inplace</code>, <code>remove_inplace</code></p>
 </li>
 </ul>
 </div>
@@ -2566,11 +2582,59 @@ The built-in semantics for relational operators compare the underlying numerical
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
-    <span class="k">constexpr</span> <span class="n">E</span><span class="o">&amp;</span> <span class="n">modify</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="n">value</span> <span class="o">=</span> <span class="n">modify</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">set</span><span class="p">);</span> <span class="k">return</span> <span class="n">value</span><span class="p">;</span> <span class="p">}</span></code></pre>
+    <span class="k">constexpr</span> <span class="n">E</span><span class="o">&amp;</span> <span class="n">modify</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">set</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="n">e</span> <span class="o">=</span> <span class="n">modify</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">set</span><span class="p">);</span> <span class="k">return</span> <span class="n">e</span><span class="p">;</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Similar to <code>modify</code> but applies the <code>mod</code> to <code>e</code> and returns it as reference.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="add_if">add_if</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">add_if</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">add</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">add</span> <span class="o">?</span> <span class="n">e</span> <span class="o">|</span> <span class="n">mod</span> <span class="o">:</span> <span class="n">e</span><span class="p">;</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Depending on <code>add</code> either adds or removes all bits from <code>mod</code> to <code>e</code> and returns the result.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="add_if_inplace">add_if_inplace</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="k">constexpr</span> <span class="n">E</span><span class="o">&amp;</span> <span class="n">add_if</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">add</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="n">e</span> <span class="o">=</span> <span class="n">add_if</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">add</span><span class="p">);</span> <span class="k">return</span> <span class="n">e</span><span class="p">;</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similar to <code>add_if</code> but applies the <code>mod</code> to <code>e</code> and returns it as reference.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="remove_if">remove_if</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">remove_if</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">remove</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="k">return</span> <span class="n">remove</span> <span class="o">?</span> <span class="n">e</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">mod</span> <span class="o">:</span> <span class="n">e</span><span class="p">;</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Depending on <code>remove</code> either removes or removes all bits from <code>mod</code> to <code>e</code> and returns the result.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="remove_if_inplace">remove_if_inplace</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
+    <span class="k">constexpr</span> <span class="n">E</span><span class="o">&amp;</span> <span class="n">remove_if</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="n">E</span> <span class="n">mod</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">remove</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span> <span class="n">e</span> <span class="o">=</span> <span class="n">remove_if</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">remove</span><span class="p">);</span> <span class="k">return</span> <span class="n">e</span><span class="p">;</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similar to <code>remove_if</code> but applies the <code>mod</code> to <code>e</code> and returns it as reference.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2873,7 +2937,7 @@ Only used, when <code>std::partial_ordering</code> is not available.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-02-24 17:51:57 +0100
+Last updated 2024-03-13 16:26:38 +0100
 </div>
 </div>
 <script type="text/x-mathjax-config">

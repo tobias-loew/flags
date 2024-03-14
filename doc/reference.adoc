@@ -19,7 +19,7 @@ The contents of the library are in namespace boost::flags.
 All operators and functions in this library
 
 * are `constexpr` and `noexcept` 
-* use attribute `+[[nodiscard]]+` except for assignment operators `&=`, `|=`, `^=` and function `modify_inplace`
+* use attribute `+[[nodiscard]]+` except for assignment operators `&=`, `|=`, `^=` and functions `modify_inplace`, `add_inplace`, `remove_inplace`
 
 Most of the function signature for operators are written with trailing return type but the leading `auto` is left out for readability.
 
@@ -548,10 +548,67 @@ Depending on `set` either adds or removes all bits from `mod` to `e` and returns
 [source]
 ----
     // pseudo code
-    constexpr E& modify(E& e, E mod, bool set) noexcept { value = modify(e, mod, set); return value; }
+    constexpr E& modify(E& e, E mod, bool set) noexcept { e = modify(e, mod, set); return e; }
 ----
 
 Similar to `modify` but applies the `mod` to `e` and returns it as reference.
+
+
+
+
+### add_if
+
+[source]
+----
+    // pseudo code
+    [[nodiscard]] constexpr E add_if(E e, E mod, bool add) noexcept { return add ? e | mod : e; }
+----
+
+Depending on `add` either adds or removes all bits from `mod` to `e` and returns the result.
+
+
+
+
+
+
+### add_if_inplace
+
+[source]
+----
+    // pseudo code
+    constexpr E& add_if(E& e, E mod, bool add) noexcept { e = add_if(e, mod, add); return e; }
+----
+
+Similar to `add_if` but applies the `mod` to `e` and returns it as reference.
+
+
+
+### remove_if
+
+[source]
+----
+    // pseudo code
+    [[nodiscard]] constexpr E remove_if(E e, E mod, bool remove) noexcept { return remove ? e & ~mod : e; }
+----
+
+Depending on `remove` either removes or removes all bits from `mod` to `e` and returns the result.
+
+
+
+
+
+
+### remove_if_inplace
+
+[source]
+----
+    // pseudo code
+    constexpr E& remove_if(E& e, E mod, bool remove) noexcept { e = remove_if(e, mod, remove); return e; }
+----
+
+Similar to `remove_if` but applies the `mod` to `e` and returns it as reference.
+
+
 
 
 
