@@ -21,7 +21,7 @@ All operators and functions in this library
 * are `constexpr` and `noexcept` 
 * use attribute `+[[nodiscard]]+` except for assignment operators `&=`, `|=`, `^=` and functions `modify_inplace`, `add_inplace`, `remove_inplace`
 
-Most of the function signature for operators are written with trailing return type but the leading `auto` is left out for readability.
+Most of the function signatures for operators are written with trailing return type but the leading `auto` is left out for readability.
 
 ## Supported language versions
 
@@ -60,15 +60,15 @@ Alternatively to using `boost_flags_enable`, the class template xref:types_enabl
 [`boost::flags::enable`] can be specialized.
 
 
-### boost_flags_option_disable_complement
+### boost_flags_disable_complement
 
-To disable the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) for an enabled enumeration `E`, the function `boost_flags_option_disable_complement` has to be overloaded for `E` with:
+To disable the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) for an enabled enumeration `E`, the function `boost_flags_disable_complement` has to be overloaded for `E` with:
 [source]
 ----
-constexpr bool boost_flags_option_disable_complement(E) { return true; }
+constexpr bool boost_flags_disable_complement(E) { return true; }
 ----
 
-`boost_flags_option_disable_complement` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+`boost_flags_disable_complement` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
 
 In case `E` is defined inside a class, a `friend` function can be used for enabling:
 
@@ -78,14 +78,48 @@ class my_class {
     // ...
     enum class E:unsigned int { ... };
     friend constexpr bool boost_flags_enable(E) { return true; }
-    friend constexpr bool boost_flags_option_disable_complement(E) { return true; }
+    friend constexpr bool boost_flags_disable_complement(E) { return true; }
     // ...
 };
 ----
 
-Please note, that defining `constexpr bool boost_flags_option_disable_complement(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
+Please note, that defining `constexpr bool boost_flags_disable_complement(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
 
-(See also xref:option_disable_complement[`option_disable_complement`].)
+(See also xref:disable_complement[`disable_complement`].)
+
+
+### boost_flags_logical_and
+
+The function
+[source]
+----
+constexpr bool boost_flags_disable_complement(E) { return true; }
+----
+enables `operator&&` for `E` with the following semantics
+
+[source]
+----
+constexpt operator&&(e1, e2) -> bool { return !!(e1 & e2); }
+----
+
+`boost_flags_logical_and` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+
+In case `E` is defined inside a class, a `friend` function can be used for enabling:
+
+[source]
+----
+class my_class {
+    // ...
+    enum class E:unsigned int { ... };
+    friend constexpr bool boost_flags_enable(E) { return true; }
+    friend constexpr bool boost_flags_logical_and(E) { return true; }
+    // ...
+};
+----
+
+Please note, that defining `constexpr bool boost_flags_logical_and(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
+
+(See also xref:logical_and[`logical_and`].)
 
 
 ## Types
@@ -97,7 +131,7 @@ To enable the Boost.Flags functionality specialize the template for an enumerati
 
 [source]
 ----
-template<typename T> struct enable<T> : std::false_type {};
+template<typename T> struct enable : std::false_type {};
 ----
 
 and inherit from `std::true_type`.
@@ -115,7 +149,7 @@ template<> struct boost::flags::enable<my_flags> : std::true_type {};
 
 A Boost.Flags enabled (scoped/unscoped) enumeration will also be called _(scoped/unscoped) flags_.
 
-When `boost::flags::enable` is specialized for `E` any definition of `boost_flags_enable` or `boost_flags_option_disable_complement` for `E` are ignored
+When `boost::flags::enable` is specialized for `E` any definition of `boost_flags_enable` or `boost_flags_disable_complement` for `E` are ignored
 (cf. xref:boost_flags_enable[`boost_flags_enable`]).
 
 ### complement<T>
@@ -125,10 +159,10 @@ It is used to distinguish flag-values from _negative masks_.
 
 [source]
 ----
-template<typename T> struct complement<E>; 
+template<typename T> struct complement; 
 ----
 
-By default the usage of `complement` is enabled but can be disabled using xref:option_disable_complement[`option_disable_complement`]. 
+By default the usage of `complement` is enabled but can be disabled using xref:disable_complement[`disable_complement`]. 
 
 Boost.Flags operators and functions will always strip double `complement`s from flags.
 
@@ -138,21 +172,38 @@ Boost.Flags operators and functions will always strip double `complement`s from 
 
 
 
-[#option_disable_complement]
-### option_disable_complement
+[#disable_complement]
+### disable_complement
 
-If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
+If the specialization of `enable` additionally inherits from `disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
 
 Example:
 [source]
 ----
 template<> struct boost::flags::enable<E> 
     : std::true_type
-    , boost::flags::option_disable_complement 
+    , boost::flags::disable_complement 
     {};
 ----
 
-(See also xref:boost_flags_option_disable_complement[`boost_flags_option_disable_complement`].)
+(See also xref:boost_flags_disable_complement[`boost_flags_disable_complement`].)
+
+
+[#logical_and]
+### logical_and
+
+If the specialization of `enable` additionally inherits from `logical_and` then `operator&&` is enabled.
+
+Example:
+[source]
+----
+template<> struct boost::flags::enable<E> 
+    : std::true_type
+    , boost::flags::logical_and 
+    {};
+----
+
+(See also xref:boost_flags_logical_and[`boost_flags_logical_and`].)
 
 
 ### total_order_t
@@ -168,7 +219,7 @@ There is also a functions object
 
 ### partial_order_t
 
-The type `boost::flags::partial_order_t` defines a call-operator which accepts two compatible flag-arguments and compares them base on flag entailment.
+The type `boost::flags::partial_order_t` defines a call-operator which accepts two compatible flag-arguments and compares them based on flag entailment.
 (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER]).
 
 There is also a functions object
@@ -184,7 +235,7 @@ There is also a functions object
 
 Reverses all bits of the underlying integer representation of its argument.
 
-The signature of `operator~` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator~` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -195,10 +246,7 @@ otherwise
 
 * `operator~(E) \-> E`
 
-
-If the specialization of `enable` additionally inherits from `option_disable_complement` then the usage of the `complement` template (xref:negation_operation[`operator~`]) is disabled.
-
-
+(cf. xref:boost_flags_disable_complement[`boost_flags_disable_complement`])
 
 
 
@@ -206,7 +254,7 @@ If the specialization of `enable` additionally inherits from `option_disable_com
 
 Applies a bitwise AND operation on the underlying integer representations of its arguments.
 
-The signature of `operator&` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator&` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -219,14 +267,14 @@ otherwise
 
 * `operator&(E, E) \-> E`
 
-All other `operator&` where one of the arguments is `E` or `complement<E>` are deleted.
+All other `operator&` where at least one of the arguments is enabled and both are implicitly convertible to an integer type are deleted.
 
 
 ### operator|
 
 Applies a bitwise AND operation on the underlying integer representations of its arguments.
 
-The signature of `operator|` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator|` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -239,8 +287,7 @@ otherwise
 
 * `operator|(E, E) \-> E`
 
-All other `operator|` where one of the arguments is `E` or `complement<E>` are deleted.
-
+All other `operator|` where at least one of the arguments is enabled and both are implicitly convertible to an integer type are deleted.
 
 
 
@@ -248,7 +295,7 @@ All other `operator|` where one of the arguments is `E` or `complement<E>` are d
 
 Applies a bitwise XOR operation on the underlying integer representations of its arguments.
 
-The signature of `operator^` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator^` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -261,14 +308,14 @@ otherwise
 
 * `operator^(E, E) \-> E`
 
-All other `operator^` where one of the arguments is `E` or `complement<E>` are deleted.
+All other `operator^` where at least one of the arguments is enabled and both are implicitly convertible to an integer type are deleted.
 
 
 ### operator&=
 
 Performs a bitwise AND assignment on the underlying integer representations of its arguments.
 
-The signature of `operator&=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator&=` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -285,10 +332,6 @@ otherwise
 
 * `operator&=(E&, E) \-> E&`
 
-All other `operator&=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
-
-
-
 
 
 
@@ -296,7 +339,7 @@ All other `operator&=` where one of the arguments is `E`, `E&`, `complement<E>&`
 
 Performs a bitwise OR assignment on the underlying integer representations of its arguments.
 
-The signature of `operator|=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator|=` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -313,10 +356,6 @@ otherwise
 
 * `operator|=(E&,E) \-> E&`
 
-All other `operator|=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
-
-
-
 
 
 
@@ -324,7 +363,7 @@ All other `operator|=` where one of the arguments is `E`, `E&`, `complement<E>&`
 
 Performs a bitwise XOR assignment on the underlying integer representations of its arguments.
 
-The signature of `operator^=` depends on whether `complement` is enabled (cf. xref:option_disable_complement[option_disable_complement]).
+The signature of `operator^=` depends on whether `complement` is enabled (cf. xref:disable_complement[disable_complement]).
 
 When `complement` is enabled for flags `E`
 
@@ -340,7 +379,6 @@ otherwise
 
 * `operator^=(E&,E) \-> E&`
 
-All other `operator^=` where one of the arguments is `E`, `E&`, `complement<E>&` or `complement<E>` are deleted.
 
 
 ### operator!
@@ -388,7 +426,8 @@ Furthermore the following overloads are defined
 
 Both test for equality with an underlying value of `0`. The macro xref:BOOST_FLAGS_NULL[`BOOST_FLAGS_NULL`] defines an instance of `impl::null_tag`.
 
-All other `operator==` where one of the arguments is `E` or `complement<E>` are deleted, especially when the other has integer type.
+All other `operator==` and `operator!=` where at least one of the arguments is enabled and both are implicitly convertible to an integer type are deleted.
+
 
 [NOTE]
 ====
@@ -464,7 +503,7 @@ Tests if two values have common bits set.
 
 
 ### disjoint
-Tests if two values do not have a common bits set.
+Tests if two values do not have a common bit set.
 
 [source]
 ----
@@ -507,7 +546,7 @@ Tests if the bits set in the first argument are a proper subset of the bits in t
     [[nodiscard]] constexpr E make_null(E) noexcept { return E{}; }
 ----
 
-For flags `E` returns an _empty_ instance of type `E` with underlying value of `0`.  
+For flags `E` returns an _empty_ instance of type `E`, i.e. with underlying value of `0`.  
 
 
 
@@ -551,7 +590,7 @@ Depending on `set` either adds or removes all bits from `mod` to `e` and returns
     constexpr E& modify(E& e, E mod, bool set) noexcept { e = modify(e, mod, set); return e; }
 ----
 
-Similar to `modify` but applies the `mod` to `e` and returns it as reference.
+Similar to `modify` but applies the modification to `e` and returns it as reference.
 
 
 
@@ -564,7 +603,7 @@ Similar to `modify` but applies the `mod` to `e` and returns it as reference.
     [[nodiscard]] constexpr E add_if(E e, E mod, bool add) noexcept { return add ? e | mod : e; }
 ----
 
-Depending on `add` either adds or removes all bits from `mod` to `e` and returns the result.
+Depending on `add` either adds all bits from `mod` to `e` or leaves `e` unmodified and returns the result.
 
 
 
@@ -579,7 +618,7 @@ Depending on `add` either adds or removes all bits from `mod` to `e` and returns
     constexpr E& add_if(E& e, E mod, bool add) noexcept { e = add_if(e, mod, add); return e; }
 ----
 
-Similar to `add_if` but applies the `mod` to `e` and returns it as reference.
+Similar to `add_if` but applies the modification to `e` and returns it as reference.
 
 
 
@@ -591,7 +630,7 @@ Similar to `add_if` but applies the `mod` to `e` and returns it as reference.
     [[nodiscard]] constexpr E remove_if(E e, E mod, bool remove) noexcept { return remove ? e & ~mod : e; }
 ----
 
-Depending on `remove` either removes or removes all bits from `mod` to `e` and returns the result.
+Depending on `remove` either removes all bits from `mod` from `e` or leaves `e` unmodified and returns the result.
 
 
 
@@ -606,7 +645,7 @@ Depending on `remove` either removes or removes all bits from `mod` to `e` and r
     constexpr E& remove_if(E& e, E mod, bool remove) noexcept { e = remove_if(e, mod, remove); return e; }
 ----
 
-Similar to `remove_if` but applies the `mod` to `e` and returns it as reference.
+Similar to `remove_if` but applies the modification to `e` and returns it as reference.
 
 
 
@@ -636,10 +675,26 @@ Let `U` be the underlying type of enabled enum `E`
 [source]
 ----
     // pseudo code
-    [[nodiscard]] constexpr unsigned int nth_bit(unsigned int n) noexcept { return 1 << n; }
+    template<typename T = int> 
+    [[nodiscard]] constexpr T nth_bit(unsigned int n) noexcept { 
+        return static_cast<T>(static_cast<underlying_or_identity<T>::type>(1) << n); 
+    }
 ----
 
-Returns an `unsigned int` with the n-th bit from the right set (zero-based) set.
+Returns a value of type `T` with the n-th bit from the right set (zero-based) set.
+
+
+### next_bit
+
+[source]
+----
+    // pseudo code
+    template<typename T> 
+    [[nodiscard]] constexpr T next_bit(T v) { return v << 1; }
+----
+
+Returns to a value `v` of type `T` the value with the next higher bit set (if available). +
+The behaviour is undefined if more than one bit is set in value `v`.
 
 
 
@@ -655,6 +710,7 @@ If `flag_generator` is constructor with flags not having exactly one bit set, th
 The function
 [source]
 ----
+    template<typename E> 
     [[nodiscard]] constexpr flag_generator<E> flags_from_to(E first, E last);
 ----
 returns a `flag_generator` instance iterating from `first` to `last` (incl.).
@@ -663,6 +719,7 @@ returns a `flag_generator` instance iterating from `first` to `last` (incl.).
 The function
 [source]
 ----
+    template<typename E> 
     [[nodiscard]] constexpr flag_generator<E> flags_to(E last);
 ----
 returns a `flag_generator` instance iterating from `E(1)` to `last` (incl.).
@@ -671,6 +728,7 @@ returns a `flag_generator` instance iterating from `E(1)` to `last` (incl.).
 The function
 [source]
 ----
+    template<typename E> 
     [[nodiscard]] constexpr flag_generator<E> flags_all();
 ----
 returns a `flag_generator` instance iterating from `E(1)` to the most significant bit of the underlying type of `E` (incl.), i.e. all bits of the underlying type.
@@ -794,6 +852,13 @@ Possible values: 0 or 1
 
 Specifies, if the partial_ordering emulation is defined. +
 Only used, when `std::partial_ordering` is not available.
+
+Possible values: 0 or 1
+
+
+### BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES
+
+Specifies, if https://en.cppreference.com/w/cpp/language/operators[rewitten candidates,window=_blank] are availabe.
 
 Possible values: 0 or 1
 

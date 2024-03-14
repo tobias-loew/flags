@@ -350,24 +350,24 @@ namespace boost {
         // workaround for msvc v140 (constexpr function templates not recognized correctly)
         // used good old variadic arguments
         constexpr inline bool boost_flags_enable(...) { return false; }
-        constexpr inline bool boost_flags_option_disable_complement(...) { return false; }
-        constexpr inline bool boost_flags_option_logical_and(...) { return false; }
+        constexpr inline bool boost_flags_disable_complement(...) { return false; }
+        constexpr inline bool boost_flags_logical_and(...) { return false; }
 #else // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
         template<typename E>
         constexpr inline bool boost_flags_enable(E) { return false; }
 
         template<typename E>
-        constexpr inline bool boost_flags_option_disable_complement(E) { return false; }
+        constexpr inline bool boost_flags_disable_complement(E) { return false; }
 
         template<typename E>
-        constexpr inline bool boost_flags_option_logical_and(E) { return false; }
+        constexpr inline bool boost_flags_logical_and(E) { return false; }
 #endif // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
 
         // derive `enable` from this type to disable the `complement` template for the enabled enumeration
-        struct option_disable_complement {};
+        struct disable_complement {};
 
         // derive `enable` from this type to enable support for logical and
-        struct option_logical_and {};
+        struct logical_and {};
 
 
 
@@ -399,8 +399,8 @@ namespace boost {
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
                 : std::integral_constant<bool, boost_flags_enable(E{}) >
-                , std::conditional < boost_flags_option_disable_complement(E{}), option_disable_complement, impl::empty<option_disable_complement> > ::type
-                , std::conditional < boost_flags_option_logical_and(E{}), option_logical_and, impl::empty<option_logical_and> > ::type
+                , std::conditional < boost_flags_disable_complement(E{}), disable_complement, impl::empty<disable_complement> > ::type
+                , std::conditional < boost_flags_logical_and(E{}), logical_and, impl::empty<logical_and> > ::type
             {};
 
         }
@@ -507,22 +507,22 @@ namespace boost {
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         concept IsComplementDisabled =
-            std::is_base_of_v<option_disable_complement, enable<enum_type_t<T>>>;
+            std::is_base_of_v<disable_complement, enable<enum_type_t<T>>>;
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         struct IsComplementDisabled : std::integral_constant<bool,
-            std::is_base_of<option_disable_complement, enable<typename enum_type<T>::type>>::value
+            std::is_base_of<disable_complement, enable<typename enum_type<T>::type>>::value
         > {};
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         concept HasLogicalAnd =
-            std::is_base_of_v<option_logical_and, enable<enum_type_t<T>>>;
+            std::is_base_of_v<logical_and, enable<enum_type_t<T>>>;
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         struct HasLogicalAnd : std::integral_constant<bool,
-            std::is_base_of<option_logical_and, enable<typename enum_type<T>::type>>::value
+            std::is_base_of<logical_and, enable<typename enum_type<T>::type>>::value
         > {};
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
@@ -846,7 +846,7 @@ namespace boost {
             is_flags<typename impl::binary_operation_result<T1, T2, BinOp>::type>::value;
 
         // concept checking both arguments are compatible, enabled and the result is not a complement
-        // and option_logical_and is enabled
+        // and logical_and is enabled
         template<typename T1, typename T2>
         concept LogicalAndEnabled = LogicalOperationEnabled<T1, T2, impl::conjunction>&& HasLogicalAnd<T1>;
 
@@ -878,7 +878,7 @@ namespace boost {
         > {};
 
         // concept checking both arguments are compatible, enabled and the result is not a complement
-        // and option_logical_and is enabled
+        // and logical_and is enabled
         template<typename T1, typename T2>
         struct  LogicalAndEnabled : std::integral_constant<bool,
             LogicalOperationEnabled<T1, T2, impl::conjunction>::value&& HasLogicalAnd<T1>::value
@@ -1772,8 +1772,8 @@ namespace boost {
         // returns a value with the n-th (zero-indexed) bit set
         template<typename T = int>
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            inline constexpr auto nth_bit(unsigned int n) noexcept -> typename impl::underlying_or_identity<T>::type {
-            return static_cast<typename impl::underlying_or_identity<T>::type>(1) << n;
+            inline constexpr auto nth_bit(unsigned int n) noexcept -> T {
+            return static_cast<T>(static_cast<typename impl::underlying_or_identity<T>::type>(1) << n);
         }
 
         template<typename T>

@@ -18,14 +18,24 @@ http://www.boost.org/LICENSE_1_0.txt
 
 The design of Boost.Flags was driven by the following principles:
 
-* type-safety: the library shall enforce that binary operators can only be applied to flags from the same enumeration and flag values must be distinguished from bitwise complements
+* type-safety
+** the library shall enforce that binary operators can only be applied to flags or their complements from the same enumeration 
+** flag values must be distinguished from their complements on the type-level
 
-* non-intrusive: no change to the definition of existing flag-like enumeration shall be required, just a template specialization
+* non-intrusive
+** as few as possible changes to the definition of existing flag-like enumeration shall be required
+** no new types for flags, except `complement`
 
-* zero-overhead: for optimized builds operator-calls must produce the same assembly code as built-in calls on the underlying integers
+* opt-in shall be done by
+** function overload or
+** template specialization
 
-* no change of semantics for existing code: enabling Boost.Flags for an existing flag-like enumeration shall not produce valid code with different semantics 
+* zero-overhead
+** for optimized builds operator-calls must produce the same assembly code as built-in calls on the underlying integers
 
-The first three principles are met by the library. The last principle of course has a notable exception:
- the `complement` template, which deliberately is different from the underlying enumeration to prevent and detect usage errors.
+* no change of semantics for existing code
+** enabling Boost.Flags for an existing flag-like enumeration must not produce valid code with different semantics 
+
+The first four principles are met by the library. The last principle of course has a notable exception: 
+ For a given enumeration `E` values of type `complement<E>` may invoke different overloads than values of `E`.
 
