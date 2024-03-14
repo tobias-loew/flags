@@ -1310,7 +1310,7 @@ namespace boost {
         // disable logical or (to avoid builtin operator ||)
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires ((IsEnabled<T1> || IsEnabled<T2>) && impl::BothImplicitIntegralConvertible<T1, T2>))
+            requires ((IsEnabled<T1> || IsEnabled<T2>) && impl::BothImplicitIntegralConvertible<T1, T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
             typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr >
