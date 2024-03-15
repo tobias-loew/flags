@@ -1772,8 +1772,8 @@ namespace boost {
         // returns a value with the n-th (zero-indexed) bit set
         template<typename T = int>
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            inline constexpr auto nth_bit(unsigned int n) noexcept -> T {
-            return static_cast<T>(static_cast<typename impl::underlying_or_identity<T>::type>(1) << n);
+            inline constexpr auto nth_bit(unsigned int n) noexcept -> typename impl::underlying_or_identity<T>::type {
+            return static_cast<typename impl::underlying_or_identity<T>::type>(1) << n;
         }
 
         template<typename T>

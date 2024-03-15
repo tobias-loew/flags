@@ -676,12 +676,13 @@ Let `U` be the underlying type of enabled enum `E`
 ----
     // pseudo code
     template<typename T = int> 
-    [[nodiscard]] constexpr T nth_bit(unsigned int n) noexcept { 
-        return static_cast<T>(static_cast<underlying_or_identity<T>::type>(1) << n); 
+    [[nodiscard]] constexpr underlying_or_identity<T>::type nth_bit(unsigned int n) noexcept { 
+        return static_cast<underlying_or_identity<T>::type>(1) << n; 
     }
 ----
 
 Returns a value of type `T` with the n-th bit from the right set (zero-based) set.
+The type `T` can be either an enumeration or an integral type, and `underlying_or_identity` is a type-trait returning the underlying type of the enumeration or it is the type-identity respectively.
 
 
 ### next_bit

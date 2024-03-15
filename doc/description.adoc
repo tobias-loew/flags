@@ -317,9 +317,9 @@ Is the the specification of the underlying type required?
 
 Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20.
 
-Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5).
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[,window=_blank]).
 
-So, if your compiler uses signed two's complement, you can leave out the underlying type for scoped enums (https://en.cppreference.com/w/cpp/language/types).
+So, if your compiler uses signed two's complement, you can leave out the underlying type for scoped enums (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
 
 
 **But, defining the underlying type for unscoped enumerations is crucial!** 
@@ -331,8 +331,8 @@ Clang has a warning for it `-Wenum-constexpr-conversion` and https://github.com/
 ====
 For unscoped enums with unspecified underlying type, the compiler infers two types:
 
-* the underlying type (https://eel.is/c++draft/dcl.enum#7), which we can query using `std::underlying_type`
-* a hypothetical integer value type with minimal width such that all enumerators can be represented (https://eel.is/c++draft/dcl.enum#8) +
+* the underlying type (https://eel.is/c++draft/dcl.enum#7[,window=_blank]), which we can query using `std::underlying_type`
+* a hypothetical integer value type with minimal width such that all enumerators can be represented (https://eel.is/c++draft/dcl.enum#8[,window=_blank]) +
   "The width of the smallest bit-field large enough to hold all the values of the enumeration type [...]." 
   
 //  This type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.)
@@ -354,9 +354,9 @@ has underlying type `int` on all major compilers, but its valid values are just
 
 // Scoped enumerations are not affected: they get an https://eel.is/c++draft/dcl.enum#5[underlying type `int` if not specified, window=_blank].
 // Ensure we do not leave the valid value range: would be UB for constant expressions!
-// https://eel.is/c++draft/expr.static.cast#10
-// https://eel.is/c++draft/dcl.enum#7
-// https://eel.is/c++draft/dcl.enum#8
+// https://eel.is/c++draft/expr.static.cast#10[,window=_blank]
+// https://eel.is/c++draft/dcl.enum#7[,window=_blank]
+// https://eel.is/c++draft/dcl.enum#8[,window=_blank]
 // 
 // Still, for unscoped enums with unspecified underlying type, the problem is not solvable:
 // The hypothetical integer value type is in general not the same as the deduced underlying type!
@@ -426,14 +426,14 @@ In a nutshell: the following two operations on sets of flags return another set 
 * disjunction (`operator|`): taking the flags that appear in *any* of the sets
 
 but negation (`operator~`) in general *does not*. +
-Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] rather than the semantics of a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra].
+Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] rather than the semantics of a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank].
 
 
 ## Mathematical justification for `complement`
 
 This section provides a mathematical explanation, why `complement` is required. It can easily be xref:from_flags_to_bool[skipped].
 
-* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
+* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
 * The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
 * Building the closure latexmath:[\overline{F}] of latexmath:[F] wrt. latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}] generates a Boolean algebra which is a Boolean subalgebra of latexmath:[U].
 
@@ -669,7 +669,7 @@ To achieve short-circuit evaluation for expresions with flags, convert the flag-
 // Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break exisiting code!
 // 
 // // Furthermore, due to the precedence rules, which for historical reasons gave logical operations a higher precedence than bitwise
-// // https://www.bell-labs.com/usr/dmr/www/chist.html
+// // https://www.bell-labs.com/usr/dmr/www/chist.html[,window=_blank]
 // 
 // // As already mentioned, there are no overloads for `operator&&` and `operator||`. +
 // // Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
@@ -695,8 +695,8 @@ Boost.Flags provides the following functions for an enabled enumeration `E`:
 
 and for generating the values of enumerators:
 
-* `template<typename T = int> nth_bit(unsigned int n) \-> T { return static_cast<T>(static_cast<underlying_or_identity<T>::type>(1) << n); }` +
-  where type `T` can be either an enumeration or an integral type 
+* `template<typename T = int> nth_bit(unsigned int n) \-> underlying_or_identity<T>::type { return static_cast<underlying_or_identity<T>::type>(1) << n; }` +
+  where type `T` can be either an enumeration or an integral type, and `underlying_or_identity` is a type-trait returning the underlying type of the enumeration or is the type-identity respectively
 * `template<typename T> next_bit(T v) \-> T { return v << 1; }`
 
 ## Flags generator

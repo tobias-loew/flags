@@ -1075,10 +1075,10 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20.</p>
 </div>
 <div class="paragraph">
-<p>Furthermore, scoped enumerations always have a fixed underlying type, which is <code>int</code> if not specified (<a href="https://eel.is/c++draft/dcl.enum#5" class="bare">https://eel.is/c++draft/dcl.enum#5</a>).</p>
+<p>Furthermore, scoped enumerations always have a fixed underlying type, which is <code>int</code> if not specified (<a href="https://eel.is/c++draft/dcl.enum#5" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#5</a>).</p>
 </div>
 <div class="paragraph">
-<p>So, if your compiler uses signed two&#8217;s complement, you can leave out the underlying type for scoped enums (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare">https://en.cppreference.com/w/cpp/language/types</a>).</p>
+<p>So, if your compiler uses signed two&#8217;s complement, you can leave out the underlying type for scoped enums (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/types</a>).</p>
 </div>
 <div class="paragraph">
 <p><strong>But, defining the underlying type for unscoped enumerations is crucial!</strong></p>
@@ -1100,10 +1100,10 @@ Clang has a warning for it <code>-Wenum-constexpr-conversion</code> and <a href=
 <div class="ulist">
 <ul>
 <li>
-<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare">https://eel.is/c++draft/dcl.enum#7</a>), which we can query using <code>std::underlying_type</code></p>
+<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#7</a>), which we can query using <code>std::underlying_type</code></p>
 </li>
 <li>
-<p>a hypothetical integer value type with minimal width such that all enumerators can be represented (<a href="https://eel.is/c++draft/dcl.enum#8" class="bare">https://eel.is/c++draft/dcl.enum#8</a>)<br>
+<p>a hypothetical integer value type with minimal width such that all enumerators can be represented (<a href="https://eel.is/c++draft/dcl.enum#8" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#8</a>)<br>
 "The width of the smallest bit-field large enough to hold all the values of the enumeration type [&#8230;&#8203;]."</p>
 </li>
 </ul>
@@ -1202,7 +1202,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </div>
 <div class="paragraph">
 <p>but negation (<code>operator~</code>) in general <strong>does not</strong>.<br>
-Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="<em>blank">mathematical lattices</a> rather than the semantics of a <a href="https://en.wikipedia.org/wiki/Boolean_algebra</em>(structure)">Boolean algebra</a>.</p>
+Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="<em>blank">mathematical lattices</a> rather than the semantics of a <a href="https://en.wikipedia.org/wiki/Boolean_algebra</em>(structure)" target="_blank" rel="noopener">Boolean algebra</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1213,7 +1213,7 @@ Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/L
 <div class="ulist">
 <ul>
 <li>
-<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> \((U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&amp;,\mid)\)</p>
+<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)" target="_blank" rel="noopener">Boolean algebra</a> \((U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&amp;,\mid)\)</p>
 </li>
 <li>
 <p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure \((F,\&amp;,\mid)\) of \(U\) (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
@@ -1728,8 +1728,8 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 <div class="ulist">
 <ul>
 <li>
-<p><code>template&lt;typename T = int&gt; nth_bit(unsigned int n) -&gt; T { return static_cast&lt;T&gt;(static_cast&lt;underlying_or_identity&lt;T&gt;::type&gt;(1) &lt;&lt; n); }</code><br>
-where type <code>T</code> can be either an enumeration or an integral type</p>
+<p><code>template&lt;typename T = int&gt; nth_bit(unsigned int n) -&gt; underlying_or_identity&lt;T&gt;::type { return static_cast&lt;underlying_or_identity&lt;T&gt;::type&gt;(1) &lt;&lt; n; }</code><br>
+where type <code>T</code> can be either an enumeration or an integral type, and <code>underlying_or_identity</code> is a type-trait returning the underlying type of the enumeration or is the type-identity respectively</p>
 </li>
 <li>
 <p><code>template&lt;typename T&gt; next_bit(T v) -&gt; T { return v &lt;&lt; 1; }</code></p>
@@ -2869,13 +2869,14 @@ Let <code>U</code> be the underlying type of enabled enum <code>E</code></p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
     <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span> <span class="o">=</span> <span class="kt">int</span><span class="p">&gt;</span>
-    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">T</span> <span class="nf">nth_bit</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">underlying_or_identity</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">n</span><span class="p">);</span>
+    <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="k">constexpr</span> <span class="n">underlying_or_identity</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">nth_bit</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">underlying_or_identity</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">n</span><span class="p">;</span>
     <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Returns a value of type <code>T</code> with the n-th bit from the right set (zero-based) set.</p>
+<p>Returns a value of type <code>T</code> with the n-th bit from the right set (zero-based) set.
+The type <code>T</code> can be either an enumeration or an integral type, and <code>underlying_or_identity</code> is a type-trait returning the underlying type of the enumeration or it is the type-identity respectively.</p>
 </div>
 </div>
 <div class="sect3">
