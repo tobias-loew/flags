@@ -15,9 +15,10 @@
 #ifndef BOOST_FLAGS_HPP_INCLUDED
 #define BOOST_FLAGS_HPP_INCLUDED
 
+#include <cstdint>
+#include <iterator>
 #include <type_traits>
 #include <utility>
-#include <iterator>
 
 
 /////////////////////////////////////////////////////////////////
