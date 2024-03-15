@@ -711,7 +711,7 @@ pre.rouge .gs {
 <p>in the same namespace as <code>E</code>.</p>
 </div>
 <div class="paragraph">
-<p>Example:  <a href="https://godbolt.org/z/bMrfb6Gz5" target="_blank" rel="noopener">on Godbolt compiler explorer</a></p>
+<p>Example:  <a href="https://godbolt.org/z/4efs43hYn" target="_blank" rel="noopener">on Godbolt compiler explorer</a></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1066,7 +1066,7 @@ Boolean arguments loudly declare that the function does more than one thing. The
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="underlying_type_decision_diagram.png" alt="underlying type decision diagram" width="800" height="448">
+<img src="./images/underlying_type_decision_diagram.png" alt="underlying type decision diagram" width="800" height="448">
 </div>
 </div>
 <div class="paragraph">
@@ -1079,7 +1079,8 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <p>So, if your compiler uses signed two&#8217;s complement, you can leave out the underlying type for scoped enums (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/types</a>).</p>
 </div>
 <div class="paragraph">
-<p><strong>But, defining the underlying type for unscoped enumerations is crucial!</strong></p>
+<p><strong>But, defining the underlying type for unscoped enumerations is crucial!</strong><br>
+(The following Note explains why.)</p>
 </div>
 <div class="paragraph">
 <p>Otherwise the <code>operator ~</code> will invoke UB. Compilers can track this down, e.g. when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
@@ -3130,7 +3131,7 @@ Only used, when <code>std::partial_ordering</code> is not available.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-03-13 16:26:38 +0100
+Last updated 2024-03-15 16:21:45 +0100
 </div>
 </div>
 <script type="text/x-mathjax-config">
