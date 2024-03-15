@@ -350,18 +350,27 @@ namespace boost {
         // workaround for msvc v140 (constexpr function templates not recognized correctly)
         // used good old variadic arguments
         constexpr inline bool boost_flags_enable(...) { return false; }
-        constexpr inline bool boost_flags_disable_complement(...) { return false; }
-        constexpr inline bool boost_flags_logical_and(...) { return false; }
+        //constexpr inline bool boost_flags_disable_complement(...) { return false; }
+        //constexpr inline bool boost_flags_logical_and(...) { return false; }
 #else // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
         template<typename E>
         constexpr inline bool boost_flags_enable(E) { return false; }
 
-        template<typename E>
-        constexpr inline bool boost_flags_disable_complement(E) { return false; }
+        //template<typename E>
+        //constexpr inline bool boost_flags_disable_complement(E) { return false; }
 
-        template<typename E>
-        constexpr inline bool boost_flags_logical_and(E) { return false; }
+        //template<typename E>
+        //constexpr inline bool boost_flags_logical_and(E) { return false; }
 #endif // BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES
+
+
+        // options flags
+        enum class option : uint8_t {
+            enable              = 0x1,
+            disable_complement  = 0x2,
+            logical_and         = 0x4,
+        };
+
 
         // derive `enable` from this type to disable the `complement` template for the enabled enumeration
         struct disable_complement {};
@@ -378,6 +387,14 @@ namespace boost {
             // empty struct
             template<typename Tag>
             struct empty {};
+
+
+            // the `bool` versions for the option-detectors
+            // the overloads for `option` are define below and will be picked up by ADL
+            constexpr inline bool is_option_enable(bool v) { return v; }
+            constexpr inline bool is_option_disable_complement(bool) { return false; }
+            constexpr inline bool is_option_logical_and(bool) { return false; }
+
 
             // type to calculate the enabling (using concepts/SFINAE)
             // enable helper
@@ -398,9 +415,9 @@ namespace boost {
             template<typename E>
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-                : std::integral_constant<bool, boost_flags_enable(E{}) >
-                , std::conditional < boost_flags_disable_complement(E{}), disable_complement, impl::empty<disable_complement> > ::type
-                , std::conditional < boost_flags_logical_and(E{}), logical_and, impl::empty<logical_and> > ::type
+                : std::integral_constant<bool, impl::is_option_enable(boost_flags_enable(E{})) >
+                , std::conditional < impl::is_option_disable_complement(boost_flags_enable(E{})), disable_complement, impl::empty<disable_complement> > ::type
+                , std::conditional < impl::is_option_logical_and(boost_flags_enable(E{})), logical_and, impl::empty<logical_and> > ::type
             {};
 
         }
@@ -416,6 +433,12 @@ namespace boost {
         // explicitly disable error_tag
         template<>
         struct enable<impl::error_tag> : std::false_type {};
+
+        // enable option enumeration
+        template<>
+        struct enable<option> : std::true_type {};
+
+
 
         namespace impl {
 
@@ -1871,6 +1894,17 @@ namespace boost {
             constexpr flag_generator<E> flags_all() {
             return flag_generator<E>{E(1), E{}};
         }
+
+        namespace impl {
+
+            // the `option` versions for the option-detectors
+            // the overloads for `option` will be picked up by ADL
+            constexpr inline bool is_option_enable(option v) { return (v & option::enable) != 0; }
+            constexpr inline bool is_option_disable_complement(option v) { return (v & option::disable_complement) != 0; }
+            constexpr inline bool is_option_logical_and(option v) { return (v & option::logical_and) != 0; }
+
+        }
+
     }
 }
 
