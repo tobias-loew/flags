@@ -59,6 +59,27 @@ void test_nth_bit() {
     }
 }
 
+namespace nth_bit_ns {
+    enum
+#ifndef TEST_COMPILE_UNSCOPED
+        class
+#endif // TEST_COMPILE_UNSCOPED
+    flags_enum: unsigned int {
+    a = boost::flags::nth_bit<uint8_t>(0), // == 0x01
+        b = boost::flags::nth_bit<flags_enum>(1), // == 0x02
+        c = boost::flags::nth_bit<int>(2), // == 0x04
+        d = boost::flags::nth_bit(3), // == 0x08
+        e = boost::flags::next_bit(d), // == 0x08
+        f = boost::flags::next_bit(e), // == 0x08
+    };
+    constexpr bool boost_flags_enable(flags_enum) { return true; }
+}
+void test_nth_bit_type() {
+
+    static_assert(get_underlying(nth_bit_ns::flags_enum::e) == boost::flags::nth_bit<unsigned int>(4), "");
+    static_assert(get_underlying(nth_bit_ns::flags_enum::f) == boost::flags::nth_bit<unsigned int>(5), "");
+}
+
 void test_negation_operators() {
     static constexpr flags_enum test_cases[] = {
         flags_enum{},
@@ -305,6 +326,7 @@ void test_in_class() {
 int main() {
     report_config();
     test_nth_bit();
+    test_nth_bit_type();
     test_negation_operators();
     test_complement_types();
     test_normalize_complements();

@@ -29,8 +29,7 @@ enum class flags_enum : unsigned int {
 };
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags_enum) { return true; }
-constexpr inline bool boost_flags_option_disable_complement(flags_enum) { return true; }
+constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return boost::flags::options::enable | boost::flags::options::disable_complement; }
 
 
 // helpers

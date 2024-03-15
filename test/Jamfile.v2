@@ -33,6 +33,11 @@ run test_basics.cpp ;
 run test_basics.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_basics_UNSCOPED ;
 compile-fail test_basics.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNSCOPED : test_basics_FAIL_UNSCOPED ;
 
+run test_logical_and.cpp ;
+run test_logical_and.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_logical_and_UNSCOPED ;
+compile-fail test_logical_and.cpp : <define>TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR : test_basics_FAIL_NO_LOGICAL_OPERATOR ;
+compile-fail test_logical_and.cpp : <define>TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR <define>TEST_COMPILE_UNSCOPED : test_basics_FAIL_NO_LOGICAL_OPERATOR_UNSCOPED ;
+
 run test_rel_ops.cpp ;
 compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LT : test_rel_ops_FAIL_RELOPS_DELETE_LT ;
 compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LE : test_rel_ops_FAIL_RELOPS_DELETE_LE ;
