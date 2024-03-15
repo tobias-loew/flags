@@ -415,9 +415,9 @@ namespace boost {
             template<typename E>
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-                : std::integral_constant<bool, impl::is_option_enable(boost_flags_enable(E{})) >
-                , std::conditional < impl::is_option_disable_complement(boost_flags_enable(E{})), disable_complement, impl::empty<disable_complement> > ::type
-                , std::conditional < impl::is_option_logical_and(boost_flags_enable(E{})), logical_and, impl::empty<logical_and> > ::type
+                : std::integral_constant<bool, is_option_enable(boost_flags_enable(E{})) >
+                , std::conditional < is_option_disable_complement(boost_flags_enable(E{})), disable_complement, impl::empty<disable_complement> > ::type
+                , std::conditional < is_option_logical_and(boost_flags_enable(E{})), logical_and, impl::empty<logical_and> > ::type
             {};
 
         }
@@ -1904,6 +1904,7 @@ namespace boost {
             constexpr inline bool is_option_logical_and(option v) { return (v & option::logical_and) != 0; }
 
         }
+
 
     }
 }
