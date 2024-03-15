@@ -926,6 +926,7 @@ namespace boost {
             // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
 
             using underlying_type = decltype(impl::get_underlying_impl(value));
+            static_assert(!(std::is_signed<underlying_type>::value && __cplusplus < 202002L), "For C++ standard before C++20, Boost.Flags requires an unsigned underlying type.");
             return result_t{
                 static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying_impl(value)))
             };
