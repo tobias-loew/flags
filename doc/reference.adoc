@@ -33,16 +33,36 @@ Concepts are used if available and not disabled using xref:BOOST_FLAGS_HAS_CONCE
 
 ### boost_flags_enable
 
-The definition
+The function `boost_flags_enable` can be overloaded for an enumeration `E` either 
+
+* with return-type `bool`:
++
 [source]
 ----
 constexpr bool boost_flags_enable(E) { return true; }
 ----
-enables Boost.Flags for an enumeration `E`.
+enables Boost.Flags for an enumeration `E`. All optional features are disabled.
 
-`boost_flags_enable` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+* or with return-type `boost::flags::options`:
+The flag-enumeration `boost::flags::options` has the options
+** `enable`:  enables `E`
+** `disable_complement`:  disables the usage of the `complement<E>` (see also xref:disable_complement[`disable_complement`])
+** `logical_and`:  enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
+e.g.
++
+[source]
+----
+constexpr boost::flags::options boost_flags_enable(E) {
+    return boost::flags::options::enable			// enable E (required)
+        | boost::flags::options::disable_complement // disable the usage of the complement
+        | boost::flags::options::logical_and        // enable operator&&
+        ;
+}
+----
 
-In case `E` is defined inside a class, a `friend` function can be used for enabling:
+The function `boost_flags_enable` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+
+In case `E` is defined inside a class, a `friend` function can be used for enabling. E.g.
 
 [source]
 ----
@@ -60,66 +80,66 @@ Alternatively to using `boost_flags_enable`, the class template xref:types_enabl
 [`boost::flags::enable`] can be specialized.
 
 
-### boost_flags_disable_complement
-
-To disable the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) for an enabled enumeration `E`, the function `boost_flags_disable_complement` has to be overloaded for `E` with:
-[source]
-----
-constexpr bool boost_flags_disable_complement(E) { return true; }
-----
-
-`boost_flags_disable_complement` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
-
-In case `E` is defined inside a class, a `friend` function can be used for enabling:
-
-[source]
-----
-class my_class {
-    // ...
-    enum class E:unsigned int { ... };
-    friend constexpr bool boost_flags_enable(E) { return true; }
-    friend constexpr bool boost_flags_disable_complement(E) { return true; }
-    // ...
-};
-----
-
-Please note, that defining `constexpr bool boost_flags_disable_complement(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
-
-(See also xref:disable_complement[`disable_complement`].)
-
-
-### boost_flags_logical_and
-
-The function
-[source]
-----
-constexpr bool boost_flags_disable_complement(E) { return true; }
-----
-enables `operator&&` for `E` with the following semantics
-
-[source]
-----
-constexpt operator&&(e1, e2) -> bool { return !!(e1 & e2); }
-----
-
-`boost_flags_logical_and` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
-
-In case `E` is defined inside a class, a `friend` function can be used for enabling:
-
-[source]
-----
-class my_class {
-    // ...
-    enum class E:unsigned int { ... };
-    friend constexpr bool boost_flags_enable(E) { return true; }
-    friend constexpr bool boost_flags_logical_and(E) { return true; }
-    // ...
-};
-----
-
-Please note, that defining `constexpr bool boost_flags_logical_and(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
-
-(See also xref:logical_and[`logical_and`].)
+// ### boost_flags_disable_complement
+// 
+// To disable the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) for an enabled enumeration `E`, the function `boost_flags_disable_complement` / has /to be overloaded for `E` with:
+// [source]
+// ----
+// constexpr bool boost_flags_disable_complement(E) { return true; }
+// ----
+// 
+// `boost_flags_disable_complement` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+// 
+// In case `E` is defined inside a class, a `friend` function can be used for enabling:
+// 
+// [source]
+// ----
+// class my_class {
+//     // ...
+//     enum class E:unsigned int { ... };
+//     friend constexpr bool boost_flags_enable(E) { return true; }
+//     friend constexpr bool boost_flags_disable_complement(E) { return true; }
+//     // ...
+// };
+// ----
+// 
+// Please note, that defining `constexpr bool boost_flags_disable_complement(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool // boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
+// 
+// (See also xref:disable_complement[`disable_complement`].)
+// 
+// 
+// ### boost_flags_logical_and
+// 
+// The function
+// [source]
+// ----
+// constexpr bool boost_flags_disable_complement(E) { return true; }
+// ----
+// enables `operator&&` for `E` with the following semantics
+// 
+// [source]
+// ----
+// constexpt operator&&(e1, e2) -> bool { return !!(e1 & e2); }
+// ----
+// 
+// `boost_flags_logical_and` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+// 
+// In case `E` is defined inside a class, a `friend` function can be used for enabling:
+// 
+// [source]
+// ----
+// class my_class {
+//     // ...
+//     enum class E:unsigned int { ... };
+//     friend constexpr bool boost_flags_enable(E) { return true; }
+//     friend constexpr bool boost_flags_logical_and(E) { return true; }
+//     // ...
+// };
+// ----
+// 
+// Please note, that defining `constexpr bool boost_flags_logical_and(E) { return true; }` does not enable `E` for Boost.Flags. The definition of `constexpr bool // boost_flags_enable(E) { return true; }` (or equivalent) is still required. 
+// 
+// (See also xref:logical_and[`logical_and`].)
 
 
 ## Types
@@ -186,7 +206,7 @@ template<> struct boost::flags::enable<E>
     {};
 ----
 
-(See also xref:boost_flags_disable_complement[`boost_flags_disable_complement`].)
+(See also xref:boost_flags_enable[`boost_flags_enable`].)
 
 
 [#logical_and]
@@ -203,7 +223,7 @@ template<> struct boost::flags::enable<E>
     {};
 ----
 
-(See also xref:boost_flags_logical_and[`boost_flags_logical_and`].)
+(See also xref:boost_flags_enable[`boost_flags_enable`].)
 
 
 ### total_order_t

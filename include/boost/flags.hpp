@@ -365,7 +365,7 @@ namespace boost {
 
 
         // options flags
-        enum class option : uint8_t {
+        enum class options : uint8_t {
             enable              = 0x1,
             disable_complement  = 0x2,
             logical_and         = 0x4,
@@ -389,8 +389,8 @@ namespace boost {
             struct empty {};
 
 
-            // the `bool` versions for the option-detectors
-            // the overloads for `option` are define below and will be picked up by ADL
+            // the `bool` versions for the options-detectors
+            // the overloads for `options` are define below and will be picked up by ADL
             constexpr inline bool is_option_enable(bool v) { return v; }
             constexpr inline bool is_option_disable_complement(bool) { return false; }
             constexpr inline bool is_option_logical_and(bool) { return false; }
@@ -434,9 +434,9 @@ namespace boost {
         template<>
         struct enable<impl::error_tag> : std::false_type {};
 
-        // enable option enumeration
+        // enable options enumeration
         template<>
-        struct enable<option> : std::true_type {};
+        struct enable<options> : std::true_type {};
 
 
 
@@ -1897,11 +1897,11 @@ namespace boost {
 
         namespace impl {
 
-            // the `option` versions for the option-detectors
-            // the overloads for `option` will be picked up by ADL
-            constexpr inline bool is_option_enable(option v) { return (v & option::enable) != 0; }
-            constexpr inline bool is_option_disable_complement(option v) { return (v & option::disable_complement) != 0; }
-            constexpr inline bool is_option_logical_and(option v) { return (v & option::logical_and) != 0; }
+            // the `options` versions for the options-detectors
+            // the overloads for `options` will be picked up by ADL
+            constexpr inline bool is_option_enable(options v) { return (v & options::enable) != 0; }
+            constexpr inline bool is_option_disable_complement(options v) { return (v & options::disable_complement) != 0; }
+            constexpr inline bool is_option_logical_and(options v) { return (v & options::logical_and) != 0; }
 
         }
         using impl::is_option_enable;

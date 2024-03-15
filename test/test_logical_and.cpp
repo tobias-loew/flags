@@ -31,9 +31,9 @@ namespace TEST_NAMESPACE {
 
 // enable flags_enum
 #ifndef TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR
-constexpr inline boost::flags::option boost_flags_enable(flags_enum) { return boost::flags::option::enable | boost::flags::option::logical_and; }
+constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return boost::flags::options::enable | boost::flags::options::logical_and; }
 #else // TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR
-constexpr inline boost::flags::option boost_flags_enable(flags_enum) { return boost::flags::option::enable; }
+constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return boost::flags::options::enable; }
 #endif // TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR
 
 

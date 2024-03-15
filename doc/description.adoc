@@ -467,7 +467,7 @@ For the rare case where
 * the set of flags semantically forms a Boolean algebra and additionally
 * all bits of the underlying type correspond to flags
 
-there exists xref:boost_flags_disable_complement[boost_flags_disable_complement] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
+there exists the option xref:boost_flags_disable_complement[boost::flags::options::disable_complement] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
 ## From flags to `bool`
@@ -605,7 +605,7 @@ Therefore, Boost.Flags provides a pseudo operator `BOOST_FLAGS_AND` with the sam
 
 * `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
 
-Alternatively, there is the xref:boost_flags_logical_and[`boost_flags_logical_and`], which enables `operator&&`, see xref:logically_and_and_or[next section].
+Alternatively, there is the options xref:boost_flags_logical_and[`boost::flags::options::logical_and`], which enables `operator&&`, see xref:logically_and_and_or[next section].
 
 [NOTE]
 ====
@@ -639,9 +639,15 @@ Since logical operators `&&` and `||` can easily get confused with their bitwise
 Nevertheless, sometimes `operator &&` comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. When for an enabled enumeration `E`
 [source]
 ----
-constexpr bool boost_flags_logical_and(E){ return true; }
+constexpr boost::flags::options boost_flags_enable(E) { 
+    return boost::flags::options::enable 
+	     | boost::flags::options::logical_and
+		 ;
+}
+// instead of 
+// constexpr bool boost_flags_enable(E){ return true; }
 ----
-or `boost::flags::enable<E>` inherits from `boost::flags::logical_and`, then `operator &&` is overloaded for `E` with the semantics
+is defined or `boost::flags::enable<E>` inherits from `boost::flags::logical_and`, then `operator &&` is overloaded for `E` with the semantics
 [source]
 ----
     operator&&(e1, e2) -> bool { return !!(e1 & e2); } 
