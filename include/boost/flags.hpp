@@ -1904,6 +1904,9 @@ namespace boost {
             constexpr inline bool is_option_logical_and(option v) { return (v & option::logical_and) != 0; }
 
         }
+        using impl::is_option_enable;
+        using impl::is_option_disable_complement;
+        using impl::is_option_logical_and;
 
 
     }
