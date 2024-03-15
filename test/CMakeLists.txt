@@ -37,6 +37,8 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -j4 -C ${CMAKE_CFG_INTDIR
 #set_property(TARGET compile_tests PROPERTY CXX_STANDARD ${CXX_STD})
 #target_link_libraries(compile_tests parser)
 
+find_package(Boost REQUIRED)
+
 macro(add_test_executable name)
     add_executable(${name} ${name}.cpp)
     target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})

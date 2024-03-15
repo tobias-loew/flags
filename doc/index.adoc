@@ -18,7 +18,7 @@ Tobias Loew
 :source-highlighter: rouge
 :source-language: c++
 // :icons: image
-
+:imagesdir: ./images/
 :leveloffset: +1
 
 include::description.adoc[]

@@ -1,0 +1,9 @@
+{
+    "key": "flags",
+    "name": "Flags",
+    "authors": [ "Tobias Loew" ],
+    "maintainers": [ "Tobias Loew <tobi -at- die-loews.de>" ],
+    "description": "Type-safe bitwise operations.",
+    "category": [ "Correctness", "Metaprogramming", "Miscellaneous" ],
+    "cxxstd": "11"
+}

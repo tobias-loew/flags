@@ -1,0 +1,80 @@
+<html>
+<head></head>
+<body onload="render()">
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  jax: ["input/TeX", "output/SVG"],
+  extensions: ["tex2jax.js"],
+  SVG: {
+      useGlobalCache: false
+  },
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains("stemblock")) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+<script>
+    window.MathJax = {
+        jax: ["input/TeX", "output/SVG"],
+        extensions: ["tex2jax.js"],
+        SVG: {
+            useGlobalCache: false
+        }
+    }
+</script>
+    -->
+<span id="math-tex">\(\{\textrm{E}, \textrm{complement&lt;E&gt;} \}\)</span>
+<script>
+
+    function tex2img(formula, callback) {
+        MathJax.Hub.Queue(function () {
+            var wrapper = MathJax.HTML.Element("span", {}, formula);
+            MathJax.Hub.Typeset(wrapper, function () {
+                var svg = wrapper.getElementsByTagName("svg")[0];
+                svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                var image = new Image();
+                image.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg.outerHTML)));
+                image.onload = function () {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    var context = canvas.getContext('2d');
+                    context.drawImage(image, 0, 0);
+                    var img = '<img src="' + canvas.toDataURL('image/png') + '"/>';
+                    callback(img);
+                };
+            });
+        })
+    }
+
+    function render() {
+        var dom = document.getElementById("math-tex");
+        tex2img(dom.innerText, function (output) {
+            dom.innerHTML = output
+        });
+    }
+
+</script>
+</body>
+</html>

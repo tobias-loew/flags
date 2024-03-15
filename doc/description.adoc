@@ -24,7 +24,7 @@ constexpr bool boost_flags_enable(E) { return true; }
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/bMrfb6Gz5[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/4efs43hYn[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
@@ -322,7 +322,8 @@ Furthermore, scoped enumerations always have a fixed underlying type, which is `
 So, if your compiler uses signed two's complement, you can leave out the underlying type for scoped enums (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
 
 
-**But, defining the underlying type for unscoped enumerations is crucial!** 
+**But, defining the underlying type for unscoped enumerations is crucial!** +
+(The following Note explains why.)
 
 Otherwise the `operator ~` will invoke UB. Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
 Clang has a warning for it `-Wenum-constexpr-conversion` and https://github.com/llvm/llvm-project/issues/59036[they are planing to turn it into a hard error].
@@ -459,6 +460,8 @@ Finally, for the binary operators we have
 ** `operator^(E, complement<E>) \-> complement<E>`
 ** `operator^(complement<E>, complement<E>) \-> E`
 
+
+// Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a Boolean algebra.
 
 Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a two-element Boolean algebra.
 
