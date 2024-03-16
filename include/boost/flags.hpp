@@ -503,6 +503,9 @@ namespace boost {
         } // namespace impl
 
 
+        template<typename E, bool B = std::is_enum<E>::value>
+        struct complement;
+
         // get enum-type from E
         // strip off `complement`-templates
         template<typename E>
@@ -511,11 +514,14 @@ namespace boost {
         };
 
         template<typename E>
+        struct enum_type<complement<E>> :enum_type<E> {};
+
+        template<typename E>
         using enum_type_t = typename enum_type<E>::type;
 
         // class-template to indicate complemented flags
         // version for nested complements
-        template<typename E, bool B = std::is_enum<E>::value>
+        template<typename E, bool B /*= std::is_enum<E>::value*/>
         struct complement {
             using enumeration_type = typename enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
@@ -586,8 +592,6 @@ namespace boost {
         //    underlying_type value;
         //};
 
-        template<typename E>
-        struct enum_type<complement<E>> :enum_type<E> {};
 
 
         // test if E is enabled: either a flags-enum or a negation (detects double-negations)
