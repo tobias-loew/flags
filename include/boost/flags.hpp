@@ -31,7 +31,7 @@
 // - turns logical errors undetectable by th compiler
 //   into type errors
 // 
-// = is non- ntrusive, only requires a template specialization
+// = is non-intrusive, only requires a template specialization
 //
 // Example:
 /*
