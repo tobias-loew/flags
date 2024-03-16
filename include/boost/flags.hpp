@@ -503,7 +503,7 @@ namespace boost {
         } // namespace impl
 
 
-        template<typename E, bool B = std::is_enum<E>::value>
+        template<typename E>
         struct complement;
 
         // get enum-type from E
@@ -519,26 +519,11 @@ namespace boost {
         template<typename E>
         using enum_type_t = typename enum_type<E>::type;
 
-        // class-template to indicate complemented flags
-        // version for nested complements
-        template<typename E, bool B /*= std::is_enum<E>::value*/>
-        struct complement {
-            using enumeration_type = enum_type_t<E>;
-            using underlying_type = typename std::underlying_type<enumeration_type>::type;
 
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-                constexpr operator underlying_type() const { return get_underlying(); }
-
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr underlying_type get_underlying() const { return value.get_underlying(); }
-
-            E value;
-        };
-
-        // class-template to indicate complemented flags
         // version for complement of enumeration (not nested)
         template<typename E>
-        struct complement<E,true> {
+        struct complement {
+            static_assert(std::is_enum<E>::value, "boost::flags::complement is only allowed on enum types.");
             using enumeration_type = enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
 
@@ -568,7 +553,6 @@ namespace boost {
             // cf. https://eel.is/c++draft/dcl.enum#8
             underlying_type value;
         };
-
 
         // test if E is enabled: either a flags-enum or a negation (detects double-negations)
         template<typename E>
@@ -847,51 +831,6 @@ namespace boost {
                 constexpr auto get_underlying_impl(complement<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
                 return value.get_underlying();
             }
-
-
-            // normalize `complement`s to zero or one
-
-            // test for outer `double complement`
-            template<typename E>
-            struct is_double_outer_complement : std::false_type {};
-
-            template<typename E>
-            struct is_double_outer_complement<complement<complement<E>>> :
-                is_enabled<E>                       // ensure it's enabled
-            {};
-
-
-#if BOOST_FLAGS_HAS_CONCEPTS
-            template<typename E>
-            concept IsDoubleOuterComplement =
-                is_double_outer_complement<std::remove_cvref_t<E>>::value;
-#else // BOOST_FLAGS_HAS_CONCEPTS
-            template<typename E>
-            struct IsDoubleOuterComplement : std::integral_constant<bool,
-                is_double_outer_complement<typename std::remove_cv<typename std::remove_reference<E>::type>::type>::value
-            > {};
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-
-
-            template<typename T>
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr T&& get_normalized(T&& value) noexcept {
-                return std::forward<T>(value);
-            }
-
-#if BOOST_FLAGS_HAS_CONCEPTS
-            template<typename T>
-                requires IsDoubleOuterComplement<T>
-#else // BOOST_FLAGS_HAS_CONCEPTS
-            template<typename T, typename std::enable_if<IsDoubleOuterComplement<T>::value, int*>::type = nullptr>
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-            BOOST_FLAGS_ATTRIBUTE_NODISCARD
-                constexpr
-                auto
-                get_normalized(T&& value) noexcept -> decltype(get_normalized(std::forward<T>(value).value.value)) {
-                return get_normalized(std::forward<T>(value).value.value);
-            }
-
         } // namespace impl
 
 
