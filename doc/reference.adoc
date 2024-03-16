@@ -184,7 +184,7 @@ template<typename T> struct complement;
 
 By default the usage of `complement` is enabled but can be disabled using xref:disable_complement[`disable_complement`]. 
 
-Boost.Flags operators and functions will always strip double `complement`s from flags.
+// Boost.Flags operators and functions will always strip double `complement`s from flags.
 
 
 
