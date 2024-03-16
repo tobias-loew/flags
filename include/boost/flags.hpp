@@ -525,7 +525,6 @@ namespace boost {
         struct complement {
             using enumeration_type = enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
-            using value_type = underlying_type;
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr operator underlying_type() const { return get_underlying(); }
@@ -542,19 +541,18 @@ namespace boost {
         struct complement<E,true> {
             using enumeration_type = enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
-            using value_type = underlying_type;
 
             complement() = default;
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-                constexpr complement(value_type v) :
+                constexpr complement(underlying_type v) :
                 value{ v }
             {}
 
 #if BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
             // silence (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
 #endif // BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr complement(E v) :
@@ -570,36 +568,12 @@ namespace boost {
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr underlying_type get_underlying() const { return value; }
 
-            value_type value;
+            // Using the underlying_type (instead of enumeration_type or E) ensures that for
+            // unscoped enumerations with unspecified underlying type, we
+            // don't get into trouble with the "hypothetical value type"
+            // cf. https://eel.is/c++draft/dcl.enum#8
+            underlying_type value;
         };
-        //// class-template to indicate complemented flags
-        //template<typename E>
-        //struct complement {
-        //    using enumeration_type = typename enum_type_t<E>;
-        //    using underlying_type = typename std::underlying_type<enumeration_type>::type;
-
-        //    complement() = default;
-        //    
-        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-        //        constexpr complement(underlying_type v) :
-        //        value{ v }
-        //    {}
-
-        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-        //        constexpr complement(E v) :
-        //        value{ static_cast<underlying_type>(v) }
-        //    {}
-
-        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-        //        constexpr operator underlying_type() const { return value; }
-
-        //    // using the underlying_type (instead of enumeration_type or E) ensures that for
-        //    // unscoped enumerations with unspecified underlying type, we
-        //    // don't get into trouble with the "hypothetical value type"
-        //    // cf. https://eel.is/c++draft/dcl.enum#8
-        //    underlying_type value;
-        //};
-
 
 
         // test if E is enabled: either a flags-enum or a negation (detects double-negations)
