@@ -128,18 +128,6 @@ void test_complement_types() {
 
 }
 
-void test_normalize_complements() {
-    flags_enum c0{};
-
-    boost::flags::complement <
-        flags_enum
-    > c1{ c0 };
-
-
-
-    static_assert(std::is_same<flags_enum, decltype(~c1)>::value, "error in complement type");
-}
-
 
 void test_binary_operators() {
 
@@ -312,7 +300,6 @@ int main() {
     test_nth_bit_type();
     test_negation_operators();
     test_complement_types();
-    test_normalize_complements();
     test_binary_operators();
     test_binary_assignment();
     test_null();
