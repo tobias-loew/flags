@@ -554,7 +554,7 @@ namespace boost {
 #if defined(__GNUC__) && (__GNUC__ < 5)
             // silence (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable"
+#pragma GCC diagnostic ignored "-Wno-unused-but-set-variable"
 #endif // defined(__GNUC__) && (__GNUC__ < 5)
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr complement(E v) :
