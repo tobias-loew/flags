@@ -503,13 +503,6 @@ namespace boost {
         } // namespace impl
 
 
-        // class-template to indicate complemented flags
-        template<typename E>
-        struct complement {
-            E value;
-        };
-
-
         // get enum-type from E
         // strip off `complement`-templates
         template<typename E>
@@ -518,10 +511,83 @@ namespace boost {
         };
 
         template<typename E>
-        struct enum_type<complement<E>> :enum_type<E> {};
+        using enum_type_t = typename enum_type<E>::type;
+
+        // class-template to indicate complemented flags
+        // version for nested complements
+        template<typename E, bool B = std::is_enum<E>::value>
+        struct complement {
+            using enumeration_type = typename enum_type_t<E>;
+            using underlying_type = typename std::underlying_type<enumeration_type>::type;
+            using value_type = underlying_type;
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                constexpr operator underlying_type() const { return get_underlying(); }
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr underlying_type get_underlying() const { return value.get_underlying(); }
+
+            E value;
+        };
+
+        // class-template to indicate complemented flags
+        // version for complement of enumeration (not nested)
+        template<typename E>
+        struct complement<E,true> {
+            using enumeration_type = typename enum_type_t<E>;
+            using underlying_type = typename std::underlying_type<enumeration_type>::type;
+            using value_type = underlying_type;
+
+            complement() = default;
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                constexpr complement(value_type v) :
+                value{ v }
+            {}
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                constexpr complement(E v) :
+                value{ static_cast<underlying_type>(v) }
+            {}
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                constexpr operator underlying_type() const { return get_underlying(); }
+
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr underlying_type get_underlying() const { return value; }
+
+            value_type value;
+        };
+        //// class-template to indicate complemented flags
+        //template<typename E>
+        //struct complement {
+        //    using enumeration_type = typename enum_type_t<E>;
+        //    using underlying_type = typename std::underlying_type<enumeration_type>::type;
+
+        //    complement() = default;
+        //    
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+        //        constexpr complement(underlying_type v) :
+        //        value{ v }
+        //    {}
+
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+        //        constexpr complement(E v) :
+        //        value{ static_cast<underlying_type>(v) }
+        //    {}
+
+        //    BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+        //        constexpr operator underlying_type() const { return value; }
+
+        //    // using the underlying_type (instead of enumeration_type or E) ensures that for
+        //    // unscoped enumerations with unspecified underlying type, we
+        //    // don't get into trouble with the "hypothetical value type"
+        //    // cf. https://eel.is/c++draft/dcl.enum#8
+        //    underlying_type value;
+        //};
 
         template<typename E>
-        using enum_type_t = typename enum_type<E>::type;
+        struct enum_type<complement<E>> :enum_type<E> {};
 
 
         // test if E is enabled: either a flags-enum or a negation (detects double-negations)
@@ -799,8 +865,7 @@ namespace boost {
             template<typename T>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto get_underlying_impl(complement<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
-                //decltype(get_underlying_impl(value.value)) {
-                return get_underlying_impl(value.value);
+                return value.get_underlying();
             }
 
 
@@ -1009,6 +1074,8 @@ namespace boost {
             operator~(T value) noexcept -> typename impl::unary_operation_result<T, impl::negation>::type {
             using result_t = typename impl::unary_operation_result<T, impl::negation>::type;
 
+            using underlying_type = decltype(impl::get_underlying_impl(value));
+
             // Ensure we do not leave the valid value range: would be UB for constant expressions!
             // https://eel.is/c++draft/expr.static.cast#10
             // https://eel.is/c++draft/dcl.enum#7
@@ -1020,7 +1087,19 @@ namespace boost {
             // E.g. clang reports warnings here, when used with unscoped enums with unspecified underlying type in constant expressions:
             // error: integer value 4294967294 is outside the valid range of values [0, 15] for this enumeration type [-Wenum-constexpr-conversion]
 
-            using underlying_type = decltype(impl::get_underlying_impl(value));
+            // check that we don't get into trouble with strange complement implementations  
+            static_assert(
+                !(
+#if BOOST_FLAGS_HAS_CONCEPTS
+                    IsComplementDisabled<T>                    // complement is not used
+#else // BOOST_FLAGS_HAS_CONCEPTS
+                    IsComplementDisabled<T>::value             // complement is not used
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+                    && std::is_signed<underlying_type>::value   // underlying type is signed
+                    && __cplusplus < 202002L                    // before C++20
+                 ),
+                "For C++ standard before C++20 and disabled complement, Boost.Flags requires an unsigned underlying type.");
+
             return result_t{
                 static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying_impl(value)))
             };

@@ -644,8 +644,8 @@ Nevertheless, sometimes `operator &&` comes in handy or is even required, e.g. w
 ----
 constexpr boost::flags::options boost_flags_enable(E) { 
     return boost::flags::options::enable 
-	     | boost::flags::options::logical_and
-		 ;
+         | boost::flags::options::logical_and
+         ;
 }
 // instead of 
 // constexpr bool boost_flags_enable(E){ return true; }
