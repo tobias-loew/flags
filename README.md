@@ -3,7 +3,7 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 
 [read the docs](https://tobias-loew.github.io/flags)
 
-[example on Godbolt compiler explorer](https://godbolt.org/z/4efs43hYn)
+[example on Godbolt compiler explorer](https://godbolt.org/z/1KosWM8P7)
 
 # ToDo
 

@@ -24,7 +24,7 @@ constexpr bool boost_flags_enable(E) { return true; }
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/4efs43hYn[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/1KosWM8P7[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
