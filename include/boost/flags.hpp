@@ -549,18 +549,12 @@ namespace boost {
                 value{ v }
             {}
 
-#if BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
-            // silence (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
-#endif // BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr complement(E v) :
-                value{ static_cast<underlying_type>(v) }
+                // using parentheses instead of brackets to silence
+                // (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
+                value(static_cast<underlying_type>(v))
             {}
-#if BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
-#pragma GCC diagnostic pop
-#endif // BOOST_FLAGS_IS_GCC_COMPILER && defined(__GNUC__) && (__GNUC__ < 5)
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr operator underlying_type() const { return get_underlying(); }

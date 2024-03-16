@@ -189,8 +189,8 @@ i.e. Boost.Flags will prohibit that in those cases the built-in version will be 
 
 ## What about the underlying type?
 
-* For *unscoped* enumerations **absolutely REQUIRED**!
 * For language standards **before C++20** as an `unsigned` type, for both scoped and unscoped enumerations!
+* For *unscoped* enumerations with the `disable_complement` option **absolutely REQUIRED**!
 
 (For details xref:underlying_type[see below.])
 
@@ -282,7 +282,8 @@ constexpr bool boost_flags_enable(E) { return true; }
 
 Is the the specification of the underlying type required?
 
-[ditaa, target=underlying_type_decision_diagram]
+First, here the standard conforming decision diagram:
+[ditaa, target=underlying_type_decision_diagram_conforming]
 ----
                           /-------------\
                           |    Start    |
@@ -292,41 +293,67 @@ Is the the specification of the underlying type required?
                        +---------+---------+
                        |{c}                |
                        |     language      |
-          +------------+  standard version +------+
-          |            |   is 20 or later  |      |
-          |            |                   |      |
-       no |            +-------------------+      | yes
-          |                                       |
-          |                                       |
-          |                                       v
-          |                             +---------+---------+
-          |                             |{c}                |
-          |                       +-----+   enum type is    +-----+
-          |                       |     |                   |     |
-          |              unscoped |     +-------------------+     | scoped
-          |                       |                               |
-          |                       |                               |
-          v                       v                               v
-/-------------------\   /--------------------\           /-----------------\
-| underlying type   |   | underlying type    |           | underlying type |
-| required, must be |   | required, can be   |           | not required    |
-| an unsigned type  |   | signed or unsigned |           |                 |
-\-------------------/   \--------------------/           \-----------------/
+          +------------+  standard version +-------+
+          |            |   is 20 or later  |       |
+          |            |                   |       |
+       no |            +-------------------+       | yes
+          |                                        |
+          |                                        |
+          |                                        v
+          |                           +------------+------------+
+          |                           |{c}       enum           |
+          |                           |    type is unscoped     |
+          |                       +---+  and disable_complement +---+
+          |                       |   |         is used         |   |
+          |                       |   |                         |   |
+          |                   yes |   +-------------------------+   | no
+          |                       |                                 |
+          |                       |                                 |
+          v                       v                                 v
+/---------+---------\   /---------+----------\             /--------+--------\
+| underlying type   |   | underlying type    |             | underlying type |
+| required, must be |   | required, can be   |             | not required    |
+| an unsigned type  |   | signed or unsigned |             |                 |
+\-------------------/   \--------------------/             \-----------------/
 
 ----
 
-Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20.
-
+Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
 Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[,window=_blank]).
 
-So, if your compiler uses signed two's complement, you can leave out the underlying type for scoped enums (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
+So, in case your compiler uses signed two's complement, you can use the following dicision diagram:
+[ditaa, target=underlying_type_decision_diagram_practical]
+----
+                       /-------------\
+                       |    Start    |
+                       \------+------/
+                              |
+                              |
+                              v
+                 +------------+------------+
+                 |{c}       enum           |
+                 |    type is unscoped     |
+             +---+  and disable_complement +---+
+             |   |         is used         |   |
+             |   |                         |   |
+         yes |   +-------------------------+   | no
+             |                                 |
+             |                                 |
+             v                                 v
+   /---------+----------\             /--------+--------\
+   | underlying type    |             | underlying type |
+   | required, can be   |             | not required    |
+   | signed or unsigned |             |                 |
+   \--------------------/             \-----------------/
+
+----
 
 
-**But, defining the underlying type for unscoped enumerations is crucial!** +
-(The following Note explains why.)
 
-Otherwise the `operator ~` will invoke UB. Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
-Clang has a warning for it `-Wenum-constexpr-conversion` and https://github.com/llvm/llvm-project/issues/59036[they are planing to turn it into a hard error].
+
+It may seem pedantic, but defining the underlying type in the unscoped and `disable_complement` case is crucial, as otherwise the `operator ~` will invoke UB. +
+Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
+Starting with Clang 16 this is diagnosed as a hard error.
 
 [NOTE]
 ====

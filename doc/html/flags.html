@@ -916,10 +916,10 @@ Best practice would be defining <code>constexpr bool boost_flags_enable(E) { ret
 <div class="ulist">
 <ul>
 <li>
-<p>For <strong>unscoped</strong> enumerations <strong>absolutely REQUIRED</strong>!</p>
+<p>For language standards <strong>before C++20</strong> as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</p>
 </li>
 <li>
-<p>For language standards <strong>before C++20</strong> as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</p>
+<p>For <strong>unscoped</strong> enumerations with the <code>disable_complement</code> option <strong>absolutely REQUIRED</strong>!</p>
 </li>
 </ul>
 </div>
@@ -1064,27 +1064,30 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <div class="paragraph">
 <p>Is the the specification of the underlying type required?</p>
 </div>
+<div class="paragraph">
+<p>First, here the standard conforming decision diagram:</p>
+</div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/underlying_type_decision_diagram.png" alt="underlying type decision diagram" width="800" height="448">
+<img src="./images/underlying_type_decision_diagram_conforming.png" alt="underlying type decision diagram conforming" width="820" height="476">
 </div>
 </div>
 <div class="paragraph">
-<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20.</p>
+<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C+20 (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c+draft/dcl.enum#5[,window=_blank]).</p>
 </div>
 <div class="paragraph">
-<p>Furthermore, scoped enumerations always have a fixed underlying type, which is <code>int</code> if not specified (<a href="https://eel.is/c++draft/dcl.enum#5" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#5</a>).</p>
+<p>So, in case your compiler uses signed two&#8217;s complement, you can use the following dicision diagram:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/underlying_type_decision_diagram_practical.png" alt="underlying type decision diagram practical" width="610" height="350">
+</div>
 </div>
 <div class="paragraph">
-<p>So, if your compiler uses signed two&#8217;s complement, you can leave out the underlying type for scoped enums (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/types</a>).</p>
-</div>
-<div class="paragraph">
-<p><strong>But, defining the underlying type for unscoped enumerations is crucial!</strong><br>
-(The following Note explains why.)</p>
-</div>
-<div class="paragraph">
-<p>Otherwise the <code>operator ~</code> will invoke UB. Compilers can track this down, e.g. when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
-Clang has a warning for it <code>-Wenum-constexpr-conversion</code> and <a href="https://github.com/llvm/llvm-project/issues/59036">they are planing to turn it into a hard error</a>.</p>
+<p>It may seem pedantic, but defining the underlying type in the unscoped and <code>disable_complement</code> case is crucial, as otherwise the <code>operator ~</code> will invoke UB.<br>
+Compilers can track this down, e.g. when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
+Starting with Clang 16 this is diagnosed as a hard error.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -2128,6 +2131,9 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 <p>If the specialization of <code>enable</code> additionally inherits from <code>disable_complement</code> then the usage of the <code>complement</code> template (cf. <a href="#negation_operation"><code>operator~</code></a>) is disabled.</p>
 </div>
 <div class="paragraph">
+<p>When <code>disable_complement</code> is used, then the used enumeration must either be scoped, or has an explicit specified underlying type, otherwise the <code>operator~</code> may invoke undefined behaviour. For more information, see the following note.</p>
+</div>
+<div class="paragraph">
 <p>Example:</p>
 </div>
 <div class="listingblock">
@@ -2140,6 +2146,50 @@ It is used to distinguish flag-values from <em>negative masks</em>.</p>
 </div>
 <div class="paragraph">
 <p>(See also <a href="#boost_flags_enable"><code>boost_flags_enable</code></a>.)</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For unscoped enumerations with unspecified underlying type, the compiler infers two types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#7</a>), which we can query using <code>std::underlying_type</code></p>
+</li>
+<li>
+<p>a hypothetical integer value type with minimal width such that all enumerators can be represented (<a href="https://eel.is/c++draft/dcl.enum#8" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#8</a>)<br>
+"The width of the smallest bit-field large enough to hold all the values of the enumeration type [&#8230;&#8203;]."</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The legal values for the enumeration are those of the hypothetical integer value type.</p>
+</div>
+<div class="paragraph">
+<p>But, this hypothetical integer value type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="n">TriBool</span> <span class="p">{</span>
+    <span class="n">false_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">true_</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">undefined</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>has underlying type <code>int</code> on all major compilers, but its valid values are just
+<code>0</code>, <code>1</code>, <code>2</code> and <code>3</code> as the <em>hypothetical integer value type with minimal width</em> is a 2-bit unsigned integer.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
