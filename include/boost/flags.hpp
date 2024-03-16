@@ -553,13 +553,13 @@ namespace boost {
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr complement(E v) :
-                value{ static_cast<underlying_type>(v) }
-            {
+                value{ 
 #if defined(__GNUC__) && (__GNUC__ < 5)
-// silence (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
-                (void)(v);
+                    // silence (wrong) gcc 4.8 warning "parameter 'v' set but not used" 
+                    (void)(v),
 #endif // defined(__GNUC__) && (__GNUC__ < 5)
-            }
+                    static_cast<underlying_type>(v) }
+            {}
 
             BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
                 constexpr operator underlying_type() const { return get_underlying(); }
