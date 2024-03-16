@@ -523,7 +523,7 @@ namespace boost {
         // version for nested complements
         template<typename E, bool B /*= std::is_enum<E>::value*/>
         struct complement {
-            using enumeration_type = typename enum_type_t<E>;
+            using enumeration_type = enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
             using value_type = underlying_type;
 
@@ -540,7 +540,7 @@ namespace boost {
         // version for complement of enumeration (not nested)
         template<typename E>
         struct complement<E,true> {
-            using enumeration_type = typename enum_type_t<E>;
+            using enumeration_type = enum_type_t<E>;
             using underlying_type = typename std::underlying_type<enumeration_type>::type;
             using value_type = underlying_type;
 
