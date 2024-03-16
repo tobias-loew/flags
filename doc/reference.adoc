@@ -197,6 +197,8 @@ Boost.Flags operators and functions will always strip double `complement`s from 
 
 If the specialization of `enable` additionally inherits from `disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
 
+When `disable_complement` is used, then the used enumeration must either be scoped, or has an explicit specified underlying type, otherwise the `operator~` may invoke undefined behaviour. For more information, see the following note.
+
 Example:
 [source]
 ----
@@ -208,6 +210,31 @@ template<> struct boost::flags::enable<E>
 
 (See also xref:boost_flags_enable[`boost_flags_enable`].)
 
+[NOTE]
+====
+For unscoped enumerations with unspecified underlying type, the compiler infers two types:
+
+* the underlying type (https://eel.is/c++draft/dcl.enum#7[,window=_blank]), which we can query using `std::underlying_type`
+* a hypothetical integer value type with minimal width such that all enumerators can be represented (https://eel.is/c++draft/dcl.enum#8[,window=_blank]) +
+  "The width of the smallest bit-field large enough to hold all the values of the enumeration type [...]." 
+  
+//  This type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.)
+
+The legal values for the enumeration are those of the hypothetical integer value type.
+
+But, this hypothetical integer value type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.
+[source]
+----
+enum TriBool {
+    false_ = 0,
+    true_ = 1,
+    undefined = 2
+};
+----
+has underlying type `int` on all major compilers, but its valid values are just 
+`0`, `1`, `2` and `3` as the __hypothetical integer value type with minimal width__ is a 2-bit unsigned integer.
+
+====
 
 [#logical_and]
 ### logical_and
