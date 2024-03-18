@@ -9,7 +9,6 @@ type-safe and non-intrusive bitwise-operators for C++ enums
 
 * all tabs to spaces, all line-endings LF
 * update boost-list probing email to reflect latest changes (C++11 conformance, std::less stuff, godbolt example)
-  * note on latex-extension 
 * finally, remove ToDo list
 
 [![CI](https://github.com/tobias-loew/flags/actions/workflows/ci.yml/badge.svg)](https://github.com/tobias-loew/flags/actions/workflows/ci.yml)

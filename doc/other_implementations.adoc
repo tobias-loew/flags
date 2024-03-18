@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toc:
 :toc-title: 
 :idprefix:
-:stem: latexmath
+// :stem: latexmath
 
 
 

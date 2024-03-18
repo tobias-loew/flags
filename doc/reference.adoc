@@ -53,7 +53,7 @@ e.g.
 [source]
 ----
 constexpr boost::flags::options boost_flags_enable(E) {
-    return boost::flags::options::enable			// enable E (required)
+    return boost::flags::options::enable            // enable E (required)
         | boost::flags::options::disable_complement // disable the usage of the complement
         | boost::flags::options::logical_and        // enable operator&&
         ;

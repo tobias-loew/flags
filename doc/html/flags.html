@@ -1215,18 +1215,18 @@ Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/L
 <div class="ulist">
 <ul>
 <li>
-<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)" target="_blank" rel="noopener">Boolean algebra</a> \((U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&amp;,\mid)\)</p>
+<p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)" target="_blank" rel="noopener">Boolean algebra</a> <span style="font-size:115%">(<span style="font-style:italic">U</span>, 0, -1, &sim;, &amp;, &mid;)</span></p>
 </li>
 <li>
-<p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure \((F,\&amp;,\mid)\) of \(U\) (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
+<p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure <span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span> of <span style="font-size:115%;font-style: italic">U</span> (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
 </li>
 <li>
-<p>Building the closure \(\overline{F}\) of \(F\) wrt. \({\raise.17ex\hbox{$\scriptstyle\sim$}}\) generates a Boolean algebra which is a Boolean subalgebra of \(U\).</p>
+<p>Building the closure <span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span></span> of <span style="font-size:115%;font-style: italic">F</span> wrt. <span style="font-size:115%">&sim;</span> generates a Boolean algebra which is a Boolean subalgebra of <span style="font-size:115%;font-style: italic">U</span>.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Semantically the elements of \(\overline{F}\setminus F\) are not combinations of flags but negative flag-masks. The distinction of <code>E</code> and <code>complement&lt;E&gt;</code> keeps them apart on the type-level.</p>
+<p>Semantically the elements of <span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span>&setminus; F</span> are not combinations of flags but negative flag-masks. The distinction of <code>E</code> and <code>complement&lt;E&gt;</code> keeps them apart on the type-level.</p>
 </div>
 <div class="paragraph">
 <p>Finally, for the binary operators we have</p>
@@ -1293,7 +1293,7 @@ Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/L
 </ul>
 </div>
 <div class="paragraph">
-<p>Which means, on the meta-level the typeset \(\{\textrm{E}, \textrm{complement&lt;E&gt;} \}\) and the operation \({\raise.17ex\hbox{$\scriptstyle\sim$}}\), \(\&amp;\) and \(\mid\) form a two-element Boolean algebra.</p>
+<p>Which means, on the meta-level the typeset <span style="font-size:115%">{E, complement&lt;E&gt;}</span> and the operation <span style="font-size:115%">&sim;</span>, <span style="font-size:115%">&amp;</span> and  <span style="font-size:115%">&mid; </span> form a two-element Boolean algebra.</p>
 </div>
 <div class="paragraph">
 <p>For the rare case where</p>
@@ -1492,7 +1492,7 @@ defining both <code>BOOST_FLAGS_REL_OPS_DELETE(E)</code> and <code>BOOST_FLAGS_S
 <td class="content">
 <div id="contained_induced_partial_order" class="paragraph">
 <p>For the mathematically inclined programmer:<br>
-The function <code>subseteq</code> reflects the partial order (in the mathematical sense) \(\leq\) of the generated Boolean algebra.
+The function <code>subseteq</code> reflects the partial order (in the mathematical sense) <span style="font-size:115%">&leq;</span> of the generated Boolean algebra.
 You can enable relational operators using the <code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</code> macro at global namespace.<br>
 <code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)</code> defines the following semantics for the relational operators</p>
 </div>
@@ -2033,7 +2033,7 @@ e.g.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">constexpr</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span> <span class="nf">boost_flags_enable</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">enable</span>			<span class="c1">// enable E (required)</span>
+    <span class="k">return</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">enable</span>            <span class="c1">// enable E (required)</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">disable_complement</span> <span class="c1">// disable the usage of the complement</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">logical_and</span>        <span class="c1">// enable operator&amp;&amp;</span>
         <span class="p">;</span>
@@ -3181,30 +3181,6 @@ Only used, when <code>std::partial_ordering</code> is not available.</p>
 Last updated 2024-03-15 16:21:45 +0100
 </div>
 </div>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  messageStyle: "none",
-  tex2jax: {
-    inlineMath: [["\\(", "\\)"]],
-    displayMath: [["\\[", "\\]"]],
-    ignoreClass: "nostem|nolatexmath"
-  },
-  asciimath2jax: {
-    delimiters: [["\\$", "\\$"]],
-    ignoreClass: "nostem|noasciimath"
-  },
-  TeX: { equationNumbers: { autoNumber: "none" } }
-})
-MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
-  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
-    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains("stemblock")) {
-      data.math.root.display = "block"
-    }
-    return data
-  })
-})
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
 <style>
 
 *:not(pre)>code { background: none; color: #600000; }

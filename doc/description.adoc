@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :toc:
 :toc-title: 
 :idprefix:
-:stem: latexmath
+// :stem: latexmath
 
 ## How to use Boost.Flags?
 
@@ -461,11 +461,15 @@ Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(o
 
 This section provides a mathematical explanation, why `complement` is required. It can easily be xref:from_flags_to_bool[skipped].
 
-* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
-* The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
-* Building the closure latexmath:[\overline{F}] of latexmath:[F] wrt. latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}] generates a Boolean algebra which is a Boolean subalgebra of latexmath:[U].
+* The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] pass:[<span style="font-size:115%">(<span style="font-style:italic">U</span>, 0, -1, &sim;, &amp;, &mid;)</span>] 
+* The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure pass:[<span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span>] of pass:[<span style="font-size:115%;font-style: italic">U</span>] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
+* Building the closure pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span></span>] of pass:[<span style="font-size:115%;font-style: italic">F</span>] wrt. pass:[<span style="font-size:115%">&sim;</span>] generates a Boolean algebra which is a Boolean subalgebra of pass:[<span style="font-size:115%;font-style: italic">U</span>].
+// * The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
+// * The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
+// * Building the closure latexmath:[\overline{F}] of latexmath:[F] wrt. latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}] generates a Boolean algebra which is a Boolean subalgebra of latexmath:[U].
 
-Semantically the elements of latexmath:[\overline{F}\setminus F] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
+Semantically the elements of pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span>&setminus; F</span>] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
+// Semantically the elements of latexmath:[\overline{F}\setminus F] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
 
 Finally, for the binary operators we have
 
@@ -488,9 +492,8 @@ Finally, for the binary operators we have
 ** `operator^(complement<E>, complement<E>) \-> E`
 
 
-// Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a Boolean algebra.
-
-Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a two-element Boolean algebra.
+//Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a two-element Boolean algebra.
+Which means, on the meta-level the typeset pass:[<span style="font-size:115%">{E, complement&lt;E&gt;}</span>] and the operation pass:[<span style="font-size:115%">&sim;</span>], pass:[<span style="font-size:115%">&amp;</span>] and  pass:[<span style="font-size:115%">&mid; </span>] form a two-element Boolean algebra.
 
 For the rare case where 
 
@@ -602,7 +605,8 @@ defining both `BOOST_FLAGS_REL_OPS_DELETE(E)` and `BOOST_FLAGS_SPECIALIZE_STD_LE
 ====
 [#contained_induced_partial_order]
 For the mathematically inclined programmer: +
-The function `subseteq` reflects the partial order (in the mathematical sense) latexmath:[\leq] of the generated Boolean algebra.
+The function `subseteq` reflects the partial order (in the mathematical sense) pass:[<span style="font-size:115%">&leq;</span>] of the generated Boolean algebra.
+// The function `subseteq` reflects the partial order (in the mathematical sense) latexmath:[\leq] of the generated Boolean algebra.
 You can enable relational operators using the `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` macro at global namespace. +
 `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines the following semantics for the relational operators
 
@@ -741,13 +745,13 @@ Boost.Flags provides a `flag_generator` class template to iterate over the bits 
 [source]
 ----
     // generates from first to last (incl.)
-    constexpr flag_generator<E> flags_from_to(E first, E last);	
+    constexpr flag_generator<E> flags_from_to(E first, E last);
 
     // generates from E(1) to last (incl.)
     constexpr flag_generator<E> flags_to(E last);               
 
     // generates all bits of the underlying type of E, starting from E(1)
-    constexpr flag_generator<E> flags_all();					
+    constexpr flag_generator<E> flags_all();
 ----
 
 Example:
