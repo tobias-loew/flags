@@ -933,7 +933,7 @@ Best practice would be defining <code>constexpr bool boost_flags_enable(E) { ret
 <h2 id="the_long_story">The long story</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Why do we use the bits of integer types for boolean options?</p>
+<p>Why do we use the bits of integer types for Boolean options?</p>
 </div>
 <div class="ulist">
 <ul>
@@ -947,7 +947,7 @@ Best practice would be defining <code>constexpr bool boost_flags_enable(E) { ret
 <p>compact representation in memory</p>
 </li>
 <li>
-<p>simple bulk transfer in interfaces (on many platforms an <code>int</code> can hold up to 32 different boolean options)</p>
+<p>simple bulk transfer in interfaces (on many platforms an <code>int</code> can hold up to 32 different Boolean options)</p>
 </li>
 <li>
 <p>enforces the usage of names, especially to prevent <code>bool</code> parameters in interfaces:</p>
@@ -1547,7 +1547,7 @@ You can enable relational operators using the <code>BOOST_FLAGS_REL_OPS_PARTIAL_
 </ul>
 </div>
 <div class="paragraph">
-<p>If we update existing code with Boost.Flags, then expressions like <code>e1 &amp; e2</code> in boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
+<p>If we update existing code with Boost.Flags, then expressions like <code>e1 &amp; e2</code> in Boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
 Therefore, Boost.Flags provides a pseudo operator <code>BOOST_FLAGS_AND</code> with the same precedence and associativity as <code>&amp;</code> but returning a <code>bool</code>:</p>
 </div>
 <div class="ulist">
@@ -1595,7 +1595,7 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </ul>
 </div>
 <div class="paragraph">
-<p>This is quite different from the semantics of the built-in bitwise <code>&amp;</code> operator in a boolean context:</p>
+<p>This is quite different from the semantics of the built-in bitwise <code>&amp;</code> operator in a Boolean context:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1608,10 +1608,10 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </ul>
 </div>
 <div class="paragraph">
-<p>E.g. in boolean contexts <code>(1 &amp;&amp; 2)</code> evaluates to <code>true</code>, while <code>(1 &amp; 2)</code> evaluates to <code>false</code>.</p>
+<p>E.g. in Boolean contexts <code>(1 &amp;&amp; 2)</code> evaluates to <code>true</code>, while <code>(1 &amp; 2)</code> evaluates to <code>false</code>.</p>
 </div>
 <div class="paragraph">
-<p>Though, for <code>operator ||</code> and <code>operator |</code> and values <code>v1</code> and <code>v2</code>, in boolean contexts <code>(v1 || v2)</code> and <code>(v1 | v2)</code> always evaluate to the same value, there is still the difference, that <code>operator ||</code> uses short-circuit evaluation and <code>operator |</code> does not.</p>
+<p>Though, for <code>operator ||</code> and <code>operator |</code> and values <code>v1</code> and <code>v2</code>, in Boolean contexts <code>(v1 || v2)</code> and <code>(v1 | v2)</code> always evaluate to the same value, there is still the difference, that <code>operator ||</code> uses short-circuit evaluation and <code>operator |</code> does not.</p>
 </div>
 <div class="paragraph">
 <p>Furthermore, <code>operator &amp;&amp;</code> and <code>operator ||</code> have lower precedences than <code>operator &amp;</code> and <code>operator |</code> (cf. <a href="https://en.cppreference.com/w/cpp/language/operator_precedence" target="_blank" rel="noopener">C++ Operator Precedence</a>), which is another source for errors.</p>
@@ -3178,7 +3178,7 @@ Only used, when <code>std::partial_ordering</code> is not available.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-03-19 18:16:04 +0100
+Last updated 2024-03-19 18:31:54 +0100
 </div>
 </div>
 <style>

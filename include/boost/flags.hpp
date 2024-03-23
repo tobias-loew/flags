@@ -109,7 +109,7 @@
         // auto ae = flags_t::a | flags2_t::e;  // compilation error (different enumerations)
 
 
-        // test with boolean result
+        // test with Boolean result
         // using pseudo operator BOOST_FLAG_AND
         // BOOST_FLAG_AND(x,y) -> bool
         // BOOST_FLAG_AND(x,y) ::= (x != 0) && (y != 0)
@@ -714,7 +714,7 @@ namespace boost {
                 is_pseudo_and_op_intermediate<typename std::remove_cv<typename std::remove_reference<E>::type>::type>
                 > {};
 
-            // calculate whether result Op(T1) is in the original or the complemented boolean algebra
+            // calculate whether result Op(T1) is in the original or the complemented Boolean algebra
             // always returns the canonical form (either the enum or its negation, never a double negated enum)
             template<typename T1, template<typename> class UnOp>
             struct unary_operation_result {
@@ -741,7 +741,7 @@ namespace boost {
 
 
 
-            // calculate whether result Op(T1, T2) is in the original or the complement boolean algebra
+            // calculate whether result Op(T1, T2) is in the original or the complement Boolean algebra
             // always returns the canonical form (either the enum or its negation, never a double negated enum)
             template<typename T1, typename T2, template<typename...> class BinOp>
             struct binary_operation_result {

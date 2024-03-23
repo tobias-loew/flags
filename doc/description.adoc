@@ -196,12 +196,12 @@ i.e. Boost.Flags will prohibit that in those cases the built-in version will be 
 
 # The long story
 
-Why do we use the bits of integer types for boolean options?
+Why do we use the bits of integer types for Boolean options?
 
 - easy to define, e.g. as macros, integer constants or enumerators
 - language support for setting and querying through bitwise operators
 - compact representation in memory
-- simple bulk transfer in interfaces (on many platforms an `int` can hold up to 32 different boolean options)
+- simple bulk transfer in interfaces (on many platforms an `int` can hold up to 32 different Boolean options)
 - enforces the usage of names, especially to prevent `bool` parameters in interfaces:
 [quote, C. Martin (Uncle Bob), Clean Code]   
 Boolean arguments loudly declare that the function does more than one thing. They are confusing and should be eliminated.
@@ -634,7 +634,7 @@ Instead of `disjoint` and `intersect` we can write:
 * `!(e1 & e2)` : equivalent to `disjoint(e1, e2)`
 * `!!(e1 & e2)` : equivalent to `intersect(e1, e2)`
 
-If we update existing code with Boost.Flags, then expressions like `e1 & e2` in boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
+If we update existing code with Boost.Flags, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
 Therefore, Boost.Flags provides a pseudo operator `BOOST_FLAGS_AND` with the same precedence and associativity as `&` but returning a `bool`:
 
 * `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
@@ -657,14 +657,14 @@ Let's first take a look at the semantics of the built-in `operator &&`:
 * it converts its first arguments to `bool`, if its `false` then returns `false` (short-circuit evaluation)
 * otherwise converts the second arguments to `bool` and returns it
 
-This is quite different from the semantics of the built-in bitwise `&` operator in a boolean context:
+This is quite different from the semantics of the built-in bitwise `&` operator in a Boolean context:
 
 * it performs intergral promotion on both arguments and compute their bitwise AND
 * returns `false` if the outcome is equal to `0` otherwise `true`
 
-E.g. in boolean contexts `(1 && 2)` evaluates to `true`, while `(1 & 2)` evaluates to `false`.
+E.g. in Boolean contexts `(1 && 2)` evaluates to `true`, while `(1 & 2)` evaluates to `false`.
 
-Though, for `operator ||` and `operator |` and values `v1` and `v2`, in boolean contexts `(v1 || v2)` and `(v1 | v2)` always evaluate to the same value, there is still the difference, that `operator ||` uses short-circuit evaluation and `operator |` does not.
+Though, for `operator ||` and `operator |` and values `v1` and `v2`, in Boolean contexts `(v1 || v2)` and `(v1 | v2)` always evaluate to the same value, there is still the difference, that `operator ||` uses short-circuit evaluation and `operator |` does not.
 
 Furthermore, `operator &&` and `operator ||` have lower precedences than `operator &` and `operator |` (cf. https://en.cppreference.com/w/cpp/language/operator_precedence[C++ Operator Precedence, window=_blank]), which is another source for errors.
 
