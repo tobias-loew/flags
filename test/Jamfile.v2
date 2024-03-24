@@ -52,6 +52,7 @@ compile-fail test_incompat.cpp : <define>TEST_COMPILE_FAIL_WITH_ENABLED : test_i
 compile-fail test_incompat.cpp : <define>TEST_COMPILE_FAIL_WITH_NOT_ENABLED : test_incompat_FAIL_WITH_NOT_ENABLED ;
 
 run test_utilities.cpp ;
+run test_utilities.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_utilities_UNSCOPED ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
 

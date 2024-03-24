@@ -1921,13 +1921,20 @@ using boost::flags::operator&=;
 using boost::flags::operator^=;
 using boost::flags::operator!;
 using boost::flags::operator==;
+
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 using boost::flags::operator!=;
+# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL using ::operator!=;
+#else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 using boost::flags::operator<=>;
-#endif
+# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP using ::operator<=>;
+#else // BOOST_FLAGS_HAS_PARTIAL_ORDERING
+# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP
+#endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 using boost::flags::operator&&;
 using boost::flags::operator||;
@@ -1949,6 +1956,44 @@ using boost::flags::remove_if_inplace;
 using boost::flags::get_underlying;
 using boost::flags::from_underlying;
 
+
+
+#define BOOST_FLAGS_USING_OPERATORS()                                                   \
+using ::operator|;                                                                      \
+using ::operator&;                                                                      \
+using ::operator^;                                                                      \
+using ::operator~;                                                                      \
+using ::operator|=;                                                                     \
+using ::operator&=;                                                                     \
+using ::operator^=;                                                                     \
+using ::operator!;                                                                      \
+using ::operator==;                                                                     \
+BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                                    \
+BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                    \
+using ::operator&&;                                                                     \
+using ::operator||;                                                                     \
+
+
+#define BOOST_FLAGS_USING_UTILITIES()                                                   \
+using ::any;                                                                            \
+using ::none;                                                                           \
+using ::subseteq;                                                                       \
+using ::subset;                                                                         \
+using ::intersect;                                                                      \
+using ::disjoint;                                                                       \
+using ::make_null;                                                                      \
+using ::make_if;                                                                        \
+using ::modify;                                                                         \
+using ::modify_inplace;                                                                 \
+using ::add_if;                                                                         \
+using ::add_if_inplace;                                                                 \
+using ::remove_if;                                                                      \
+using ::remove_if_inplace;                                                              \
+using ::get_underlying;                                                                 \
+
+#define BOOST_FLAGS_USING_ALL()                                                         \
+BOOST_FLAGS_USING_OPERATORS()                                                           \
+BOOST_FLAGS_USING_UTILITIES()                                                           \
 
 
 #define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                              \
