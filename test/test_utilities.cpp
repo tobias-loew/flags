@@ -8,7 +8,7 @@
 // this function template must be defined before boost/flags.hpp is included
 
 template<typename T>
-auto adl_test(T lhs, T rhs)
+void adl_test(T lhs, T rhs)
 {
     {
         auto result = lhs & rhs;
