@@ -285,12 +285,6 @@ void test_modify_inplace() {
     }
 }
 
-void test_adl() {
-    auto a = flags_enum::bit_0;
-    auto b = flags_enum::bit_1;
-    adl_test(a, b);
-}
-
 namespace a_namespace {
     void test_adl() {
         auto a = flags_enum::bit_0;
@@ -312,7 +306,6 @@ int main() {
     test_make_if();
     test_modify();
     test_modify_inplace();
-    test_adl();
     a_namespace::test_adl();
 
     return boost::report_errors();
