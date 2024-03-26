@@ -6,8 +6,11 @@
 // http://www.boost.org/LICENSE_1_0.txt
 
 // this function template must be defined before boost/flags.hpp is included
+
+#ifdef TEST_COMPILE_NO_GLOBAL_USING
 #define BOOST_FLAGS_NO_GLOBAL_USING 1
-khkjh
+#endif
+
 template<typename T>
 void adl_test(T lhs, T rhs)
 {
@@ -133,7 +136,9 @@ namespace a_namespace {
     // enable flags_enum
     constexpr inline bool boost_flags_enable(flags_enum) { return true; }
 
+#ifndef TEST_COMPILE_NO_GLOBAL_USING_FAIL
     BOOST_FLAGS_USING_ALL()
+#endif
 }
 
 
