@@ -848,6 +848,26 @@ The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` specializes `std::less` for `E` t
 
 The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global namespace.
 
+### BOOST_FLAGS_USING_OPERATORS
+
+The macro `BOOST_FLAGS_USING_OPERATORS()` imports all operators from `namespace boost::flags` into the current namespace. (cf. xref:BOOST_FLAGS_NO_GLOBAL_USING[BOOST_FLAGS_NO_GLOBAL_USING]). +
+This will enable ADL for Boost.Flags operators for enumerations in the current namespace. 
+
+
+### BOOST_FLAGS_USING_UTILITIES
+
+The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions from `namespace boost::flags` into the current namespace. (cf. xref:BOOST_FLAGS_NO_GLOBAL_USING[BOOST_FLAGS_NO_GLOBAL_USING]). +
+This will enable ADL for Boost.Flags utility functions for enumerations in the current namespace. 
+
+### BOOST_FLAGS_USING_ALL
+
+The macro `BOOST_FLAGS_USING_ALL()` is a shorthand for
+[source]
+----
+BOOST_FLAGS_USING_OPERATORS()
+BOOST_FLAGS_USING_UTILITIES()
+----
+(cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS], xref:BOOST_FLAGS_USING_UTILITIES[BOOST_FLAGS_USING_UTILITIES])
 
 ## Configuration Macros
 
@@ -855,6 +875,14 @@ If not specified, all the following macros are deduced from the system, compiler
 (Boost.Flags is tested with all major compilers on linux (ubuntu), macos and windows.)
 
 
+### BOOST_FLAGS_NO_GLOBAL_USING
+
+Controls the import of Boost.Flags operators and utility functions into the global namespace.
+
+Possible values: undefined, 0 or 1
+
+If the macro is undefined or has the value 0, then all operators and utility functions are imported into the global namespace via `using` declarations.
+(cf. xref:BOOST_FLAGS_USING_ALL[BOOST_FLAGS_USING_ALL])
 
 ### BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
 

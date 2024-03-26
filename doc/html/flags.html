@@ -663,10 +663,14 @@ pre.rouge .gs {
 <li><a href="#boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</a></li>
 <li><a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a></li>
 <li><a href="#boost_flags_specialize_std_less_2">BOOST_FLAGS_SPECIALIZE_STD_LESS</a></li>
+<li><a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS</a></li>
+<li><a href="#boost_flags_using_utilities">BOOST_FLAGS_USING_UTILITIES</a></li>
+<li><a href="#boost_flags_using_all">BOOST_FLAGS_USING_ALL</a></li>
 </ul>
 </li>
 <li><a href="#configuration_macros">Configuration Macros</a>
 <ul class="sectlevel3">
+<li><a href="#boost_flags_no_global_using">BOOST_FLAGS_NO_GLOBAL_USING</a></li>
 <li><a href="#boost_flags_has_three_way_comparison">BOOST_FLAGS_HAS_THREE_WAY_COMPARISON</a></li>
 <li><a href="#boost_flags_has_partial_ordering">BOOST_FLAGS_HAS_PARTIAL_ORDERING</a></li>
 <li><a href="#boost_flags_has_concepts">BOOST_FLAGS_HAS_CONCEPTS</a></li>
@@ -3046,12 +3050,54 @@ The following semantics apply</p>
 <p>The macro <code>BOOST_FLAGS_SPECIALIZE_STD_LESS(E)</code> has to be defined at global namespace.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS</h4>
+<div class="paragraph">
+<p>The macro <code>BOOST_FLAGS_USING_OPERATORS()</code> imports all operators from <code>namespace boost::flags</code> into the current namespace. (cf. <a href="#boost_flags_no_global_using">BOOST_FLAGS_NO_GLOBAL_USING</a>).<br>
+This will enable ADL for Boost.Flags operators for enumerations in the current namespace.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_using_utilities">BOOST_FLAGS_USING_UTILITIES</h4>
+<div class="paragraph">
+<p>The macro <code>BOOST_FLAGS_USING_UTILITIES()</code> imports all utility functions from <code>namespace boost::flags</code> into the current namespace. (cf. <a href="#boost_flags_no_global_using">BOOST_FLAGS_NO_GLOBAL_USING</a>).<br>
+This will enable ADL for Boost.Flags utility functions for enumerations in the current namespace.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_using_all">BOOST_FLAGS_USING_ALL</h4>
+<div class="paragraph">
+<p>The macro <code>BOOST_FLAGS_USING_ALL()</code> is a shorthand for</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_USING_OPERATORS</span><span class="p">()</span>
+<span class="n">BOOST_FLAGS_USING_UTILITIES</span><span class="p">()</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS</a>, <a href="#boost_flags_using_utilities">BOOST_FLAGS_USING_UTILITIES</a>)</p>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="configuration_macros">Configuration Macros</h3>
 <div class="paragraph">
 <p>If not specified, all the following macros are deduced from the system, compiler, C++ version.
 (Boost.Flags is tested with all major compilers on linux (ubuntu), macos and windows.)</p>
+</div>
+<div class="sect3">
+<h4 id="boost_flags_no_global_using">BOOST_FLAGS_NO_GLOBAL_USING</h4>
+<div class="paragraph">
+<p>Controls the import of Boost.Flags operators and utility functions into the global namespace.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: undefined, 0 or 1</p>
+</div>
+<div class="paragraph">
+<p>If the macro is undefined or has the value 0, then all operators and utility functions are imported into the global namespace via <code>using</code> declarations.
+(cf. <a href="#boost_flags_using_all">BOOST_FLAGS_USING_ALL</a>)</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="boost_flags_has_three_way_comparison">BOOST_FLAGS_HAS_THREE_WAY_COMPARISON</h4>
