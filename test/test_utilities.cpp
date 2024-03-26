@@ -136,7 +136,7 @@ namespace a_namespace {
     // enable flags_enum
     constexpr inline bool boost_flags_enable(flags_enum) { return true; }
 
-#ifndef TEST_COMPILE_NO_GLOBAL_USING_FAIL
+#ifndef TEST_COMPILE_FAIL_NO_GLOBAL_USING
     BOOST_FLAGS_USING_ALL()
 #endif
 }
