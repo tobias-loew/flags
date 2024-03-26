@@ -5,6 +5,96 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
+// this function template must be defined before boost/flags.hpp is included
+
+#ifdef TEST_COMPILE_NO_GLOBAL_USING
+#define BOOST_FLAGS_NO_GLOBAL_USING 1
+#endif
+
+template<typename T>
+void adl_test(T lhs, T rhs)
+{
+    {
+        auto result = lhs & rhs;
+        result &= rhs;
+    }
+    {
+        auto result = lhs | rhs;
+        result |= rhs;
+    }
+    {
+        auto result = lhs ^ rhs;
+        result ^= rhs;
+    }
+    {
+        auto result = lhs ^ rhs;
+        result ^= rhs;
+    }
+
+    {
+        auto result = any(lhs);
+        (void)(result);
+    }
+    {
+        auto result = none(lhs);
+        (void)(result);
+    }
+    {
+        auto result = subseteq(lhs, rhs);
+        (void)(result);
+    }
+    {
+        auto result = subset(lhs, rhs);
+        (void)(result);
+    }
+    {
+        auto result = intersect(lhs, rhs);
+        (void)(result);
+    }
+    {
+        auto result = disjoint(lhs, rhs);
+        (void)(result);
+    }
+    {
+        auto result = make_null(lhs);
+        (void)(result);
+    }
+    {
+        auto result = make_if(lhs, true);
+        (void)(result);
+    }
+    {
+        auto result = modify(lhs, rhs, false);
+        (void)(result);
+    }
+    {
+        auto local = lhs;
+        modify_inplace(local, rhs, false);
+    }
+    {
+        auto result = add_if(lhs, rhs, false);
+        (void)(result);
+    }
+    {
+        auto local = lhs;
+        add_if_inplace(local, rhs, false);
+    }
+    {
+        auto result = remove_if(lhs, rhs, false);
+        (void)(result);
+    }
+    {
+        auto local = lhs;
+        remove_if_inplace(local, rhs, false);
+    }
+    {
+        auto result = get_underlying(lhs);
+        (void)(result);
+    }
+}
+
+
+
 #define TEST_NAMESPACE test_utilities
 #include "include_test.hpp"
 
@@ -17,7 +107,11 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
-enum class flags_enum : unsigned int {
+enum 
+#ifndef TEST_COMPILE_UNSCOPED
+    class
+#endif // TEST_COMPILE_UNSCOPED
+flags_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -26,6 +120,26 @@ enum class flags_enum : unsigned int {
 
 // enable flags_enum
 constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+
+namespace a_namespace {
+    enum
+#ifndef TEST_COMPILE_UNSCOPED
+        class
+#endif // TEST_COMPILE_UNSCOPED
+    flags_enum: unsigned int {
+    bit_0 = boost::flags::nth_bit(0), // == 0x01
+        bit_1 = boost::flags::nth_bit(1), // == 0x02
+        bit_2 = boost::flags::nth_bit(2), // == 0x04
+        bit_3 = boost::flags::nth_bit(3), // == 0x08
+    };
+
+    // enable flags_enum
+    constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+
+#ifndef TEST_COMPILE_FAIL_NO_GLOBAL_USING
+    BOOST_FLAGS_USING_ALL()
+#endif
+}
 
 
 // helpers
@@ -177,6 +291,14 @@ void test_modify_inplace() {
     }
 }
 
+namespace a_namespace {
+    void test_adl() {
+        auto a = flags_enum::bit_0;
+        auto b = flags_enum::bit_1;
+        adl_test(a, b);
+    }
+}
+
 
 int main() {
     report_config();
@@ -190,7 +312,7 @@ int main() {
     test_make_if();
     test_modify();
     test_modify_inplace();
-    std::cout << "__MINGW32__ not defined\n";
+    a_namespace::test_adl();
 
     return boost::report_errors();
 }

@@ -1912,43 +1912,61 @@ namespace boost {
 }
 
 
-using boost::flags::operator|;
-using boost::flags::operator&;
-using boost::flags::operator^;
-using boost::flags::operator~;
-using boost::flags::operator|=;
-using boost::flags::operator&=;
-using boost::flags::operator^=;
-using boost::flags::operator!;
-using boost::flags::operator==;
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
-using boost::flags::operator!=;
+# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL using boost::flags::operator!=;
+#else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
-using boost::flags::operator<=>;
-#endif
+# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP using boost::flags::operator<=>;
+#else // BOOST_FLAGS_HAS_PARTIAL_ORDERING
+# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP
+#endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
-using boost::flags::operator&&;
-using boost::flags::operator||;
 
-using boost::flags::any;
-using boost::flags::none;
-using boost::flags::subseteq;
-using boost::flags::subset;
-using boost::flags::intersect;
-using boost::flags::disjoint;
-using boost::flags::make_null;
-using boost::flags::make_if;
-using boost::flags::modify;
-using boost::flags::modify_inplace;
-using boost::flags::add_if;
-using boost::flags::add_if_inplace;
-using boost::flags::remove_if;
-using boost::flags::remove_if_inplace;
-using boost::flags::get_underlying;
-using boost::flags::from_underlying;
+#define BOOST_FLAGS_USING_OPERATORS()                                                   \
+using boost::flags::operator|;                                                          \
+using boost::flags::operator&;                                                          \
+using boost::flags::operator^;                                                          \
+using boost::flags::operator~;                                                          \
+using boost::flags::operator|=;                                                         \
+using boost::flags::operator&=;                                                         \
+using boost::flags::operator^=;                                                         \
+using boost::flags::operator!;                                                          \
+using boost::flags::operator==;                                                         \
+BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                                    \
+BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                    \
+using boost::flags::operator&&;                                                         \
+using boost::flags::operator||;                                                         \
 
+
+#define BOOST_FLAGS_USING_UTILITIES()                                                   \
+using boost::flags::any;                                                                \
+using boost::flags::none;                                                               \
+using boost::flags::subseteq;                                                           \
+using boost::flags::subset;                                                             \
+using boost::flags::intersect;                                                          \
+using boost::flags::disjoint;                                                           \
+using boost::flags::make_null;                                                          \
+using boost::flags::make_if;                                                            \
+using boost::flags::modify;                                                             \
+using boost::flags::modify_inplace;                                                     \
+using boost::flags::add_if;                                                             \
+using boost::flags::add_if_inplace;                                                     \
+using boost::flags::remove_if;                                                          \
+using boost::flags::remove_if_inplace;                                                  \
+using boost::flags::get_underlying;                                                     \
+
+#define BOOST_FLAGS_USING_ALL()                                                         \
+BOOST_FLAGS_USING_OPERATORS()                                                           \
+BOOST_FLAGS_USING_UTILITIES()                                                           \
+
+
+#if !(defined(BOOST_FLAGS_NO_GLOBAL_USING) && BOOST_FLAGS_NO_GLOBAL_USING)
+// import all operators and utility functions into global namespace
+BOOST_FLAGS_USING_ALL()
+#endif // #if !(defined(BOOST_FLAGS_NO_GLOBAL_USING) && BOOST_FLAGS_NO_GLOBAL_USING)
 
 
 #define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                              \
