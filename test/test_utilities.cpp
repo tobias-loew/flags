@@ -6,7 +6,8 @@
 // http://www.boost.org/LICENSE_1_0.txt
 
 // this function template must be defined before boost/flags.hpp is included
-
+#define BOOST_FLAGS_NO_GLOBAL_USING 1
+khkjh
 template<typename T>
 void adl_test(T lhs, T rhs)
 {

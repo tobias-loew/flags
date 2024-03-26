@@ -53,6 +53,7 @@ compile-fail test_incompat.cpp : <define>TEST_COMPILE_FAIL_WITH_NOT_ENABLED : te
 
 run test_utilities.cpp ;
 run test_utilities.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_utilities_UNSCOPED ;
+# run test_utilities.cpp : : : <define>BOOST_FLAGS_NO_GLOBAL_USING=1 : test_utilities_NO_GLOBAL_USING ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
 
