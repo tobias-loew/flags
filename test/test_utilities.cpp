@@ -84,7 +84,7 @@ void adl_test(T lhs, T rhs)
         remove_if_inplace(local, rhs, false);
     }
     {
-        auto result = boost::flags::get_underlying(lhs);
+        auto result = get_underlying(lhs);
         (void)(result);
     }
 }
