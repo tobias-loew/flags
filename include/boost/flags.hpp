@@ -1931,6 +1931,13 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 }                                                                                       \
 
 
+
+
+
+
+
+#if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
 #define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
 template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
 constexpr RET operator op(E l, BOOST_FLAGS_TEMPLATE_TYPE r) noexcept {                \
@@ -1950,20 +1957,27 @@ constexpr RET operator op(std::nullptr_t l, E r) noexcept {                \
 }                                                                                       \
 
 
-
-
-
-
-
-#if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
-
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL   using ::boost::flags::operator!=;
 # define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                              \
 BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, !=, bool)
 
 #else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
+template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, BOOST_FLAGS_TEMPLATE_TYPE r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
 # define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)
+
+
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
