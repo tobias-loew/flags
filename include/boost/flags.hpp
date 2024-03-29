@@ -1913,7 +1913,7 @@ namespace boost {
 
 
 #define BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, op, RET)                                      \
-FRIEND BOOST_FLAGS_ATTRIBUTE_NODISCARD constexpr RET operator op(E l, E r) noexcept {         \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E l, E r) noexcept {         \
     return ::boost::flags::operator op(l, r);                                           \
 }                                                                                       \
 
@@ -1921,7 +1921,7 @@ FRIEND BOOST_FLAGS_ATTRIBUTE_NODISCARD constexpr RET operator op(E l, E r) noexc
 FRIEND constexpr RET operator op(E l, E r) noexcept = delete;  \
 
 #define BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, op, RET)                                       \
-FRIEND BOOST_FLAGS_ATTRIBUTE_NODISCARD constexpr RET operator op(E v) noexcept {                  \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E v) noexcept {                  \
     return ::boost::flags::operator op(v);                                              \
 }                                                                                       \
 
@@ -1931,11 +1931,27 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 }                                                                                       \
 
 
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
+template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, BOOST_FLAGS_TEMPLATE_TYPE r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(BOOST_FLAGS_TEMPLATE_TYPE l, E r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+
+
+
+
+
+
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL   using ::boost::flags::operator!=;
 # define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                              \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, !=, bool)
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, !=, bool)
 
 #else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
@@ -2003,7 +2019,7 @@ BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, |=)                          
 BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, &=)                                          \
 BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                                          \
 BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                                 \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, ==, bool)                                              \
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                              \
 BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                                    \
 
 
