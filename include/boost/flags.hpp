@@ -1940,6 +1940,14 @@ template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRI
 constexpr RET operator op(BOOST_FLAGS_TEMPLATE_TYPE l, E r) noexcept {                \
     return ::boost::flags::operator op(l, r);                                           \
 }                                                                                       \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(std::nullptr_t l, E r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
 
 
 
