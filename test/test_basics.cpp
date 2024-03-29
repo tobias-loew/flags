@@ -77,8 +77,8 @@ namespace nth_bit_ns {
 }
 void test_nth_bit_type() {
 
-    static_assert(get_underlying(nth_bit_ns::flags_enum::e) == boost::flags::nth_bit<unsigned int>(4), "");
-    static_assert(get_underlying(nth_bit_ns::flags_enum::f) == boost::flags::nth_bit<unsigned int>(5), "");
+    static_assert(boost::flags::get_underlying(nth_bit_ns::flags_enum::e) == boost::flags::nth_bit<unsigned int>(4), "");
+    static_assert(boost::flags::get_underlying(nth_bit_ns::flags_enum::f) == boost::flags::nth_bit<unsigned int>(5), "");
 }
 
 void test_negation_operators() {
