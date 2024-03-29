@@ -55,8 +55,8 @@ run test_utilities.cpp ;
 run test_utilities.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_utilities_UNSCOPED ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
-run test_utilities.cpp : : : <define>TEST_COMPILE_NO_GLOBAL_USING : test_utilities_NO_GLOBAL_USING ;
-compile-fail test_utilities.cpp : <define>TEST_COMPILE_NO_GLOBAL_USING <define>TEST_COMPILE_FAIL_NO_GLOBAL_USING : test_utilities_FAIL_NO_GLOBAL_USING ;
+# run test_utilities.cpp : : : <define>TEST_COMPILE_NO_GLOBAL_USING : test_utilities_NO_GLOBAL_USING ;
+# compile-fail test_utilities.cpp : <define>TEST_COMPILE_NO_GLOBAL_USING <define>TEST_COMPILE_FAIL_NO_GLOBAL_USING : test_utilities_FAIL_NO_GLOBAL_USING ;
 
 
 local GCC_ON_WINDOWS = [ os.environ GCC_ON_WINDOWS ] ;

@@ -19,8 +19,7 @@ enum class pizza_toppings : unsigned int {
 };
 
 // enable Boost.Flags for pizza_toppings
-constexpr inline bool boost_flags_enable(pizza_toppings) { return true; }
-
+BOOST_FLAGS_ENABLE(pizza_toppings)
 
 enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -29,8 +28,7 @@ enum class ice_cream_flavours : unsigned int {
 };
 
 // enable Boost.Flags for ice_cream_flavours
-constexpr inline bool boost_flags_enable(ice_cream_flavours) { return true; }
-
+BOOST_FLAGS_ENABLE(ice_cream_flavours)
 
 // order selected pizza
 void order_pizza(pizza_toppings toppings) {

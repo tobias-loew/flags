@@ -7,10 +7,6 @@
 
 // this function template must be defined before boost/flags.hpp is included
 
-#ifdef TEST_COMPILE_NO_GLOBAL_USING
-#define BOOST_FLAGS_NO_GLOBAL_USING 1
-#endif
-
 template<typename T>
 void adl_test(T lhs, T rhs)
 {
@@ -119,7 +115,7 @@ flags_enum : unsigned int {
 };
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+BOOST_FLAGS_ENABLE(flags_enum)
 
 namespace a_namespace {
     enum
@@ -134,7 +130,7 @@ namespace a_namespace {
     };
 
     // enable flags_enum
-    constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+    BOOST_FLAGS_ENABLE(flags_enum)
 
 #ifndef TEST_COMPILE_FAIL_NO_GLOBAL_USING
     BOOST_FLAGS_USING_ALL()
