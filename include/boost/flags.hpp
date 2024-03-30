@@ -2370,12 +2370,17 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 // enabling macro for enum E at namespace level
 #define BOOST_FLAGS_ENABLE(E) \
     constexpr inline bool boost_flags_enable(E) { return true; } \
-    BOOST_FLAGS_FORWARD_OPERATORS(E)
+    BOOST_FLAGS_USING_OPERATORS()
 
 #define BOOST_FLAGS_ENABLE_LOCAL(E) \
     friend constexpr inline bool boost_flags_enable(E) { return true; } \
-    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)
-
+    friend void boost_flags_adl_test() {                                                                          \
+        /* This static_assert tests whether ADL is working for the Boost.Flags enabled enum */                    \
+        /* If you get a compilation error here, please define 'BOOST_FLAGS_USING_OPERATORS()' */                  \
+        /* before the enclosing class!                                                         */                 \
+        static_assert(E{} == (E{} & E{} | E{} ^ E{}) && std::is_same<E, decltype(E{} & E{} | E{} ^ E{})>::value,  \
+            "ADL not working for the enum. Define 'BOOST_FLAGS_USING_OPERATORS()' before the enclosing class!");  \
+    }                                                                                                             \
 
 
 

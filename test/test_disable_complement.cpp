@@ -30,7 +30,7 @@ enum class flags_enum : unsigned int {
 
 // enable flags_enum
 constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return boost::flags::options::enable | boost::flags::options::disable_complement; }
-BOOST_FLAGS_FORWARD_OPERATORS(flags_enum)
+BOOST_FLAGS_USING_OPERATORS()
 
 
 // helpers
