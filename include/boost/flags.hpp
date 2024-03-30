@@ -2367,13 +2367,36 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 
 
 
-// enabling macro for enum E at namespace level
-#define BOOST_FLAGS_ENABLE(E) \
-    constexpr inline bool boost_flags_enable(E) { return true; } \
-    BOOST_FLAGS_USING_OPERATORS()
+// enabling macro for enum E at namespace scope
+#define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                \
+    constexpr inline boost::flags::options boost_flags_enable(E) {    \
+        return OPTS;                                                  \
+    }                                                                 \
 
-#define BOOST_FLAGS_ENABLE_LOCAL(E) \
-    friend constexpr inline bool boost_flags_enable(E) { return true; } \
+#define BOOST_FLAGS_ENABLE(E)                                         \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)           \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                      \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGIC_AND(E)            \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+#define BOOST_FLAGS_ENABLE_LOGIC_AND(E)                               \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+
+
+// enabling macro for enum E at class scope
+#define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                    \
+    friend constexpr inline boost::flags::options boost_flags_enable(E) {    \
+        return OPTS;                                                         \
+    }                                                                 \
     friend void boost_flags_adl_test() {                                                                          \
         /* This static_assert tests whether ADL is working for the Boost.Flags enabled enum */                    \
         /* If you get a compilation error here, please define 'BOOST_FLAGS_USING_OPERATORS()' */                  \
@@ -2382,6 +2405,18 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
             "ADL not working for the enum. Define 'BOOST_FLAGS_USING_OPERATORS()' before the enclosing class!");  \
     }                                                                                                             \
 
+#define BOOST_FLAGS_ENABLE_LOCAL(E)                                         \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                      \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGIC_AND(E)            \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGIC_AND(E)                               \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
