@@ -686,13 +686,13 @@ namespace boost {
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
+        // for pseudo operator BOOST_FLAG_AND
+        struct pseudo_and_op_tag {};
+
         namespace impl {
 
             // NULL constant tag
             struct null_tag {};
-
-            // for pseudo operator BOOST_FLAG_AND
-            struct pseudo_and_op_tag {};
 
             template<typename T>
             struct pseudo_and_op_intermediate_t {
@@ -1761,7 +1761,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr impl::pseudo_and_op_intermediate_t<T>
-            operator&(T lhs, impl::pseudo_and_op_tag) noexcept {
+            operator&(T lhs, pseudo_and_op_tag) noexcept {
             return { lhs };
         }
 
@@ -2359,7 +2359,7 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 #endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 
-#define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &
+#define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::pseudo_and_op_tag{} &
 
 #define BOOST_FLAGS_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
 
