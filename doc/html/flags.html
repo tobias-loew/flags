@@ -920,10 +920,10 @@ Best practice would be defining <code>constexpr bool boost_flags_enable(E) { ret
 <div class="ulist">
 <ul>
 <li>
-<p>For language standards <strong>before C++20</strong> as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</p>
+<p>For language standards <strong>before C++20</strong> the underlying type is required as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</p>
 </li>
 <li>
-<p>For <strong>unscoped</strong> enumerations with the <code>disable_complement</code> option <strong>absolutely REQUIRED</strong>!</p>
+<p>For <strong>unscoped</strong> enumerations with the <code>disable_complement</code> option the underlying type is <strong>always required</strong>!</p>
 </li>
 </ul>
 </div>
