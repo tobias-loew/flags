@@ -18,6 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 There are several articles and libraries on flag-like enums available. The following is not exhaustive list found on the web in January 2024:
 
+. https://www.boost.org/doc/libs/1_84_0/boost/detail/bitmask.hpp[,window=_blank] (BOOST_BITMASK, BB)
 . https://www.sandordargo.com/blog/2022/06/22/bitwise-enums[,window=_blank] (SD)
 . https://grisumbras.github.io/enum-flags/[,window=_blank] (GR)
 . https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/[,window=_blank] (MP)
@@ -26,13 +27,15 @@ There are several articles and libraries on flag-like enums available. The follo
 . https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)[,window=_blank] (.net, language built-in flags support - not usable with ISO-C++ !)
 
 
-[%header,cols="3,^1,^1,^1,^1,^1,^1,^1"]
+[%header,cols="3,^1,^1,^1,^1,^1,^1,^1,^1"]
 |===
-| | Boost.Flags | SD | GR | MP | Qt | JM | .net
+| | Boost.Flags | BB | SD | GR | MP | Qt | JM | .net
 
 
 | non-intrusive
 // Boost.Flags
+| *+*
+// BOOST_BITMASK
 | *+*
 // SD
 | *+*
@@ -51,6 +54,8 @@ There are several articles and libraries on flag-like enums available. The follo
 | zero-overhead
 // Boost.Flags
 | *+*
+// BOOST_BITMASK
+| *+*
 // SD
 | *+*
 //GR
@@ -68,6 +73,8 @@ There are several articles and libraries on flag-like enums available. The follo
 | distinguishes complement
 // Boost.Flags
 | *+*
+// BOOST_BITMASK
+| *-*
 // SD
 | *-*
 //GR
@@ -85,6 +92,8 @@ There are several articles and libraries on flag-like enums available. The follo
 | operators as free functions
 // Boost.Flags
 | *+*
+// BOOST_BITMASK
+| *+*
 // SD
 | *+*
 //GR
@@ -99,8 +108,48 @@ There are several articles and libraries on flag-like enums available. The follo
 | *+*
 
 
-| implementation available
+| everything is constexpr
 // Boost.Flags
+| *+*
+// BOOST_BITMASK
+| *-*
+// SD
+| *-*
+//GR
+| *-*
+//MP
+| *-*
+//Qt
+| *-*
+//JM
+| *-*
+// .net
+| N/A
+
+
+| unscoped type safety (*)
+// Boost.Flags
+| *+*
+// BOOST_BITMASK
+| *-*
+// SD
+| *-*
+//GR
+| *+*
+//MP
+| *+*
+//Qt
+| *-*
+//JM
+| *+*
+// .net
+| +
+
+
+| library available
+// Boost.Flags
+| *+*
+// BOOST_BITMASK
 | *+*
 // SD
 | *-*
@@ -119,5 +168,5 @@ There are several articles and libraries on flag-like enums available. The follo
 
 |===
 
-
+(*) unscoped type safety: The library prevents usage of built-in binary operators, when both arguments are implicitly convertible to an integer type and at least one of the arguments is an enabled enumeration type.
 

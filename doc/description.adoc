@@ -20,11 +20,11 @@ http://www.boost.org/LICENSE_1_0.txt
 * opt-in for an enumeration `E` by defining
 [source]
 ----
-constexpr bool boost_flags_enable(E) { return true; }
+BOOST_FLAGS_ENABLE(E)
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/qbojncnd7[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/br1193vob[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
@@ -40,7 +40,7 @@ enum class pizza_toppings : unsigned int {
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
-constexpr bool boost_flags_enable(pizza_toppings) { return true; }
+BOOST_FLAGS_ENABLE(pizza_toppings)
 
 enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -48,7 +48,7 @@ enum class ice_cream_flavours : unsigned int {
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
 // enable Boost.Flags for ice_cream_flavours
-constexpr bool boost_flags_enable(ice_cream_flavours) { return true; }
+BOOST_FLAGS_ENABLE(ice_cream_flavours)
 
 // order selected pizza
 void order_pizza(pizza_toppings toppings) { 
@@ -126,39 +126,40 @@ int main() {
 * no dependencies (only standard-library includes)
 * everything is `constexpr`
 * zero-overhead in optimized builds
+* operator are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
 * requires at least C++11, uses newer features if available
 // * provides a bunch of bit manipulation utility functions
 // * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
 
 ## Opt-in
 
-To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to overload `boost_flags_enable` for `E` in the same namespace as `E`
+To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS_ENABLE` for `E` in the same namespace as `E`
 [source]
 ----
-constexpr bool boost_flags_enable(E) { return true; }
+BOOST_FLAGS_ENABLE(E)
 ----
 
-As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
-Best practice would be defining `constexpr bool boost_flags_enable(E) { return true; }` right after the enumeration in the same namespace.
+// As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+Best practice would be writing `BOOST_FLAGS_ENABLE(E)` right after the enumeration in the same namespace.
 
-In case the enumeration `E` is defined inside a class, a `friend` function can be used for enabling:
+In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_ENABLE_LOCAL` has to be used for enabling:
 
 [source]
 ----
 class my_class {
     // ...
     enum class E:unsigned int { ... };
-    friend constexpr bool boost_flags_enable(E) { return true; }
+    BOOST_FLAGS_ENABLE_LOCAL(E)
     // ...
 };
 ----
 
-Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling:
-[source]
-----
-template<>
-struct boost::flags::enable<E> : std::true_type {};
-----
+// Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling:
+// [source]
+// ----
+// template<>
+// struct boost::flags::enable<E> : std::true_type {};
+// ----
 
 In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with
 [source]
@@ -172,11 +173,11 @@ The usage of scoped enumeration is strongly recommended, as they provide more ty
 
 Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.
 
-For unscoped enumerations Boost.Flags will delete binary operators `&`, `|`, `^`, `&&`, `||`, `==` and `!=` where
+For unscoped enumerations Boost.Flags will delete binary operators `&`, `|`, `^`, `&&`, `||`, `==` and `!=` if
 
 * at least one is enabled for Boost.Flags and
 * both arguments are implicitly convertible to an integer type and
-* both arguments are not compatible (they do not derive from the same enumeration)
+* both arguments are not compatible (they are not the same enumeration or its xref:complementing_the_complement[complement])
 
 i.e. Boost.Flags will prohibit that in those cases the built-in version will be used. +
 (For scoped enumerations this is not necessary, as those cases cannot occur.)
@@ -190,7 +191,7 @@ i.e. Boost.Flags will prohibit that in those cases the built-in version will be 
 ## What about the underlying type?
 
 * For language standards **before C++20** as an `unsigned` type, for both scoped and unscoped enumerations!
-* For *unscoped* enumerations with the `disable_complement` option **absolutely REQUIRED**!
+* For *unscoped* enumerations with the xref:disable_complement[`disable_complement`] option **absolutely REQUIRED**!
 
 (For details xref:underlying_type[see below.])
 
@@ -256,7 +257,7 @@ With Boost.Flags we get support for all bitwise operators and type-safety. E.g. 
 [source]
 ----
 enum class E : unsigned int { a=1, b=2, c=4, d=8 };
-constexpr bool boost_flags_enable(E) { return true; }
+BOOST_FLAGS_ENABLE(E)
 ----
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])
@@ -318,8 +319,8 @@ First, here the standard conforming decision diagram:
 
 ----
 
-Ok, the `unsigned` is more a theoretical issue, since all C\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[,window=_blank]).
-Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[,window=_blank]).
+Ok, the `unsigned` is more a theoretical issue, since all C\\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[, window=_blank]).
 
 So, in case your compiler uses signed two's complement, you can use the following dicision diagram:
 [ditaa, target=underlying_type_decision_diagram_practical]
@@ -351,7 +352,7 @@ So, in case your compiler uses signed two's complement, you can use the followin
 
 
 
-It may seem pedantic, but defining the underlying type in the unscoped and `disable_complement` case is crucial, as otherwise the `operator ~` will invoke UB. +
+It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator ~` will invoke UB. +
 Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
 Starting with Clang 16 this is diagnosed as a hard error.
 
@@ -500,7 +501,7 @@ For the rare case where
 * the set of flags semantically forms a Boolean algebra and additionally
 * all bits of the underlying type correspond to flags
 
-there exists the option xref:boost_flags_disable_complement[boost::flags::options::disable_complement] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
+there exists the option xref:disable_complement[`disable_complement`] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
 ## From flags to `bool`
@@ -639,11 +640,11 @@ Therefore, Boost.Flags provides a pseudo operator `BOOST_FLAGS_AND` with the sam
 
 * `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
 
-Alternatively, there is the options xref:boost_flags_logical_and[`boost::flags::options::logical_and`], which enables `operator&&`, see xref:logically_and_and_or[next section].
+Alternatively, there is the options xref:boost_flags_logical_and[`logical_and`], which enables `operator&&`, see xref:logically_and_and_or[next section].
 
 [NOTE]
 ====
-`BOOST_FLAGS_AND` is a macro defined as `& boost::flags::impl::pseudo_and_op_tag{} &`. +
+`BOOST_FLAGS_AND` is a macro defined as `& boost::flags::pseudo_and_op_tag{} &`. +
 The first `&` stores its left-hand argument in an intermediate type, which the second `&` evaluates with its right-hand argument.
 ====
 
@@ -673,15 +674,18 @@ Since logical operators `&&` and `||` can easily get confused with their bitwise
 Nevertheless, sometimes `operator &&` comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. When for an enabled enumeration `E`
 [source]
 ----
-constexpr boost::flags::options boost_flags_enable(E) { 
-    return boost::flags::options::enable 
-         | boost::flags::options::logical_and
-         ;
-}
+BOOST_FLAGS_ENABLE_LOGICAL_AND(E)
+
+// resp. for a class local enum
+BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)
+
 // instead of 
-// constexpr bool boost_flags_enable(E){ return true; }
+// BOOST_FLAGS_ENABLE(E) 
+// resp.
+// BOOST_FLAGS_ENABLE_LOCAL(E) 
 ----
-is defined or `boost::flags::enable<E>` inherits from `boost::flags::logical_and`, then `operator &&` is overloaded for `E` with the semantics
+// is defined or `boost::flags::enable<E>` inherits from `boost::flags::logical_and`, 
+is defined, then `operator &&` is overloaded for `E` with the semantics
 [source]
 ----
     operator&&(e1, e2) -> bool { return !!(e1 & e2); } 
@@ -732,6 +736,9 @@ Boost.Flags provides the following functions for an enabled enumeration `E`:
 * `remove_if_inplace(E& e, E mod, bool remove)  \-> E& { e = remove_if(e, mod, remove); return e; }`
 * `get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }`
 * `from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }`
+
+All utility functions are defined in `namespace boost::flags`. +
+The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except `from_underlying`, into the current naespace.
 
 and for generating the values of enumerators:
 

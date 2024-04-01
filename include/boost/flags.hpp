@@ -2367,11 +2367,11 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
     BOOST_FLAGS_USING_OPERATORS()                                     \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGIC_AND(E)            \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)            \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
     BOOST_FLAGS_USING_OPERATORS()                                     \
 
-#define BOOST_FLAGS_ENABLE_LOGIC_AND(E)                               \
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND(E)                               \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
     BOOST_FLAGS_USING_OPERATORS()                                     \
 
@@ -2392,10 +2392,10 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 #define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                      \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGIC_AND(E)            \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)            \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGIC_AND(E)                               \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                               \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
 
 
