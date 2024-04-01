@@ -190,8 +190,8 @@ i.e. Boost.Flags will prohibit that in those cases the built-in version will be 
 
 ## What about the underlying type?
 
-* For language standards **before C++20** as an `unsigned` type, for both scoped and unscoped enumerations!
-* For *unscoped* enumerations with the xref:disable_complement[`disable_complement`] option **absolutely REQUIRED**!
+* For language standards **before C++20** the underlying type is required as an `unsigned` type, for both scoped and unscoped enumerations!
+* For *unscoped* enumerations with the `disable_complement` option the underlying type is **always required**!
 
 (For details xref:underlying_type[see below.])
 
