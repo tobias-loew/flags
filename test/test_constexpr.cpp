@@ -29,7 +29,7 @@ enum
 };
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+BOOST_FLAGS_ENABLE(flags_enum)
 
 
 // helpers

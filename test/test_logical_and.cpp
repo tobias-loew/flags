@@ -35,7 +35,9 @@ constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return b
 #else // TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR
 constexpr inline boost::flags::options boost_flags_enable(flags_enum) { return boost::flags::options::enable; }
 #endif // TEST_COMPILE_FAIL_NO_LOGICAL_OPERATOR
-
+//BOOST_FLAGS_FORWARD_OPERATORS(flags_enum)
+BOOST_FLAGS_USING_OPERATORS()
+    
 
 // helpers
 //template<typename E>

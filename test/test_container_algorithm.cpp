@@ -29,7 +29,7 @@ enum class relops_builtin_enum : unsigned int {
 };
 
 // enable relops_builtin_enum
-constexpr inline bool boost_flags_enable(relops_builtin_enum) { return true; }
+BOOST_FLAGS_ENABLE(relops_builtin_enum)
 
 
 enum class relops_delete_enum : unsigned int {
@@ -40,7 +40,7 @@ enum class relops_delete_enum : unsigned int {
 };
 
 // enable relops_delete_enum
-constexpr inline bool boost_flags_enable(relops_delete_enum) { return true; }
+BOOST_FLAGS_ENABLE(relops_delete_enum)
 
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
@@ -59,7 +59,7 @@ enum class relops_partial_order_enum : unsigned int {
 };
 
 // enable relops_delete_enum
-constexpr inline bool boost_flags_enable(relops_partial_order_enum) { return true; }
+BOOST_FLAGS_ENABLE(relops_partial_order_enum)
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
 
@@ -74,7 +74,7 @@ enum class relops_std_less_enum : unsigned int {
 };
 
 // enable relops_delete_enum
-constexpr inline bool boost_flags_enable(relops_std_less_enum) { return true; }
+BOOST_FLAGS_ENABLE(relops_std_less_enum)
 
 
 #if defined(TEST_FLAGS_LINKING)

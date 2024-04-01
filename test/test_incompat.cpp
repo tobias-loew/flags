@@ -18,13 +18,13 @@
 enum class flags_enum : unsigned int {};
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+BOOST_FLAGS_ENABLE(flags_enum)
 
 
 enum class flags2_enum : unsigned int {};
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags2_enum) { return true; }
+BOOST_FLAGS_ENABLE(flags2_enum)
 
 
 enum class not_enabled_enum {};

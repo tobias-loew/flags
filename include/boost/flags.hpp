@@ -44,7 +44,7 @@
         olives      = boost::flags::nth_bit(3), // == 0x08
     };
     // enable Boost.Flags for pizza_toppings
-    static constexpr bool boost_flags_enable(pizza_toppings) { return true; }
+    BOOST_FLAGS_ENABLE(pizza_toppings)
 
     enum class ice_cream_flavours : unsigned int {
         vanilla     = boost::flags::nth_bit(0), // == 0x01
@@ -52,7 +52,7 @@
         strawberry  = boost::flags::nth_bit(2), // == 0x04
     };
     // enable Boost.Flags for ice_cream_flavours
-    static constexpr bool boost_flags_enable(ice_cream_flavours) { return true; }
+    BOOST_FLAGS_ENABLE(ice_cream_flavours)
 
     void order_pizza(pizza_toppings toppings) { ... }
     void order_ice_cream(ice_cream_flavours flavours) { ... }
@@ -90,11 +90,8 @@
         g = boost::flags::nth_bit(2), // == 0x4
     };
 
-    template<>
-    struct boost::flags::enable<flags_t> : std::true_type {};
-
-    template<>
-    struct boost::flags::enable<flags2_t> : std::true_type {};
+    BOOST_FLAGS_ENABLE(flags_t)
+    BOOST_FLAGS_ENABLE(flags2_t)
 
     void foo() {
         auto ab = flags_t::a | flags_t::b;  // type: flags_t
@@ -686,13 +683,13 @@ namespace boost {
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
+        // for pseudo operator BOOST_FLAG_AND
+        struct pseudo_and_op_tag {};
+
+        // NULL constant tag
+        struct null_tag {};
+
         namespace impl {
-
-            // NULL constant tag
-            struct null_tag {};
-
-            // for pseudo operator BOOST_FLAG_AND
-            struct pseudo_and_op_tag {};
 
             template<typename T>
             struct pseudo_and_op_intermediate_t {
@@ -1162,7 +1159,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(T value, impl::null_tag) noexcept {
+            operator==(T value, null_tag) noexcept {
             return impl::get_underlying_impl(value) == 0;
         }
 
@@ -1178,7 +1175,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(impl::null_tag, T value) noexcept {
+            operator==(null_tag, T value) noexcept {
             return impl::get_underlying_impl(value) == 0;
         }
 
@@ -1191,7 +1188,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(T value, impl::null_tag) noexcept {
+            operator!=(T value, null_tag) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
 
@@ -1204,7 +1201,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(impl::null_tag, T value) noexcept {
+            operator!=(null_tag, T value) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
@@ -1761,25 +1758,25 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr impl::pseudo_and_op_intermediate_t<T>
-            operator&(T lhs, impl::pseudo_and_op_tag) noexcept {
+            operator&(T lhs, pseudo_and_op_tag) noexcept {
             return { lhs };
         }
 
-#if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-            requires LogicalOperationEnabled<T1, T2, impl::conjunction>
-#else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2,
-            typename std::enable_if<LogicalOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            constexpr bool
-            operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
-            return (impl::get_underlying_impl(lhs.value) & impl::get_underlying_impl(rhs)) != 0;
-        }
-
-
         namespace impl {
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires LogicalOperationEnabled<T1, T2, impl::conjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<LogicalOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr bool
+                operator&(pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
+                return (impl::get_underlying_impl(lhs.value) & impl::get_underlying_impl(rhs)) != 0;
+            }
+
+
             template <typename T, bool B = std::is_enum<T>::value>
             struct underlying_or_identity {
                 using type = T;
@@ -1912,61 +1909,132 @@ namespace boost {
 }
 
 
+#define BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, op, RET)                                      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E l, E r) noexcept {         \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+#define BOOST_FLAGS_FORWARD_BINARY_OPERATOR_DELETE(E, FRIEND, op, RET)                                      \
+FRIEND constexpr RET operator op(E l, E r) noexcept = delete;  \
+
+#define BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, op, RET)                                       \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E v) noexcept {                  \
+    return ::boost::flags::operator op(v);                                              \
+}                                                                                       \
+
+#define BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, op)                                  \
+FRIEND constexpr E& operator op(E& l, E r) noexcept {                                          \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+
+
+
+
+
+
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
-# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL using boost::flags::operator!=;
+
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(std::nullptr_t l, E r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+
+# define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL   using ::boost::flags::operator!=;
+# define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                              \
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, !=, bool)
+
 #else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
+    return ::boost::flags::operator op(l, r);                                           \
+}                                                                                       \
+
+
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
+# define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)
+
+
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
-# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP using boost::flags::operator<=>;
+
+# define BOOST_FLAGS_USING_OPERATOR_SPACESHIP using ::boost::flags::operator<=>;
+# define BOOST_FLAGS_FORWARD_OPERATOR_SPACESHIP(E, FRIEND)                              \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, <=>, ::boost::flags::partial_ordering)
+
 #else // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 # define BOOST_FLAGS_USING_OPERATOR_SPACESHIP
+# define BOOST_FLAGS_FORWARD_OPERATOR_SPACESHIP(E, FRIEND)
 #endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 
 #define BOOST_FLAGS_USING_OPERATORS()                                                   \
-using boost::flags::operator|;                                                          \
-using boost::flags::operator&;                                                          \
-using boost::flags::operator^;                                                          \
-using boost::flags::operator~;                                                          \
-using boost::flags::operator|=;                                                         \
-using boost::flags::operator&=;                                                         \
-using boost::flags::operator^=;                                                         \
-using boost::flags::operator!;                                                          \
-using boost::flags::operator==;                                                         \
+using ::boost::flags::operator|;                                                          \
+using ::boost::flags::operator&;                                                          \
+using ::boost::flags::operator^;                                                          \
+using ::boost::flags::operator~;                                                          \
+using ::boost::flags::operator|=;                                                         \
+using ::boost::flags::operator&=;                                                         \
+using ::boost::flags::operator^=;                                                         \
+using ::boost::flags::operator!;                                                          \
+using ::boost::flags::operator==;                                                         \
 BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                                    \
 BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                    \
-using boost::flags::operator&&;                                                         \
-using boost::flags::operator||;                                                         \
+using ::boost::flags::operator&&;                                                         \
+using ::boost::flags::operator||;                                                         \
 
 
 #define BOOST_FLAGS_USING_UTILITIES()                                                   \
-using boost::flags::any;                                                                \
-using boost::flags::none;                                                               \
-using boost::flags::subseteq;                                                           \
-using boost::flags::subset;                                                             \
-using boost::flags::intersect;                                                          \
-using boost::flags::disjoint;                                                           \
-using boost::flags::make_null;                                                          \
-using boost::flags::make_if;                                                            \
-using boost::flags::modify;                                                             \
-using boost::flags::modify_inplace;                                                     \
-using boost::flags::add_if;                                                             \
-using boost::flags::add_if_inplace;                                                     \
-using boost::flags::remove_if;                                                          \
-using boost::flags::remove_if_inplace;                                                  \
-using boost::flags::get_underlying;                                                     \
+using ::boost::flags::any;                                                                \
+using ::boost::flags::none;                                                               \
+using ::boost::flags::subseteq;                                                           \
+using ::boost::flags::subset;                                                             \
+using ::boost::flags::intersect;                                                          \
+using ::boost::flags::disjoint;                                                           \
+using ::boost::flags::make_null;                                                          \
+using ::boost::flags::make_if;                                                            \
+using ::boost::flags::modify;                                                             \
+using ::boost::flags::modify_inplace;                                                     \
+using ::boost::flags::add_if;                                                             \
+using ::boost::flags::add_if_inplace;                                                     \
+using ::boost::flags::remove_if;                                                          \
+using ::boost::flags::remove_if_inplace;                                                  \
+using ::boost::flags::get_underlying;                                                     \
 
 #define BOOST_FLAGS_USING_ALL()                                                         \
 BOOST_FLAGS_USING_OPERATORS()                                                           \
 BOOST_FLAGS_USING_UTILITIES()                                                           \
 
 
-#if !(defined(BOOST_FLAGS_NO_GLOBAL_USING) && BOOST_FLAGS_NO_GLOBAL_USING)
-// import all operators and utility functions into global namespace
-BOOST_FLAGS_USING_ALL()
-#endif // #if !(defined(BOOST_FLAGS_NO_GLOBAL_USING) && BOOST_FLAGS_NO_GLOBAL_USING)
+
+
+#define BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, C, FRIEND) \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, |, E)                                               \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &, E)                                               \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, ^, E)                                               \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, ~, C)                                                \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, |=)                                          \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, &=)                                          \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                                          \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                                 \
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                              \
+BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                                    \
+
+
+#define BOOST_FLAGS_EMPTY()
+
+#define BOOST_FLAGS_FORWARD_OPERATORS(E) BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, BOOST_FLAGS_EMPTY())
+#define BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E) BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, friend)
+
 
 
 #define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                              \
@@ -2276,11 +2344,59 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 #endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 
-#define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::impl::pseudo_and_op_tag{} &
+#define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::pseudo_and_op_tag{} &
 
 #define BOOST_FLAGS_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
 
-#define BOOST_FLAGS_NULL boost::flags::impl::null_tag{}
+#define BOOST_FLAGS_NULL boost::flags::null_tag{}
+
+
+
+// enabling macro for enum E at namespace scope
+#define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                \
+    constexpr inline boost::flags::options boost_flags_enable(E) {    \
+        return OPTS;                                                  \
+    }                                                                 \
+
+#define BOOST_FLAGS_ENABLE(E)                                         \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)           \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                      \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)            \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND(E)                               \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
+    BOOST_FLAGS_USING_OPERATORS()                                     \
+
+
+
+// enabling macro for enum E at class scope
+#define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                    \
+    friend constexpr inline boost::flags::options boost_flags_enable(E) {    \
+        return OPTS;                                                         \
+    }                                                                 \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)  \
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL(E)                                         \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                      \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)            \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                               \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED

@@ -29,7 +29,7 @@ enum
 };
 
 // enable flags_enum
-constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+BOOST_FLAGS_ENABLE(flags_enum)
 
 
 
@@ -72,12 +72,13 @@ namespace nth_bit_ns {
         e = boost::flags::next_bit(d), // == 0x08
         f = boost::flags::next_bit(e), // == 0x08
     };
-    constexpr bool boost_flags_enable(flags_enum) { return true; }
+    // enable flags_enum
+    BOOST_FLAGS_ENABLE(flags_enum)
 }
 void test_nth_bit_type() {
 
-    static_assert(get_underlying(nth_bit_ns::flags_enum::e) == boost::flags::nth_bit<unsigned int>(4), "");
-    static_assert(get_underlying(nth_bit_ns::flags_enum::f) == boost::flags::nth_bit<unsigned int>(5), "");
+    static_assert(boost::flags::get_underlying(nth_bit_ns::flags_enum::e) == boost::flags::nth_bit<unsigned int>(4), "");
+    static_assert(boost::flags::get_underlying(nth_bit_ns::flags_enum::f) == boost::flags::nth_bit<unsigned int>(5), "");
 }
 
 void test_negation_operators() {
@@ -227,6 +228,7 @@ void test_bfand() {
 
 namespace test_in_class_ns {
     namespace test_1_ns {
+
         struct s {
             enum
 #ifndef TEST_COMPILE_UNSCOPED
@@ -238,13 +240,14 @@ namespace test_in_class_ns {
                 c = boost::flags::nth_bit(2), // == 0x04
                 d = boost::flags::nth_bit(3), // == 0x08
             };
+            // enable flags_enum
+            BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
 
         };
-        // enable flags_enum
-        constexpr bool boost_flags_enable(s::flags_enum) { return true; }
-    }
+        }
 
     namespace test_2_ns {
+
         struct s {
             enum
 #ifndef TEST_COMPILE_UNSCOPED
@@ -258,7 +261,7 @@ namespace test_in_class_ns {
             };
 
             // enable flags_enum
-            friend constexpr bool boost_flags_enable(flags_enum) { return true; }
+            BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
         };
     }
 
