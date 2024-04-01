@@ -41,6 +41,8 @@ compile-fail test_adl.cpp : <define>TEST_COMPILE_FAIL_ADL_1 : test_adl_FAIL_ADL_
 compile-fail test_adl.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_ADL_1 : test_adl_UNSCOPED_FAIL_ADL_1 ;
 compile-fail test_adl.cpp : <define>TEST_COMPILE_FAIL_ADL_2 : test_adl_FAIL_ADL_2 ;
 compile-fail test_adl.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_ADL_2 : test_adl_UNSCOPED_FAIL_ADL_2 ;
+run test_adl.cpp : : : <define>TEST_COMPILE_ADL_UTILITIES : test_adl_UTILITIES ;
+run test_adl.cpp : : : <define>TEST_COMPILE_ADL_UTILITIES <define>TEST_COMPILE_UNSCOPED : test_adl_UTILITIES_UNSCOPED ;
 
 run test_logical_and.cpp ;
 run test_logical_and.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_logical_and_UNSCOPED ;
@@ -64,8 +66,6 @@ run test_utilities.cpp ;
 run test_utilities.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_utilities_UNSCOPED ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_ANY : test_utilities_FAIL_COMPLEMENT_ANY ;
 compile-fail test_utilities.cpp : <define>TEST_COMPILE_FAIL_COMPLEMENT_NONE : test_utilities_FAIL_COMPLEMENT_NONE ;
-# run test_utilities.cpp : : : <define>TEST_COMPILE_NO_GLOBAL_USING : test_utilities_NO_GLOBAL_USING ;
-# compile-fail test_utilities.cpp : <define>TEST_COMPILE_NO_GLOBAL_USING <define>TEST_COMPILE_FAIL_NO_GLOBAL_USING : test_utilities_FAIL_NO_GLOBAL_USING ;
 
 
 local GCC_ON_WINDOWS = [ os.environ GCC_ON_WINDOWS ] ;

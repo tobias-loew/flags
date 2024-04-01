@@ -27,6 +27,7 @@ void adl_test(T lhs, T rhs)
         result ^= rhs;
     }
 
+#ifdef TEST_COMPILE_ADL_UTILITIES
     {
         auto result = any(lhs);
         (void)(result);
@@ -87,6 +88,7 @@ void adl_test(T lhs, T rhs)
         auto result = get_underlying(lhs);
         (void)(result);
     }
+#endif
 }
 
 
@@ -132,8 +134,8 @@ namespace a_namespace {
     // enable flags_enum
     BOOST_FLAGS_ENABLE(flags_enum)
 
-#ifndef TEST_COMPILE_FAIL_NO_GLOBAL_USING
-    BOOST_FLAGS_USING_ALL()
+#ifdef TEST_COMPILE_ADL_UTILITIES
+    BOOST_FLAGS_USING_UTILITIES(flags_enum)
 #endif
 }
 

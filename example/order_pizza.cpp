@@ -33,19 +33,19 @@ BOOST_FLAGS_ENABLE(ice_cream_flavours)
 // order selected pizza
 void order_pizza(pizza_toppings toppings) {
     std::cout << "Pizza ordered with\n";
-    if (any(toppings & pizza_toppings::tomato)) {
+    if (boost::flags::any(toppings & pizza_toppings::tomato)) {
         std::cout << "- tomato\n";
     }
-    if (any(toppings & pizza_toppings::cheese)) {
+    if (boost::flags::any(toppings & pizza_toppings::cheese)) {
         std::cout << "- cheese\n";
     }
-    if (any(toppings & pizza_toppings::salami)) {
+    if (boost::flags::any(toppings & pizza_toppings::salami)) {
         std::cout << "- salami\n";
     }
-    if (any(toppings & pizza_toppings::olives)) {
+    if (boost::flags::any(toppings & pizza_toppings::olives)) {
         std::cout << "- olives\n";
     }
-    if (any(toppings & pizza_toppings::garlic)) {
+    if (boost::flags::any(toppings & pizza_toppings::garlic)) {
         std::cout << "- garlic\n";
     }
     std::cout << "\n";
@@ -54,13 +54,13 @@ void order_pizza(pizza_toppings toppings) {
 // order selected dessert
 void order_ice_cream(ice_cream_flavours flavours) {
     std::cout << "Ice cream ordered with flavours\n";
-    if (any(flavours & ice_cream_flavours::vanilla)) {
+    if (boost::flags::any(flavours & ice_cream_flavours::vanilla)) {
         std::cout << "- vanilla\n";
     }
-    if (any(flavours & ice_cream_flavours::chocolate)) {
+    if (boost::flags::any(flavours & ice_cream_flavours::chocolate)) {
         std::cout << "- chocolate\n";
     }
-    if (any(flavours & ice_cream_flavours::strawberry)) {
+    if (boost::flags::any(flavours & ice_cream_flavours::strawberry)) {
         std::cout << "- strawberry\n";
     }
     std::cout << "\n";
