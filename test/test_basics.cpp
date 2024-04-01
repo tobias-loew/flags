@@ -228,7 +228,7 @@ void test_bfand() {
 
 namespace test_in_class_ns {
     namespace test_1_ns {
-        BOOST_FLAGS_USING_OPERATORS()
+
         struct s {
             enum
 #ifndef TEST_COMPILE_UNSCOPED
@@ -247,7 +247,7 @@ namespace test_in_class_ns {
         }
 
     namespace test_2_ns {
-        BOOST_FLAGS_USING_OPERATORS()
+
         struct s {
             enum
 #ifndef TEST_COMPILE_UNSCOPED

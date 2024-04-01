@@ -44,7 +44,7 @@
         olives      = boost::flags::nth_bit(3), // == 0x08
     };
     // enable Boost.Flags for pizza_toppings
-    static constexpr bool boost_flags_enable(pizza_toppings) { return true; }
+    BOOST_FLAGS_ENABLE(pizza_toppings)
 
     enum class ice_cream_flavours : unsigned int {
         vanilla     = boost::flags::nth_bit(0), // == 0x01
@@ -52,7 +52,7 @@
         strawberry  = boost::flags::nth_bit(2), // == 0x04
     };
     // enable Boost.Flags for ice_cream_flavours
-    static constexpr bool boost_flags_enable(ice_cream_flavours) { return true; }
+    BOOST_FLAGS_ENABLE(ice_cream_flavours)
 
     void order_pizza(pizza_toppings toppings) { ... }
     void order_ice_cream(ice_cream_flavours flavours) { ... }
@@ -90,11 +90,8 @@
         g = boost::flags::nth_bit(2), // == 0x4
     };
 
-    template<>
-    struct boost::flags::enable<flags_t> : std::true_type {};
-
-    template<>
-    struct boost::flags::enable<flags2_t> : std::true_type {};
+    BOOST_FLAGS_ENABLE(flags_t)
+    BOOST_FLAGS_ENABLE(flags2_t)
 
     void foo() {
         auto ab = flags_t::a | flags_t::b;  // type: flags_t
@@ -2387,15 +2384,6 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
     }                                                                 \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)  \
 
-
-//friend void boost_flags_adl_test() {                                                                          \
-//        /* This static_assert tests whether ADL is working for the Boost.Flags enabled enum */                    \
-//        /* If you get a compilation error here, please define 'BOOST_FLAGS_USING_OPERATORS()' */                  \
-//        /* before the enclosing class!                                                         */                 \
-//        static_assert(E{} == (E{} & E{} | E{} ^ E{}) && std::is_same<E, decltype(E{} & E{} | E{} ^ E{})>::value,  \
-//            "ADL not working for the enum. Define 'BOOST_FLAGS_USING_OPERATORS()' before the enclosing class!");  \
-//    }                                                                                                             \
-//
 
 #define BOOST_FLAGS_ENABLE_LOCAL(E)                                         \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)
