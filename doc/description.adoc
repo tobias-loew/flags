@@ -24,7 +24,7 @@ BOOST_FLAGS_ENABLE(E)
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/br1193vob[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/5ffq6eGaW[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
