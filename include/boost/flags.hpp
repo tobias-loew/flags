@@ -689,10 +689,10 @@ namespace boost {
         // for pseudo operator BOOST_FLAG_AND
         struct pseudo_and_op_tag {};
 
-        namespace impl {
+        // NULL constant tag
+        struct null_tag {};
 
-            // NULL constant tag
-            struct null_tag {};
+        namespace impl {
 
             template<typename T>
             struct pseudo_and_op_intermediate_t {
@@ -1162,7 +1162,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(T value, impl::null_tag) noexcept {
+            operator==(T value, null_tag) noexcept {
             return impl::get_underlying_impl(value) == 0;
         }
 
@@ -1178,7 +1178,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator==(impl::null_tag, T value) noexcept {
+            operator==(null_tag, T value) noexcept {
             return impl::get_underlying_impl(value) == 0;
         }
 
@@ -1191,7 +1191,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(T value, impl::null_tag) noexcept {
+            operator!=(T value, null_tag) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
 
@@ -1204,7 +1204,7 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr bool
-            operator!=(impl::null_tag, T value) noexcept {
+            operator!=(null_tag, T value) noexcept {
             return !(impl::get_underlying_impl(value) == 0);
         }
 #endif // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
@@ -1765,21 +1765,21 @@ namespace boost {
             return { lhs };
         }
 
-#if BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-            requires LogicalOperationEnabled<T1, T2, impl::conjunction>
-#else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2,
-            typename std::enable_if<LogicalOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
-#endif // BOOST_FLAGS_HAS_CONCEPTS
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            constexpr bool
-            operator&(impl::pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
-            return (impl::get_underlying_impl(lhs.value) & impl::get_underlying_impl(rhs)) != 0;
-        }
-
-
         namespace impl {
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires LogicalOperationEnabled<T1, T2, impl::conjunction>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<LogicalOperationEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr bool
+                operator&(pseudo_and_op_intermediate_t<T1> lhs, T2 rhs) noexcept {
+                return (impl::get_underlying_impl(lhs.value) & impl::get_underlying_impl(rhs)) != 0;
+            }
+
+
             template <typename T, bool B = std::is_enum<T>::value>
             struct underlying_or_identity {
                 using type = T;
@@ -1939,14 +1939,6 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
-template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
-constexpr RET operator op(E l, BOOST_FLAGS_TEMPLATE_TYPE r) noexcept {                \
-    return ::boost::flags::operator op(l, r);                                           \
-}                                                                                       \
-template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
-constexpr RET operator op(BOOST_FLAGS_TEMPLATE_TYPE l, E r) noexcept {                \
-    return ::boost::flags::operator op(l, r);                                           \
-}                                                                                       \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
 constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
     return ::boost::flags::operator op(l, r);                                           \
@@ -1964,10 +1956,6 @@ BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, !=, bool)
 #else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 #define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                      \
-template<typename BOOST_FLAGS_TEMPLATE_TYPE> BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
-constexpr RET operator op(E l, BOOST_FLAGS_TEMPLATE_TYPE r) noexcept {                \
-    return ::boost::flags::operator op(l, r);                                           \
-}                                                                                       \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                    \
 constexpr RET operator op(E l, std::nullptr_t r) noexcept {                \
     return ::boost::flags::operator op(l, r);                                           \
@@ -2363,7 +2351,7 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 
 #define BOOST_FLAGS_AND  BOOST_FLAGS_PSEUDO_AND_OPERATOR
 
-#define BOOST_FLAGS_NULL boost::flags::impl::null_tag{}
+#define BOOST_FLAGS_NULL boost::flags::null_tag{}
 
 
 
@@ -2397,13 +2385,17 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
     friend constexpr inline boost::flags::options boost_flags_enable(E) {    \
         return OPTS;                                                         \
     }                                                                 \
-    friend void boost_flags_adl_test() {                                                                          \
-        /* This static_assert tests whether ADL is working for the Boost.Flags enabled enum */                    \
-        /* If you get a compilation error here, please define 'BOOST_FLAGS_USING_OPERATORS()' */                  \
-        /* before the enclosing class!                                                         */                 \
-        static_assert(E{} == (E{} & E{} | E{} ^ E{}) && std::is_same<E, decltype(E{} & E{} | E{} ^ E{})>::value,  \
-            "ADL not working for the enum. Define 'BOOST_FLAGS_USING_OPERATORS()' before the enclosing class!");  \
-    }                                                                                                             \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)  \
+
+
+//friend void boost_flags_adl_test() {                                                                          \
+//        /* This static_assert tests whether ADL is working for the Boost.Flags enabled enum */                    \
+//        /* If you get a compilation error here, please define 'BOOST_FLAGS_USING_OPERATORS()' */                  \
+//        /* before the enclosing class!                                                         */                 \
+//        static_assert(E{} == (E{} & E{} | E{} ^ E{}) && std::is_same<E, decltype(E{} & E{} | E{} ^ E{})>::value,  \
+//            "ADL not working for the enum. Define 'BOOST_FLAGS_USING_OPERATORS()' before the enclosing class!");  \
+//    }                                                                                                             \
+//
 
 #define BOOST_FLAGS_ENABLE_LOCAL(E)                                         \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)

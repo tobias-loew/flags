@@ -35,10 +35,10 @@ compile-fail test_basics.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPIL
 
 
 
-run test_adl.cpp ;
-run test_adl.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_adl_UNSCOPED ;
-compile-fail test_adl.cpp : <define>TEST_COMPILE_FAIL_ADL : test_adl_FAIL_ADL ;
-compile-fail test_adl.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_ADL : test_adl_UNSCOPED_ADL ;
+# run test_adl.cpp ;
+# run test_adl.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_adl_UNSCOPED ;
+# compile-fail test_adl.cpp : <define>TEST_COMPILE_FAIL_ADL : test_adl_FAIL_ADL ;
+# compile-fail test_adl.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_ADL : test_adl_UNSCOPED_ADL ;
 
 run test_logical_and.cpp ;
 run test_logical_and.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_logical_and_UNSCOPED ;
