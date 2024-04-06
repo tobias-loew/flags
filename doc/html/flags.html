@@ -1094,7 +1094,7 @@ Furthermore, scoped enumerations always have a fixed underlying type, which is <
 <img src="./images/underlying_type_decision_diagram_practical.png" alt="underlying type decision diagram practical" width="610" height="350">
 </div>
 </div>
-<div class="paragraph">
+<div id="complement_UB" class="paragraph">
 <p>It may seem pedantic, but defining the underlying type in the unscoped and <a href="#disable_complement"><code>disable_complement</code></a> case is crucial, as otherwise the <code>operator ~</code> will invoke UB.<br>
 Compilers can track this down, e.g. when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
 Starting with Clang 16 this is diagnosed as a hard error.</p>
@@ -1902,6 +1902,28 @@ If <code>flag_generator</code> is constructor with flags not having exactly one 
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">prevents UB for operator~ (*)</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">supports enums with underlying type larger than <code>int</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">everything is constexpr</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
@@ -1913,7 +1935,7 @@ If <code>flag_generator</code> is constructor with flags not having exactly one 
 <td class="tableblock halign-center valign-top"><p class="tableblock">N/A</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unscoped type safety (*)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unscoped type safety (**)</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>+</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>-</strong></p></td>
@@ -1937,7 +1959,10 @@ If <code>flag_generator</code> is constructor with flags not having exactly one 
 </tbody>
 </table>
 <div class="paragraph">
-<p>(*) unscoped type safety: The library prevents usage of built-in binary operators, when both arguments are implicitly convertible to an integer type and at least one of the arguments is an enabled enumeration type.</p>
+<p>(*) cf. <a href="#complement_UB">underlying type</a> and <a href="#disable_complement"><code>disable_complement</code></a></p>
+</div>
+<div class="paragraph">
+<p>(**) unscoped type safety: The library prevents usage of built-in binary operators, when both arguments are implicitly convertible to an integer type and at least one of the arguments is an enabled enumeration type.</p>
 </div>
 </div>
 </div>

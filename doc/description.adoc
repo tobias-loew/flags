@@ -352,6 +352,7 @@ So, in case your compiler uses signed two's complement, you can use the followin
 
 
 
+[#complement_UB]
 It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator ~` will invoke UB. +
 Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
 Starting with Clang 16 this is diagnosed as a hard error.

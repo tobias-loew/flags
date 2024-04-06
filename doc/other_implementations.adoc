@@ -108,6 +108,44 @@ There are several articles and libraries on flag-like enums available. The follo
 | *+*
 
 
+| prevents UB for operator~ (*)
+// Boost.Flags
+| *+*
+// BOOST_BITMASK
+| *-*
+// SD
+| N/A
+//GR
+| *+*
+//MP
+| *+*
+//Qt
+| *+*
+//JM
+| *+*
+// .net
+| *+*
+
+
+| supports enums with underlying type larger than `int`
+// Boost.Flags
+| *+*
+// BOOST_BITMASK
+| *-*
+// SD
+| *+*
+//GR
+| *+*
+//MP
+| *+*
+//Qt
+| *-*
+//JM
+| *+*
+// .net
+| *+*
+
+
 | everything is constexpr
 // Boost.Flags
 | *+*
@@ -127,7 +165,7 @@ There are several articles and libraries on flag-like enums available. The follo
 | N/A
 
 
-| unscoped type safety (*)
+| unscoped type safety (**)
 // Boost.Flags
 | *+*
 // BOOST_BITMASK
@@ -168,5 +206,7 @@ There are several articles and libraries on flag-like enums available. The follo
 
 |===
 
-(*) unscoped type safety: The library prevents usage of built-in binary operators, when both arguments are implicitly convertible to an integer type and at least one of the arguments is an enabled enumeration type.
+(*) cf. xref:complement_UB[underlying type] and xref:disable_complement[`disable_complement`]
+
+(**) unscoped type safety: The library prevents usage of built-in binary operators, when both arguments are implicitly convertible to an integer type and at least one of the arguments is an enabled enumeration type.
 

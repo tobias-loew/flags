@@ -297,6 +297,59 @@ void test_in_class() {
 }
 
 
+
+enum
+#ifndef TEST_COMPILE_UNSCOPED
+    class
+#endif // TEST_COMPILE_UNSCOPED
+large_flags_enum : int64_t {
+lbit_0 = boost::flags::nth_bit<int64_t>(0), // == 0x01
+lbit_1 = boost::flags::nth_bit<int64_t>(1), // == 0x02
+lbit_2 = boost::flags::nth_bit<int64_t>(2), // == 0x04
+lbit_3 = boost::flags::nth_bit<int64_t>(3), // == 0x08
+
+lbit_32 = boost::flags::nth_bit<int64_t>(32),
+lbit_42 = boost::flags::nth_bit<int64_t>(42),
+lbit_52 = boost::flags::nth_bit<int64_t>(52),
+lbit_62 = boost::flags::nth_bit<int64_t>(62),
+
+a = lbit_1 | lbit_2 | lbit_42 | lbit_62,
+b = lbit_0 | lbit_2 | lbit_42 | lbit_52,
+};
+// enable large_flags_enum
+BOOST_FLAGS_ENABLE(large_flags_enum)
+
+
+void test_64_bit() {
+    using s = large_flags_enum;
+    {
+        BOOST_TEST(s::a == (s::a & s::a));
+        BOOST_TEST(s::a == (s::a | s::a));
+        BOOST_TEST(s::a == ~~s::a);
+        BOOST_TEST(boost::flags::any(s::a));
+        BOOST_TEST(boost::flags::any(s::lbit_62));
+        BOOST_TEST(boost::flags::any(s::a & s::b));
+
+    }
+    {
+        // check De Morgan's laws
+        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+    }
+
+    {
+        // check De Morgan's laws
+        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+    }
+
+}
+
+
+
+
+
+
 int main() {
     report_config();
     test_nth_bit();
@@ -308,6 +361,7 @@ int main() {
     test_null();
     test_bfand();
     test_in_class();
+    test_64_bit();
 
     return boost::report_errors();
 }
