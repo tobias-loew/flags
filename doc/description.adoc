@@ -217,7 +217,7 @@ For flags based on integer-types or enumerations all values are implicitly conve
 
 Here's an example from the Win32-API: 
 
-In `Windows.h` we find the listbox-style
+In `WinUser.h` we find the listbox-style
 [source]
 ----
 #define LBS_NOTIFY            0x0001L
@@ -241,7 +241,7 @@ If the Windows team had decided to use unscoped enumerations instead of macros i
 
 * The built-in operators `&`, `|`, `^` and `~` return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.
 * The built-in operators `&=`, `|=`, `^=` require the left-hand type to be arithmetic, which excludes enumerations.
-* Scoped enumerations (which didn't exist when `Windows.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
+* Scoped enumerations (which didn't exist when `WinUser.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
 
 
 [discrete]
@@ -268,7 +268,7 @@ BOOST_FLAGS_ENABLE(E)
 // [#overloading_relational_operators]
 
 // and return _appropriate_ types (_appropriate_ will be explained soon). 
-// So, all the bitwise operators work for `E` as they did e.g. for the macros from `Windows.h`.
+// So, all the bitwise operators work for `E` as they did e.g. for the macros from `WinUser.h`.
 // Even more
 // 
 // * the bitwise negation `~` changes the type from `E` to `complement<E>` and vice-versa
