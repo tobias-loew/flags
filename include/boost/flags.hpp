@@ -2394,11 +2394,11 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
 
 #define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)            \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &&, bool)                                               \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                               \
 
 #define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                               \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &&, bool)                                               \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                               \
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
