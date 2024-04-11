@@ -2028,7 +2028,7 @@ BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                          
 BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                                 \
 BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                              \
 BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                                    \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &&, E)                                               \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &&, bool)                                               \
 
 
 #define BOOST_FLAGS_EMPTY()
