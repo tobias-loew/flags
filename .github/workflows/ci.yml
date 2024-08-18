@@ -162,6 +162,12 @@ jobs:
         shell: bash
 
     steps:
+      - name: Reset node.js version
+        if: ${{ matrix.container == 'ubuntu:18.04' }}
+        run: |
+          apt-get remove nodejs
+          nvm install 16.15.1
+
       - uses: actions/checkout@v3
   
       - name: Set reusable strings
@@ -176,12 +182,6 @@ jobs:
         run: |
           apt-get update
           apt-get -y install sudo python3 git g++
-
-      - name: Reset node.js version
-        if: ${{ matrix.container == 'ubuntu:18.04' }}
-        run: |
-          apt-get remove nodejs
-          nvm install 16.15.1
 
       - name: Install packages
         if: matrix.install
