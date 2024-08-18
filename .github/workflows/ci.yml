@@ -165,7 +165,6 @@ jobs:
       - name: Reset node.js version
         if: ${{ matrix.container == 'ubuntu:18.04' }}
         run: |
-          apt-get remove nodejs
           nvm install 16.15.1
 
       - uses: actions/checkout@v3
