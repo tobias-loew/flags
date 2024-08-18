@@ -162,10 +162,10 @@ jobs:
         shell: bash
 
     steps:
-      - name: Reset node.js version
+      - uses: actions/setup-node@v4
         if: ${{ matrix.container == 'ubuntu:18.04' }}
-        run: |
-          nvm install 16.15.1
+        with:
+          node-version: 16.15.1
 
       - uses: actions/checkout@v3
   
