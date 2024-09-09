@@ -1,3 +1,4 @@
+ @@ -1,8 +1,3 @@
 # Copyright 2024 Tobias Loew
 #
 # Distributed under the Boost Software License, Version 1.0.
@@ -167,11 +168,6 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/setup-node@v4
-        if: ${{ matrix.container == 'ubuntu:18.04' }}
-        with:
-          node-version: 16.15.1
-
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
         id: strings
@@ -224,10 +220,8 @@ jobs:
           git submodule update --init libs/assert
           python3 tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           echo GITHUB_WORKSPACE: $GITHUB_WORKSPACE
-          mkdir -p libs
-          rm -rf "libs/$LIBRARY"
-          mv -f "../snapshot/${LIBRARY}-${GITHUB_SHA}" "libs/$LIBRARY"
-          rm -rf "../snapshot"
+          mkdir -p libs/$LIBRARY
+          cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
           ./bootstrap.sh
           ./b2 -d0 headers
 
@@ -238,7 +232,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd boost-root
+          cd ../boost-root
           ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
 
   windows:
