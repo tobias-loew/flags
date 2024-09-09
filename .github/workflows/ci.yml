@@ -1,3 +1,8 @@
+# Copyright 2024 Tobias Loew
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+
 name: CI
 
 on:
@@ -167,8 +172,6 @@ jobs:
         with:
           node-version: 16.15.1
 
-      - uses: actions/checkout@v3
-  
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
         id: strings
@@ -201,6 +204,18 @@ jobs:
           echo REF: $REF
           BOOST_BRANCH=develop && [ "$REF" == "main" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
+          mkdir -p snapshot
+          cd snapshot
+          echo "Downloading library snapshot: https://github.com/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz"
+          curl -L --retry "$NET_RETRY_COUNT" -o "${LIBRARY}-${GITHUB_SHA}.tar.gz" "https://github.com/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz"
+          tar -xf "${LIBRARY}-${GITHUB_SHA}.tar.gz"
+          if [ ! -d "${LIBRARY}-${GITHUB_SHA}" ]
+          then
+              echo "Library snapshot does not contain the library directory ${LIBRARY}-${GITHUB_SHA}:"
+              ls -la
+              exit 1
+          fi
+          rm -f "${LIBRARY}-${GITHUB_SHA}.tar.gz"
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
           cd boost-root
@@ -209,8 +224,10 @@ jobs:
           git submodule update --init libs/assert
           python3 tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           echo GITHUB_WORKSPACE: $GITHUB_WORKSPACE
-          mkdir -p libs/$LIBRARY
-          cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
+          mkdir -p libs
+          rm -rf "libs/$LIBRARY"
+          mv -f "../snapshot/${LIBRARY}-${GITHUB_SHA}" "libs/$LIBRARY"
+          rm -rf "../snapshot"
           ./bootstrap.sh
           ./b2 -d0 headers
 
@@ -221,7 +238,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd ../boost-root
+          cd boost-root
           ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
 
   windows:
