@@ -132,12 +132,12 @@
 // g++ does not allow overwriting rel. operators with spaceship for enums 
 // cf. https://cplusplus.github.io/CWG/issues/2673.html
 // cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105200
-// hopefully g++ 14 will have fixed it
-# if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+// hopefully g++ 15 will have fixed it
+# if (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 15) || !defined(__cpp_impl_three_way_comparison)
 #  define BOOST_FLAGS_HAS_THREE_WAY_COMPARISON 0
-# else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+# else // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 15) || !defined(__cpp_impl_three_way_comparison)
 #  define BOOST_FLAGS_HAS_THREE_WAY_COMPARISON 1
-# endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 14) || !defined(__cpp_impl_three_way_comparison)
+# endif // (BOOST_FLAGS_IS_GCC_COMPILER && __GNUC__ < 15) || !defined(__cpp_impl_three_way_comparison)
 #endif // !defined(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 
