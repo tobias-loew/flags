@@ -1,7 +1,7 @@
 # flags
 type-safe and non-intrusive bitwise-operators for C++ enums
 
-[presentation at C++-Now 2024](Not online yet. Patience please...)
+presentation at C++-Now 2024 not online yet, patience please...
 
 [slides from presentation at C++-Now 2024](presentations/C++Now-2024/flags_slides.pdf)
 
