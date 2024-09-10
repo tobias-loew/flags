@@ -151,14 +151,14 @@ jobs:
             container: ubuntu:23.10
             install: clang-17
           - toolset: clang
-            cxxstd: "11,14,17,2a"
-            os: macos-11
-          - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-12
           - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-13
+          - toolset: clang
+            cxxstd: "11,14,17,20,2b"
+            os: macos-14
 
     runs-on: ${{matrix.os}}
     container: ${{matrix.container}}
