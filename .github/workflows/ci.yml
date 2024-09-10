@@ -15,6 +15,7 @@ on:
 
 env:
   UBSAN_OPTIONS: print_stacktrace=1
+  NET_RETRY_COUNT: 5
 
 jobs:
   posix:
