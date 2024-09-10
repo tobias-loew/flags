@@ -180,6 +180,8 @@ jobs:
         run: |
           apt-get update
           apt-get -y install sudo python3 git g++
+          apt remove -y libcurl4
+          apt install -y libcurl4 curl
 
       - name: Install packages
         if: matrix.install
