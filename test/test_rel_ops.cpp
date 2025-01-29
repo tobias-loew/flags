@@ -55,7 +55,7 @@ enum class relops_partial_order_enum : unsigned int {
     bit_3 = boost::flags::nth_bit(3), // == 0x08
 };
 
-// enable relops_delete_enum
+// enable relops_partial_order_enum
 BOOST_FLAGS_ENABLE(relops_partial_order_enum)
 
 BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
@@ -70,7 +70,7 @@ enum class relops_std_less_enum : unsigned int {
     bit_3 = boost::flags::nth_bit(3), // == 0x08
 };
 
-// enable relops_delete_enum
+// enable relops_std_less_enum
 BOOST_FLAGS_ENABLE(relops_std_less_enum)
 
 
@@ -199,6 +199,9 @@ void test_delete() {
                                     auto v2 = a2 | b2 | c2 | d2;
                                     (void)v1;   // prevent unused warning
                                     (void)v2;   // prevent unused warning
+									
+									// something different than E
+									auto w2 = relops_builtin_enum::bit_0;
 
 #if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LT)
                                     {
@@ -258,6 +261,191 @@ void test_delete() {
 
 
 #endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP)
+
+
+
+
+
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LT)
+                                    {
+#define OP <
+                                        bool bf = v1 OP to_underlying(v2);
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LE)
+                                    {
+#define OP <=
+                                        bool bf = v1 OP to_underlying(v2);
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GT)
+                                    {
+#define OP >
+                                        bool bf = v1 OP to_underlying(v2);
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GE)
+                                    {
+#define OP >=
+                                        bool bf = v1 OP to_underlying(v2);
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_SPACESHIP)
+
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+                                    {
+#define OP <=>
+                                        bool bf = v1 OP to_underlying(v2);
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#else // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+#error Spaceship has not yet landed or is destroyed be builtin operator! Cannot test for fail-on-delete.
+
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_SPACESHIP)
+
+
+
+
+
+
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LT)
+                                    {
+#define OP <
+                                        bool bf = to_underlying(v1) OP v2;
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LE)
+                                    {
+#define OP <=
+                                        bool bf = to_underlying(v1) OP v2;
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GT)
+                                    {
+#define OP >
+                                        bool bf = to_underlying(v1) OP v2;
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GE)
+                                    {
+#define OP >=
+                                        bool bf = to_underlying(v1) OP v2;
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_SPACESHIP)
+
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+                                    {
+#define OP <=>
+                                        bool bf = to_underlying(v1) OP v2;
+                                        BOOST_TEST((bf == bf));
+#undef OP
+                                    }
+#else // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+#error Spaceship has not yet landed or is destroyed be builtin operator! Cannot test for fail-on-delete.
+
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_SPACESHIP)
+
+
+
+
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LT)
+                                    {
+#define OP <
+                                        bool bf = v1 OP w2;
+                                        bool bu = to_underlying(v1) OP to_underlying(w2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LE)
+                                    {
+#define OP <=
+                                        bool bf = v1 OP w2;
+                                        bool bu = to_underlying(v1) OP to_underlying(w2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GT)
+                                    {
+#define OP >
+                                        bool bf = v1 OP w2;
+                                        bool bu = to_underlying(v1) OP to_underlying(w2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GT)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GE)
+                                    {
+#define OP >=
+                                        bool bf = v1 OP w2;
+                                        bool bu = to_underlying(v1) OP to_underlying(w2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GE)
+
+#if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_SPACESHIP)
+
+#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+                                    {
+#define OP <=>
+                                        auto bf = v1 OP w2;
+                                        auto bu = to_underlying(v1) OP to_underlying(w2);
+                                        BOOST_TEST((bf == bu));
+#undef OP
+                                    }
+#else // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+#error Spaceship has not yet landed or is destroyed be builtin operator! Cannot test for fail-on-delete.
+
+#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
+
+
+#endif // defined(TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_SPACESHIP)
+
+
+
                                 }
                             }
                         }

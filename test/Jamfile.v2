@@ -56,6 +56,25 @@ compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_GT : tes
 compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_GE : test_rel_ops_FAIL_RELOPS_DELETE_GE ;
 compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_SPACESHIP : test_rel_ops_FAIL_RELOPS_DELETE_SPACESHIP ;
 
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LT : test_rel_ops_FAIL_RELOPS_DELETE_LHS_LT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_LE : test_rel_ops_FAIL_RELOPS_DELETE_LHS_LE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GT : test_rel_ops_FAIL_RELOPS_DELETE_LHS_GT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_GE : test_rel_ops_FAIL_RELOPS_DELETE_LHS_GE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_LHS_SPACESHIP : test_rel_ops_FAIL_RELOPS_DELETE_LHS_SPACESHIP ;
+
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LT : test_rel_ops_FAIL_RELOPS_DELETE_RHS_LT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_LE : test_rel_ops_FAIL_RELOPS_DELETE_RHS_LE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GT : test_rel_ops_FAIL_RELOPS_DELETE_RHS_GT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_GE : test_rel_ops_FAIL_RELOPS_DELETE_RHS_GE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_RHS_SPACESHIP : test_rel_ops_FAIL_RELOPS_DELETE_RHS_SPACESHIP ;
+
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LT : test_rel_ops_FAIL_RELOPS_DELETE_MIXED_LT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_LE : test_rel_ops_FAIL_RELOPS_DELETE_MIXED_LE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GT : test_rel_ops_FAIL_RELOPS_DELETE_MIXED_GT ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_GE : test_rel_ops_FAIL_RELOPS_DELETE_MIXED_GE ;
+compile-fail test_rel_ops.cpp : <define>TEST_COMPILE_FAIL_RELOPS_DELETE_MIXED_SPACESHIP : test_rel_ops_FAIL_RELOPS_DELETE_MIXED_SPACESHIP ;
+
+
 run test_disable_complement.cpp ;
 
 
