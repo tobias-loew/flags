@@ -202,6 +202,7 @@ void test_delete() {
 									
 									// something different than E
 									auto w2 = relops_builtin_enum::bit_0;
+                                    (void)w2;   // prevent unused warning
 
 #if defined(TEST_COMPILE_FAIL_RELOPS_DELETE_LT)
                                     {
