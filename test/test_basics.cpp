@@ -244,7 +244,7 @@ namespace test_in_class_ns {
             BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
 
         };
-        }
+    }
 
     namespace test_2_ns {
 
@@ -254,7 +254,7 @@ namespace test_in_class_ns {
                 class
 #endif // TEST_COMPILE_UNSCOPED
             flags_enum: unsigned int {
-            a = boost::flags::nth_bit(0), // == 0x01
+                a = boost::flags::nth_bit(0), // == 0x01
                 b = boost::flags::nth_bit(1), // == 0x02
                 c = boost::flags::nth_bit(2), // == 0x04
                 d = boost::flags::nth_bit(3), // == 0x08
@@ -262,6 +262,25 @@ namespace test_in_class_ns {
 
             // enable flags_enum
             BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
+        };
+    }
+
+    namespace test_3_ns {
+
+        struct s {
+            enum
+#ifndef TEST_COMPILE_UNSCOPED
+                class
+#endif // TEST_COMPILE_UNSCOPED
+            flags_enum: unsigned int {
+                a = boost::flags::nth_bit(0), // == 0x01
+                b = boost::flags::nth_bit(1), // == 0x02
+                c = boost::flags::nth_bit(2), // == 0x04
+                d = boost::flags::nth_bit(3), // == 0x08
+            };
+
+            // enable flags_enum
+            BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(flags_enum)
         };
     }
 
@@ -292,6 +311,17 @@ void test_in_class() {
         // check De Morgan's laws
         BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
         BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+    }
+
+    {
+#ifdef TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_3_ns::s;
+#else // TEST_COMPILE_UNSCOPED
+        using s = test_in_class_ns::test_3_ns::s::flags_enum;
+#endif // TEST_COMPILE_UNSCOPED
+
+        BOOST_TEST( !(s::a && s::b));
+        BOOST_TEST( s::a && (s::a | s::b));
     }
 
 }

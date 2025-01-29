@@ -54,19 +54,19 @@ jobs:
             os: ubuntu-22.04
             install: g++-10
           - toolset: gcc-11
-            cxxstd: "11,14,17,2a"
+            cxxstd: "11,14,17,20,23"
             os: ubuntu-22.04
           - toolset: gcc-12
-            cxxstd: "11,14,17,20,2b"
+            cxxstd: "11,14,17,20,23"
             os: ubuntu-22.04
             install: g++-12
           - toolset: gcc-13
-            cxxstd: "11,14,17,20,2b"
+            cxxstd: "11,14,17,20,23"
             os: ubuntu-latest
             container: ubuntu:24.04
             install: g++-13
           - toolset: gcc-14
-            cxxstd: "11,14,17,20,2b"
+            cxxstd: "11,14,17,20,23,26"
             os: ubuntu-latest
             container: ubuntu:24.04
             install: g++-14
@@ -146,19 +146,31 @@ jobs:
             install: clang-16
           - toolset: clang
             compiler: clang++-17
-            cxxstd: "11,14,17,20,2b"
+            cxxstd: "11,14,17,20,23,26"
             os: ubuntu-latest
             container: ubuntu:24.04
             install: clang-17
           - toolset: clang
-            cxxstd: "11,14,17,20,2b"
-            os: macos-12
+            compiler: clang++-18
+            cxxstd: "11,14,17,20,23,26"
+            os: ubuntu-latest
+            container: ubuntu:24.04
+            install: clang-18
+          - toolset: clang
+            compiler: clang++-19
+            cxxstd: "11,14,17,20,23,26"
+            os: ubuntu-latest
+            container: ubuntu:24.04
+            install: clang-19
           - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-13
           - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-14
+          - toolset: clang
+            cxxstd: "11,14,17,20,2b"
+            os: macos-15
 
     runs-on: ${{matrix.os}}
     container: ${{matrix.container}}
