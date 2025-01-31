@@ -2358,7 +2358,6 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
     constexpr inline boost::flags::options boost_flags_enable(E) {                        \
         return OPTS;                                                                      \
     }                                                                                     \
-    BOOST_FLAGS_REL_OPS_DELETE(E)                                                         \
 
 #define BOOST_FLAGS_ENABLE(E)                                                             \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)                               \
@@ -2408,7 +2407,6 @@ constexpr auto operator<=> (T1 l, T2 r) noexcept                                
         return OPTS;                                                                      \
     }                                                                                     \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
-    BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)                                                   \
 
 
 #define BOOST_FLAGS_ENABLE_LOCAL(E)                                                       \
