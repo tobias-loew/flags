@@ -44,7 +44,7 @@
         olives      = boost::flags::nth_bit(3), // == 0x08
     };
     // enable Boost.Flags for pizza_toppings
-    BOOST_FLAGS_ENABLE(pizza_toppings)
+    BOOST_FLAGS(pizza_toppings)
 
     enum class ice_cream_flavours : unsigned int {
         vanilla     = boost::flags::nth_bit(0), // == 0x01
@@ -52,7 +52,7 @@
         strawberry  = boost::flags::nth_bit(2), // == 0x04
     };
     // enable Boost.Flags for ice_cream_flavours
-    BOOST_FLAGS_ENABLE(ice_cream_flavours)
+    BOOST_FLAGS(ice_cream_flavours)
 
     void order_pizza(pizza_toppings toppings) { ... }
     void order_ice_cream(ice_cream_flavours flavours) { ... }
@@ -90,8 +90,8 @@
         g = boost::flags::nth_bit(2), // == 0x4
     };
 
-    BOOST_FLAGS_ENABLE(flags_t)
-    BOOST_FLAGS_ENABLE(flags2_t)
+    BOOST_FLAGS(flags_t)
+    BOOST_FLAGS(flags2_t)
 
     void foo() {
         auto ab = flags_t::a | flags_t::b;  // type: flags_t
