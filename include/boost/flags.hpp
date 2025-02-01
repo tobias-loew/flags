@@ -355,10 +355,10 @@ namespace boost {
         // the 'friend boost_flags_enable' is only declared (but not yet defined - this happens directly
         // after the class definition) we cannot call it, but only 'decltype' its returned type.
         // 
-        // decltype(boost_flags_enable(E{})){}()
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      -> options_constant<Opts>
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    -> instance of options_constant<Opts>
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  -> invoke operator() on instance to return value -> Opts
+        // decltype(boost_flags_enable(E{})){}.value
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^          -> options_constant<Opts>
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        -> instance of options_constant<Opts>
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  -> return value -> Opts
 
         // "fallback" overload, used for non-enabled enums
         BOOST_FLAGS_CONSTEVAL inline std::integral_constant<bool, false> boost_flags_enable(...) { return {}; }
@@ -416,10 +416,10 @@ namespace boost {
             template<typename E>
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-                : std::integral_constant<bool, is_option_enable(decltype(boost_flags_enable(E{})){}()) >
-                , std::conditional < is_option_disable_complement(decltype(boost_flags_enable(E{})){}()),
+                : std::integral_constant<bool, is_option_enable(decltype(boost_flags_enable(E{})){}.value) >
+                , std::conditional < is_option_disable_complement(decltype(boost_flags_enable(E{})){}.value),
                                                 disable_complement, impl::empty<disable_complement> > ::type
-                , std::conditional < is_option_logical_and(decltype(boost_flags_enable(E{})){}()),
+                , std::conditional < is_option_logical_and(decltype(boost_flags_enable(E{})){}.value),
                                                 logical_and, impl::empty<logical_and> > ::type
             {};
 
