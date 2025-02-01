@@ -20,11 +20,11 @@ http://www.boost.org/LICENSE_1_0.txt
 * opt-in for an enumeration `E` by defining
 [source]
 ----
-BOOST_FLAGS_ENABLE(E)
+BOOST_FLAGS(E)
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/5ffq6eGaW[on Godbolt compiler explorer, window=_blank]
+Example:  https://godbolt.org/z/PPoKaGrzc[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
@@ -40,7 +40,7 @@ enum class pizza_toppings : unsigned int {
     all_toppings = tomato | cheese | salami | olives | garlic,
 };
 // enable Boost.Flags for pizza_toppings
-BOOST_FLAGS_ENABLE(pizza_toppings)
+BOOST_FLAGS(pizza_toppings)
 
 enum class ice_cream_flavours : unsigned int {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
@@ -48,7 +48,7 @@ enum class ice_cream_flavours : unsigned int {
     strawberry   = boost::flags::nth_bit(2), // == 0x04
 };
 // enable Boost.Flags for ice_cream_flavours
-BOOST_FLAGS_ENABLE(ice_cream_flavours)
+BOOST_FLAGS(ice_cream_flavours)
 
 // order selected pizza
 void order_pizza(pizza_toppings toppings) { 
@@ -133,23 +133,23 @@ int main() {
 
 ## Opt-in
 
-To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS_ENABLE` for `E` in the same namespace as `E`
+To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS` for `E` in the same namespace as `E`
 [source]
 ----
-BOOST_FLAGS_ENABLE(E)
+BOOST_FLAGS(E)
 ----
 
 // As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
-Best practice would be writing `BOOST_FLAGS_ENABLE(E)` right after the enumeration in the same namespace.
+Best practice would be writing `BOOST_FLAGS(E)` right after the enumeration in the same namespace.
 
-In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_ENABLE_LOCAL` has to be used for enabling:
+In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_LOCAL` has to be used for enabling:
 
 [source]
 ----
 class my_class {
     // ...
     enum class E:unsigned int { ... };
-    BOOST_FLAGS_ENABLE_LOCAL(E)
+    BOOST_FLAGS_LOCAL(E)
     // ...
 };
 ----
@@ -217,7 +217,7 @@ For flags based on integer-types or enumerations all values are implicitly conve
 
 Here's an example from the Win32-API: 
 
-In `Windows.h` we find the listbox-style
+In `WinUser.h` we find the listbox-style
 [source]
 ----
 #define LBS_NOTIFY            0x0001L
@@ -241,7 +241,7 @@ If the Windows team had decided to use unscoped enumerations instead of macros i
 
 * The built-in operators `&`, `|`, `^` and `~` return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.
 * The built-in operators `&=`, `|=`, `^=` require the left-hand type to be arithmetic, which excludes enumerations.
-* Scoped enumerations (which didn't exist when `Windows.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
+* Scoped enumerations (which didn't exist when `WinUser.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
 
 
 [discrete]
@@ -257,7 +257,7 @@ With Boost.Flags we get support for all bitwise operators and type-safety. E.g. 
 [source]
 ----
 enum class E : unsigned int { a=1, b=2, c=4, d=8 };
-BOOST_FLAGS_ENABLE(E)
+BOOST_FLAGS(E)
 ----
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])
@@ -268,7 +268,7 @@ BOOST_FLAGS_ENABLE(E)
 // [#overloading_relational_operators]
 
 // and return _appropriate_ types (_appropriate_ will be explained soon). 
-// So, all the bitwise operators work for `E` as they did e.g. for the macros from `Windows.h`.
+// So, all the bitwise operators work for `E` as they did e.g. for the macros from `WinUser.h`.
 // Even more
 // 
 // * the bitwise negation `~` changes the type from `E` to `complement<E>` and vice-versa
@@ -532,9 +532,9 @@ Instead of calling `any` and `none` we can use `operator!`
 Let's take a look at the relational operators `<`, `\<=`, `>` and `>=`.
 
 For enumerations (scoped and unscoped) C++ provides built-in relational operators which apply the operator to the values of the underlying type.
-This order we usually want to use as _Compare_ predicate for sorted containers and sorting algorithms. 
+This order is a total order, which we usually want to use as _Compare_ predicate for sorted containers and sorting algorithms. 
 
-This total order, is a linearization of a partial order which naturally arises, when we abstract away from the underlying type
+There is another order, which naturally arises, when we abstract away from the underlying type
  (which is what enumerations are usually about). It is the order induced by flag entailment:
 
 [.text-center]
@@ -542,7 +542,7 @@ This total order, is a linearization of a partial order which naturally arises, 
 
 (xref:contained_induced_partial_order[see below])
 
-But, if there is more than one flag, then this order is inherently partial and should never be used as _Compare_ predicate for containers or algorithms.
+But, when there is more than one flag, then this order is inherently partial and should never be used as _Compare_ predicate for containers or algorithms.
 
 As there are applications for two different orders on the same type, the best would be different sets of relational operators, but C++ offers only one such. +
 One approach would be, deleting all relational operators for flags and forcing the user to call a function / pass a _Compare_ type as predicate.
@@ -674,15 +674,15 @@ Since logical operators `&&` and `||` can easily get confused with their bitwise
 Nevertheless, sometimes `operator &&` comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. When for an enabled enumeration `E`
 [source]
 ----
-BOOST_FLAGS_ENABLE_LOGICAL_AND(E)
+BOOST_FLAGS(E, BOOST_FLAGS_LOGICAL_AND)
 
 // resp. for a class local enum
-BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)
+BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_LOGICAL_AND)
 
 // instead of 
-// BOOST_FLAGS_ENABLE(E) 
+// BOOST_FLAGS(E) 
 // resp.
-// BOOST_FLAGS_ENABLE_LOCAL(E) 
+// BOOST_FLAGS_LOCAL(E) 
 ----
 // is defined or `boost::flags::enable<E>` inherits from `boost::flags::logical_and`, 
 is defined, then `operator &&` is overloaded for `E` with the semantics

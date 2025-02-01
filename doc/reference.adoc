@@ -32,7 +32,69 @@ Concepts are used if available and not disabled using xref:BOOST_FLAGS_HAS_CONCE
 ## Macros to opt-in
 
 
-### BOOST_FLAGS_ENABLE
+### BOOST_FLAGS
+
+For an enumeration `E` at namespace scope use the following variadic macro to enables all operators of Boost.Flags
+[source]
+----
+BOOST_FLAGS(E)
+----
+
+resp.
+
+[source]
+----
+BOOST_FLAGS(E, OPTIONS)
+----
+where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
+containing at most one of each of the following options:
+* `BOOST_FLAGS_LOGICAL_AND`            : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
+* `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
+
+furthermore at most one of the following relational-operator options may be specified:
+* `BOOST_FLAGS_STD_REL`                : use operators <, <=, >, >= and <=> which accept two compatible flag-arguments and compare their underlying values (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[BOOST_FLAGS_SPECIALIZE_STD_LESS])
+* `BOOST_FLAGS_PARTIAL_ORDER_REL`      : use order induced by flag entailment relation for operators <, <=, >, >= and <=> (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER])
+* `BOOST_FLAGS_DELETE_REL`             : delete operators <, <=, >, >= and <=> for type E (cf. xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE])
+
+If no relational-operator option is specified, the macro defaults to using 'BOOST_FLAGS_STD_REL`.
+
+[NOTE]
+====
+When errors are encountered using [BOOST_FLAGS(E, ...)] this can have multiple reasons (list is NOT exhaustive):
+* the invoked preprocessor is not standard conforming to at least C++11
+* misspelling one of the options
+* forgetting a comma or specifying a comma too much
+* specifying the same options more than once
+* specifying more than one relational-operator option
+====
+
+`BOOST_FLAGS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+
+
+### BOOST_FLAGS_LOCAL
+
+For an enumeration `E` at class scope use the following variadic macro to enables all operators of Boost.Flags
+[source]
+----
+BOOST_FLAGS_LOCAL(E)
+----
+
+resp.
+
+[source]
+----
+BOOST_FLAGS_LOCAL(E, OPTIONS)
+----
+enables all operators of Boost.Flags. +
+For the description of `OPTIONS` please refer to xref:BOOST_FLAGS[BOOST_FLAGS]+
+`BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
+
+
+### Non-variadic macros for enabling
+
+The following macros are primarily provided for non standard conforming preprocessors.
+
+#### BOOST_FLAGS_ENABLE
 
 For an enumeration `E` at namespace scope the macro 
 [source]
@@ -42,7 +104,7 @@ BOOST_FLAGS_ENABLE(E)
 enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
-### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT
+#### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT
 
 For an enumeration `E` at namespace scope the macro 
 [source]
@@ -53,7 +115,7 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
-### BOOST_FLAGS_ENABLE_LOGICAL_AND
+#### BOOST_FLAGS_ENABLE_LOGICAL_AND
 
 For an enumeration `E` at namespace scope the macro 
 [source]
@@ -65,7 +127,7 @@ enables all operators of Boost.Flags and enables `operator&&` for `E` (see also 
 
 
 
-### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND
+#### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND
 
 For an enumeration `E` at namespace scope the macro 
 [source]
@@ -79,7 +141,7 @@ enables all operators of Boost.Flags,disables the usage of `complement<E>` (see 
 
 
 
-### BOOST_FLAGS_ENABLE_LOCAL
+#### BOOST_FLAGS_ENABLE_LOCAL
 
 For an enumeration `E` at class scope the macro 
 [source]
@@ -90,7 +152,7 @@ enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
 
 
-### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT
+#### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT
 
 For an enumeration `E` at class scope the macro 
 [source]
@@ -101,7 +163,7 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
-### BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND
+#### BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND
 
 For an enumeration `E` at class scope the macro 
 [source]
@@ -113,7 +175,7 @@ enables all operators of Boost.Flags and enables `operator&&` for `E` (see also 
 
 
 
-### BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND
+#### BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND
 
 For an enumeration `E` at class scope the macro 
 [source]
@@ -129,7 +191,7 @@ enables all operators of Boost.Flags,disables the usage of `complement<E>` (see 
 
 [NOTE]
 ====
-The functions, types and macros in this section are usually not used directly, but implicitly through one of the `BOOST_FLAGS_ENABLE...` macros.
+The functions, types and macros in this section are usually not used directly, but implicitly through one of the `BOOST_FLAGS...` macros.
 ====
 
 ### BOOST_FLAGS_USING_OPERATORS
@@ -189,15 +251,15 @@ Since the language does not allow `using` declarations at class scope, Boost.Fla
 
 The function `boost_flags_enable` can be overloaded for an enumeration `E` either 
 
-* with return-type `bool`:
+* with return-type `std::integral_constant<bool, true>`:
 +
 [source]
 ----
-constexpr bool boost_flags_enable(E) { return true; }
+constexpr std::integral_constant<bool, true> boost_flags_enable(E) { return {}; }
 ----
 enables Boost.Flags for an enumeration `E`. All optional features are disabled.
 
-* or with return-type `boost::flags::options`:
+* or with return-type `boost::flags::options_constant<__options-value__>`:
 The flag-enumeration `boost::flags::options` has the options
 ** `enable`:  enables `E`
 ** `disable_complement`:  disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
@@ -206,12 +268,12 @@ e.g.
 +
 [source]
 ----
-constexpr boost::flags::options boost_flags_enable(E) {
-    return boost::flags::options::enable            // enable E (required)
+constexpr boost::flags::options_constant<
+        boost::flags::options::enable            // enable E (required)
         | boost::flags::options::disable_complement // disable the usage of the complement
         | boost::flags::options::logical_and        // enable operator&&
-        ;
-}
+    > 
+        boost_flags_enable(E) { return {}; }
 ----
 
 The function `boost_flags_enable` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].

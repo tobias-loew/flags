@@ -44,7 +44,7 @@ namespace test_in_class_ns {
             };
             // enable flags_enum
 #ifdef TEST_COMPILE_FAIL_ADL_1
-            friend constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+            friend constexpr inline std::integral_constant<bool, true> boost_flags_enable(flags_enum) { return {}; }
 #else
             BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
 #endif
@@ -66,7 +66,7 @@ namespace test_in_class_ns {
             };
 
 #ifdef TEST_COMPILE_FAIL_ADL_2
-            friend constexpr inline bool boost_flags_enable(flags_enum) { return true; }
+            friend constexpr inline std::integral_constant<bool, true> boost_flags_enable(flags_enum) { return {}; }
 #else
             BOOST_FLAGS_ENABLE_LOCAL(flags_enum)
 #endif
