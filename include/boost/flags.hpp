@@ -2431,7 +2431,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 // - BOOST_FLAGS_PARTIAL_ORDER_REL      : use order induced by flag-subset relation for operators <, <=, >, >= and <=>
 // - BOOST_FLAGS_DELETE_REL             : delete operators <, <=, >, >= and <=> if at least on e argument is of type E (or `complement`s of E)
 //
-// If no relational-operator option is specified, the macro defaults to using BOOST_FLAGS_DELETE_REL
+// If no relational-operator option is specified, the macro defaults to using BOOST_FLAGS_STD_REL
 // 
 // When you encounter errors using BOOST_FLAGS(E, ...) this can have multiple reasons (list is NOT exhaustive)
 //
