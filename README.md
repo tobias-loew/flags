@@ -7,7 +7,7 @@ presentation at C++-Now 2024 not online yet, patience please...
 
 [read the docs](https://tobias-loew.github.io/flags)
 
-[example on Godbolt compiler explorer](https://godbolt.org/z/5ffq6eGaW)
+[example on Godbolt compiler explorer](https://godbolt.org/z/PPoKaGrzc)
 
 [![CI](https://github.com/tobias-loew/flags/actions/workflows/ci.yml/badge.svg)](https://github.com/tobias-loew/flags/actions/workflows/ci.yml)
 
