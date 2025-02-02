@@ -2425,7 +2425,11 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 // containing at most one of each of the following options:
 // - BOOST_FLAGS_LOGICAL_AND            : enable operator&& for enum E
 // - BOOST_FLAGS_DISABLE_COMPLEMENT     : disable 'complement' template for enum E
-// 
+// - BOOST_FLAGS_NO_FORWARDING          : do not forward operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS)
+//                                        This is required when using operators from namespace boost::flags inside classes 
+//                                        (through usage of BOOST_FLAGS(...) or BOOST_FLAGS_USING_OPERATORS(...) in classes
+//                                        namespace before its definition). See documentation for further details.
+//  
 // furthermore at most one of the following relational-operator options may be specified:
 // - BOOST_FLAGS_STD_REL                : use operators <, <=, >, >= and <=> as specified by the C++ standard
 // - BOOST_FLAGS_PARTIAL_ORDER_REL      : use order induced by flag-subset relation for operators <, <=, >, >= and <=>
@@ -2445,6 +2449,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) | boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) | boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_PARTIAL_ORDER_REL(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
@@ -2456,6 +2461,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) 1
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_PARTIAL_ORDER_REL(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
@@ -2463,10 +2469,23 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_(...) 0
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
+// needed for BOOST_FLAGS_LOCAL
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_NO_FORWARDING(NAME, ...) 1 
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_PARTIAL_ORDER_REL(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_IS_NO_FORWARDING_(...) 0
+#define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+
+
 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_GENERATE_STD_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_PARTIAL_ORDER_REL(NAME, ...) BOOST_FLAGS_GENERATE_PARTIAL_ORDER_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
@@ -2539,12 +2558,27 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)
 
 
+
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND)                              \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                              \
+    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                         \
+
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND)
+
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)                         \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND)
+
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND)                         \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)
+
+
+
+
+
 #define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                                     \
     friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) {                 \
         return {};                                        \
     }                                                                                     \
-    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
-
 
 
 
@@ -2584,7 +2618,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 
 #define BOOST_FLAGS_LOCAL(E, ...)                                                        \
     BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                         \
-    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))                         \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__), BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))  \
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                                                         \
 
 

@@ -136,6 +136,7 @@ int main() {
 To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS` for `E` in the same namespace as `E`
 [source]
 ----
+enum class E:unsigned int { ... };
 BOOST_FLAGS(E)
 ----
 
@@ -153,6 +154,43 @@ class my_class {
     // ...
 };
 ----
+
+
+[NOTE]
+====
+Inside class definitions, `constexpr` constructions using Boost.Flags enabled operators may fail to compile:
+[source,subs="+quotes,+macros"]
+----
+class my_class {
+    // ...
+    enum class E:unsigned int { 
+        flag_0 = 0x1,
+        flag_1 = 0x2,
+    };
+    BOOST_FLAGS_LOCAL(E)
+    
+    static constexpr E flag_0_or_flag_1 = pass:[<span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>]
+};
+----
+
+The reason is, that `BOOST_FLAGS_LOCAL(E)` generates `friend` operators which are _declared_ in the class but _defined_ is after it, thus they are 
+inaccessible for in-class `constexpr` constructions. To workaround this limitation, please use the following code:
+[source]
+----
+BOOST_FLAGS_USING_OPERATORS()
+
+class my_class {
+    // ...
+    enum class E:unsigned int { 
+        flag_0 = 0x1,
+        flag_1 = 0x2,
+    };
+    BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_NO_FORWARDING)
+    
+    static constexpr E flag_0_or_flag_1 = E::flag_0 | E::flag_1;
+};
+----
+====
 
 // Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling:
 // [source]

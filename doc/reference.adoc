@@ -48,19 +48,24 @@ BOOST_FLAGS(E, OPTIONS)
 ----
 where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
 containing at most one of each of the following options:
+
 * `BOOST_FLAGS_LOGICAL_AND`            : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 * `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
+* `BOOST_FLAGS_NO_FORWARDING`       : do not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
+
 
 furthermore at most one of the following relational-operator options may be specified:
-* `BOOST_FLAGS_STD_REL`                : use operators <, <=, >, >= and <=> which accept two compatible flag-arguments and compare their underlying values (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[BOOST_FLAGS_SPECIALIZE_STD_LESS])
-* `BOOST_FLAGS_PARTIAL_ORDER_REL`      : use order induced by flag entailment relation for operators <, <=, >, >= and <=> (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER])
-* `BOOST_FLAGS_DELETE_REL`             : delete operators <, <=, >, >= and <=> for type E (cf. xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE])
+
+* `BOOST_FLAGS_STD_REL`                : use operators <, <=, >, >= and <=> which accept two compatible flag-arguments and compare their underlying values (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[`BOOST_FLAGS_SPECIALIZE_STD_LESS`])
+* `BOOST_FLAGS_PARTIAL_ORDER_REL`      : use order induced by flag entailment relation for operators <, <=, >, >= and <=> (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[`BOOST_FLAGS_REL_OPS_PARTIAL_ORDER`])
+* `BOOST_FLAGS_DELETE_REL`             : delete operators <, <=, >, >= and <=> for type E (cf. xref:BOOST_FLAGS_REL_OPS_DELETE[`BOOST_FLAGS_REL_OPS_DELETE`])
 
 If no relational-operator option is specified, the macro defaults to using 'BOOST_FLAGS_STD_REL`.
 
 [NOTE]
 ====
 When errors are encountered using [BOOST_FLAGS(E, ...)] this can have multiple reasons (list is NOT exhaustive):
+
 * the invoked preprocessor is not standard conforming to at least C++11
 * misspelling one of the options
 * forgetting a comma or specifying a comma too much
@@ -68,7 +73,7 @@ When errors are encountered using [BOOST_FLAGS(E, ...)] this can have multiple r
 * specifying more than one relational-operator option
 ====
 
-`BOOST_FLAGS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+`BOOST_FLAGS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[`BOOST_FLAGS_USING_OPERATORS()`]).
 
 
 ### BOOST_FLAGS_LOCAL
