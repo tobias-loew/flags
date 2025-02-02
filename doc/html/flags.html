@@ -859,7 +859,8 @@ pre.rouge .gs {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span><span class="o">:</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+<span class="n">BOOST_FLAGS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -877,6 +878,54 @@ pre.rouge .gs {
     <span class="c1">// ...</span>
 <span class="p">};</span></code></pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Inside class definitions, <code>constexpr</code> constructions using Boost.Flags enabled operators may fail to compile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span><span class="o">:</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
+        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
+        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+
+    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The reason is, that <code>BOOST_FLAGS_LOCAL(E)</code> generates <code>friend</code> operators which are <em>declared</em> in the class but <em>defined</em> is after it, thus they are
+inaccessible for in-class <code>constexpr</code> constructions. To workaround this limitation, please use the following code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_USING_OPERATORS</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span><span class="o">:</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="p">{</span>
+        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
+        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_NO_FORWARDING</span><span class="p">)</span>
+
+    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_0</span> <span class="o">|</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_1</span><span class="p">;</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with</p>
@@ -2064,15 +2113,36 @@ If <code>flag_generator</code> is constructor with flags not having exactly one 
 </div>
 <div class="paragraph">
 <p>where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
-containing at most one of each of the following options:
-* <code>BOOST_FLAGS_LOGICAL_AND</code>            : enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)
-* <code>BOOST_FLAGS_DISABLE_COMPLEMENT</code>    : disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>)</p>
+containing at most one of each of the following options:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>BOOST_FLAGS_LOGICAL_AND</code>            : enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)</p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_DISABLE_COMPLEMENT</code>    : disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>)</p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_NO_FORWARDING</code>       : do not generate forwarding <code>friend</code> operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also <a href="#opt_in">Opt-in</a> and <a href="#boost_flags_forward_operators"><code>BOOST_FLAGS_FORWARD_OPERATORS</code></a>)</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>furthermore at most one of the following relational-operator options may be specified:
-* <code>BOOST_FLAGS_STD_REL</code>                : use operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; which accept two compatible flag-arguments and compare their underlying values (cf. <a href="#boost_flags_specialize_std_less">BOOST_FLAGS_SPECIALIZE_STD_LESS</a>)
-* <code>BOOST_FLAGS_PARTIAL_ORDER_REL</code>      : use order induced by flag entailment relation for operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; (cf. <a href="#boost_flags_rel_ops_partial_order">BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</a>)
-* <code>BOOST_FLAGS_DELETE_REL</code>             : delete operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; for type E (cf. <a href="#boost_flags_rel_ops_delete">BOOST_FLAGS_REL_OPS_DELETE</a>)</p>
+<p>furthermore at most one of the following relational-operator options may be specified:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>BOOST_FLAGS_STD_REL</code>                : use operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; which accept two compatible flag-arguments and compare their underlying values (cf. <a href="#boost_flags_specialize_std_less"><code>BOOST_FLAGS_SPECIALIZE_STD_LESS</code></a>)</p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_PARTIAL_ORDER_REL</code>      : use order induced by flag entailment relation for operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; (cf. <a href="#boost_flags_rel_ops_partial_order"><code>BOOST_FLAGS_REL_OPS_PARTIAL_ORDER</code></a>)</p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_DELETE_REL</code>             : delete operators &lt;, &#8656;, &gt;, &gt;= and &lt;&#8658; for type E (cf. <a href="#boost_flags_rel_ops_delete"><code>BOOST_FLAGS_REL_OPS_DELETE</code></a>)</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>If no relational-operator option is specified, the macro defaults to using 'BOOST_FLAGS_STD_REL`.</p>
@@ -2085,19 +2155,33 @@ containing at most one of each of the following options:
 </td>
 <td class="content">
 <div class="paragraph">
-<p>When errors are encountered using [BOOST_FLAGS(E, &#8230;&#8203;)] this can have multiple reasons (list is NOT exhaustive):
-* the invoked preprocessor is not standard conforming to at least C++11
-* misspelling one of the options
-* forgetting a comma or specifying a comma too much
-* specifying the same options more than once
-* specifying more than one relational-operator option</p>
+<p>When errors are encountered using [BOOST_FLAGS(E, &#8230;&#8203;)] this can have multiple reasons (list is NOT exhaustive):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the invoked preprocessor is not standard conforming to at least C++11</p>
+</li>
+<li>
+<p>misspelling one of the options</p>
+</li>
+<li>
+<p>forgetting a comma or specifying a comma too much</p>
+</li>
+<li>
+<p>specifying the same options more than once</p>
+</li>
+<li>
+<p>specifying more than one relational-operator option</p>
+</li>
+</ul>
 </div>
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p><code>BOOST_FLAGS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+<p><code>BOOST_FLAGS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators"><code>BOOST_FLAGS_USING_OPERATORS()</code></a>).</p>
 </div>
 </div>
 <div class="sect3">
