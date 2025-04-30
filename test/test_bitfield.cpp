@@ -20,8 +20,9 @@ namespace TEST_NAMESPACE {
 enum 
 #ifndef TEST_COMPILE_UNSCOPED
     class
-#endif // TEST_COMPILE_UNSCOPED
     flags_enum : uint8_t {
+#endif // TEST_COMPILE_UNSCOPED
+    flags_enum {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -44,8 +45,8 @@ constexpr auto to_underlying(E value)
 
 namespace ns1 {
     struct bf_struct {
-        int i : 3;
-        flags_enum f : 4;
+        int i : 2;
+        flags_enum f : 5;
     };
 }
 
