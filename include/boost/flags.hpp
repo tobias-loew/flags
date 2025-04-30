@@ -1063,10 +1063,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::conjunction>)
+            requires (std::is_base_of<bitfield_proxy, T1> && BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::conjunction>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
-        template<typename T1, typename T2>
-        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
+        template<typename T1, typename T2,
+            typename std::enable_if<std::is_base_of<bitfield_proxy, T1>::value && BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::conjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
             constexpr void
             operator&=(T1 && lhs, T2 rhs) noexcept {
@@ -1091,10 +1091,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::disjunction>)
+            requires (std::is_base_of<bitfield_proxy, T1>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::disjunction>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::disjunction>::value, int*>::type = nullptr >
+        typename std::enable_if<std::is_base_of<bitfield_proxy, T1>::value && BinaryAssignmentEnabled<T1, T2, impl::disjunction>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
             constexpr void
             operator|=(T1 && lhs, T2 rhs) noexcept {
@@ -1119,10 +1119,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::not_equal>)
+            requires (std::is_base_of<bitfield_proxy, T1>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::not_equal>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
-        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
+        typename std::enable_if<std::is_base_of<bitfield_proxy, T1>::value && BinaryAssignmentEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
             constexpr void
             operator^=(T1& lhs, T2 rhs) noexcept {
