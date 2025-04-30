@@ -3,7 +3,7 @@
 //  Boost.Flags
 //  non-intrusive bitwise operators for flag-like enumerations
 //
-//  Copyright Tobias Loew 2024. Use, modification and
+//  Copyright Tobias Loew 2025. Use, modification and
 //  distribution is subject to the Boost Software License, Version
 //  1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -2621,6 +2621,32 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__), BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))  \
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                                                         \
 
+
+// bitfield: assignment operators require first argument to be lvalue reference -> proxy required
+
+#define BOOST_FLAGS_BITFIELD_PROXY_NAMES(MEMBER, STRUCT_NAME, FUNC_NAME)                                                            \
+    template<typename OUTER>                                                                                                        \
+    struct STRUCT_NAME:bitfield_proxy_impl<std::remove_cvref_t<decltype(MEMBER)>>{                                                  \
+        OUTER* self;                                                                                                                \
+        STRUCT_NAME(OUTER* self):self{self} {}                                                                                      \
+        struct proxy{                                                                                                               \
+            using enum_type = std::remove_cvref_t<decltype(MEMBER)>;                                                                \
+                                                                                                                                    \
+            proxy(OUTER* self):self{self}, ref{self->MEMBER}{}                                                                      \
+            ~proxy(){self->MEMBER = ref;}                                                                                           \
+            enum_type ref;                                                                                                          \
+            OUTER* self;                                                                                                            \
+            enum_type& get_ref(){                                                                                                   \
+                return ref;                                                                                                         \
+            }                                                                                                                       \
+        };                                                                                                                          \
+        auto get_proxy(){                                                                                                           \
+            return proxy{self};                                                                                                     \
+        }                                                                                                                           \
+    };                                                                                                                              \
+    auto FUNC_NAME(){return STRUCT_NAME{this};};                                                                                    \
+
+#define BOOST_FLAGS_BITFIELD_PROXY(MEMBER)      BOOST_FLAGS_BITFIELD_PROXY_NAMES(MEMBER, BOOST_PP_CAT(bitfield_proxy_,MEMBER), BOOST_PP_CAT(MEMBER,_ref))
 
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
