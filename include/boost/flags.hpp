@@ -2679,23 +2679,23 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     template<typename OUTER>                                                                                                        \
     struct STRUCT_NAME:boost::flags::impl::bitfield_proxy_impl<std::remove_cvref_t<decltype(MEMBER)>>{                              \
         OUTER* self;                                                                                                                \
-        STRUCT_NAME(OUTER* self):self{self} {}                                                                                      \
+        constexpr STRUCT_NAME(OUTER* self):self{self} {}                                                                            \
         struct proxy{                                                                                                               \
             using enum_type = std::remove_cvref_t<decltype(MEMBER)>;                                                                \
                                                                                                                                     \
-            proxy(OUTER* self):self{self}, ref{self->MEMBER}{}                                                                      \
-            ~proxy(){self->MEMBER = ref;}                                                                                           \
+            constexpr proxy(OUTER* self):self{self}, ref{self->MEMBER}{}                                                            \
+            constexpr ~proxy(){self->MEMBER = ref;}                                                                                 \
             enum_type ref;                                                                                                          \
             OUTER* self;                                                                                                            \
-            enum_type& get_ref(){                                                                                                   \
+            constexpr enum_type& get_ref(){                                                                                         \
                 return ref;                                                                                                         \
             }                                                                                                                       \
         };                                                                                                                          \
-        auto get_proxy(){                                                                                                           \
+        constexpr auto get_proxy(){                                                                                                 \
             return proxy{self};                                                                                                     \
         }                                                                                                                           \
     };                                                                                                                              \
-    auto FUNC_NAME(){return STRUCT_NAME{this};};                                                                                    \
+    constexpr auto FUNC_NAME(){return STRUCT_NAME{this};};                                                                          \
 
 #define BOOST_FLAGS_BITFIELD_PROXY(MEMBER)      BOOST_FLAGS_BITFIELD_PROXY_NAMES(MEMBER, bitfield_proxy_##MEMBER, MEMBER##_ref)
 
