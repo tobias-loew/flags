@@ -379,9 +379,16 @@ namespace boost {
         // derive `enable` from this type to enable support for logical and
         struct logical_and {};
 
-
+        struct bitfield_proxy {};
 
         namespace impl {
+            template<typename E>
+            struct bitfield_proxy_impl : bitfield_proxy
+            {
+                using enum_type = E;
+            };
+
+
             // error tag indicating invalid/incompatible types for operation
             struct error_tag {};
 
@@ -1054,6 +1061,20 @@ namespace boost {
             return (lhs = lhs & rhs), lhs;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::conjunction>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::conjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr void
+            operator&=(T1 && lhs, T2 rhs) noexcept {
+            auto proxy = lhs.get_proxy();
+            // comma operator used to only have a return statement in the function (required for C++11)
+            proxy.get_ref() &= rhs;
+        }
+
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
@@ -1068,6 +1089,20 @@ namespace boost {
             return (lhs = lhs | rhs), lhs;
         }
 
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::disjunction>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::disjunction>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr void
+            operator|=(T1 && lhs, T2 rhs) noexcept {
+            auto proxy = lhs.get_proxy();
+            // comma operator used to only have a return statement in the function (required for C++11)
+            proxy.get_ref() |= rhs;
+        }
+
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
@@ -1080,6 +1115,20 @@ namespace boost {
             operator^=(T1& lhs, T2 rhs) noexcept {
             // comma operator used to only have a return statement in the function (required for C++11)
             return (lhs = lhs ^ rhs), lhs;
+        }
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+            requires (std::derived_from<T1, bitfield_proxy>&& BinaryAssignmentEnabled<typename T1::enum_type, T2, impl::not_equal>)
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T1, typename T2>
+        typename std::enable_if<BinaryAssignmentEnabled<T1, T2, impl::not_equal>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            constexpr void
+            operator^=(T1& lhs, T2 rhs) noexcept {
+            auto proxy = lhs.get_proxy();
+            // comma operator used to only have a return statement in the function (required for C++11)
+            proxy.get_ref() ^= rhs;
         }
 
 
@@ -2622,6 +2671,33 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                                                         \
 
 
+
+
+// bitfield: assignment operators require first argument to be lvalue reference -> proxy required
+
+#define BOOST_FLAGS_BITFIELD_PROXY_NAMES(MEMBER, STRUCT_NAME, FUNC_NAME)                                                            \
+    template<typename OUTER>                                                                                                        \
+    struct STRUCT_NAME:boost::flags::impl::bitfield_proxy_impl<std::remove_cvref_t<decltype(MEMBER)>>{                              \
+        OUTER* self;                                                                                                                \
+        STRUCT_NAME(OUTER* self):self{self} {}                                                                                      \
+        struct proxy{                                                                                                               \
+            using enum_type = std::remove_cvref_t<decltype(MEMBER)>;                                                                \
+                                                                                                                                    \
+            proxy(OUTER* self):self{self}, ref{self->MEMBER}{}                                                                      \
+            ~proxy(){self->MEMBER = ref;}                                                                                           \
+            enum_type ref;                                                                                                          \
+            OUTER* self;                                                                                                            \
+            enum_type& get_ref(){                                                                                                   \
+                return ref;                                                                                                         \
+            }                                                                                                                       \
+        };                                                                                                                          \
+        auto get_proxy(){                                                                                                           \
+            return proxy{self};                                                                                                     \
+        }                                                                                                                           \
+    };                                                                                                                              \
+    auto FUNC_NAME(){return STRUCT_NAME{this};};                                                                                    \
+
+#define BOOST_FLAGS_BITFIELD_PROXY(MEMBER)      BOOST_FLAGS_BITFIELD_PROXY_NAMES(MEMBER, bitfield_proxy_##MEMBER, MEMBER##_ref)
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
 
