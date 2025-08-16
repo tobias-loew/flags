@@ -116,19 +116,22 @@ jobs:
             install: clang-9
           - toolset: clang
             compiler: clang++-10
-            cxxstd: "11,14,17,2a"
+            cxxstd: "03,11,14,17,2a"
+            container: ubuntu:20.04
             os: ubuntu-latest
-            container: ubuntu:22.04
+            install: clang-10
           - toolset: clang
             compiler: clang++-11
-            cxxstd: "11,14,17,2a"
+            cxxstd: "03,11,14,17,2a"
+            container: ubuntu:20.04
             os: ubuntu-latest
-            container: ubuntu:22.04
+            install: clang-11
           - toolset: clang
             compiler: clang++-12
-            cxxstd: "11,14,17,2a"
+            cxxstd: "03,11,14,17,2a"
+            container: ubuntu:20.04
             os: ubuntu-latest
-            container: ubuntu:22.04
+            install: clang-12
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
@@ -171,6 +174,12 @@ jobs:
             os: ubuntu-latest
             container: ubuntu:24.04
             install: clang-19
+          - toolset: clang
+            compiler: clang++-20
+            cxxstd: "03,11,14,17,20,23,2c"
+            container: ubuntu:25.04
+            os: ubuntu-latest
+            install: clang-20
           - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-13
@@ -414,20 +423,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-  
-      - name: Set reusable strings
-        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - uses: Jimver/cuda-toolkit@v0.2.21
+      - uses: actions/checkout@v4
+      - uses: Jimver/cuda-toolkit@v0.2.16
         with:
-          cuda: '12.5.0'
+          cuda: '11.7.1'
           linux-local-args: '["--toolkit"]'
-          
+
       - name: Setup Boost
         run: |
           cd ..
@@ -451,19 +452,11 @@ jobs:
 
 
   cuda-windows:
-    runs-on: windows-2022
+    runs-on: windows-2019
 
     steps:
-      - uses: actions/checkout@v3
-  
-      - name: Set reusable strings
-        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - uses: Jimver/cuda-toolkit@v0.2.24
+      - uses: actions/checkout@v4
+      - uses: Jimver/cuda-toolkit@v0.2.16
       - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup Boost
@@ -490,6 +483,7 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
 
 
 
