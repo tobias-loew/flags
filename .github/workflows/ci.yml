@@ -260,19 +260,36 @@ jobs:
           - toolset: msvc-14.0
             cxxstd: "11,14"
             addrmd: 32,64
-            os: windows-2019
-            msvcver: 2017
-            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
-          - toolset: msvc-14.1
-            cxxstd: "11,14,17,20,latest"
-            addrmd: 32,64
-            os: windows-2019
+            os: windows-2022
             msvcver: 2017
             environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
           - toolset: msvc-14.0
             cxxstd: "11,14"
             addrmd: 32,64
-            os: windows-2019
+            os: windows-2025
+            msvcver: 2017
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
+          - toolset: msvc-14.1
+            cxxstd: "11,14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2022
+            msvcver: 2017
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
+          - toolset: msvc-14.1
+            cxxstd: "11,14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2025
+            msvcver: 2017
+            environment_script: 'call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvars64.bat"'
+          - toolset: msvc-14.0
+            cxxstd: "11,14"
+            addrmd: 32,64
+            os: windows-2022
+            msvcver: 2019
+          - toolset: msvc-14.0
+            cxxstd: "11,14"
+            addrmd: 32,64
+            os: windows-2025
             msvcver: 2019
 
           # commented since it does not find cl.exe, but msvc-14.1 is tested anyway with VS 2017 above 
@@ -286,22 +303,43 @@ jobs:
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
-            os: windows-2019
+            os: windows-2022
+            msvcver: 2019
+          - toolset: msvc-14.2
+            cxxstd: "14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2025
             msvcver: 2019
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
             os: windows-2022
             msvcver: 2022
+          - toolset: msvc-14.3
+            cxxstd: "14,17,20,latest"
+            addrmd: 32,64
+            os: windows-2025
+            msvcver: 2022
           - toolset: clang-win
             cxxstd: "14,17,latest"
             addrmd: 32,64
             os: windows-2022
             msvcver: 2022
+          - toolset: clang-win
+            cxxstd: "14,17,latest"
+            addrmd: 32,64
+            os: windows-2025
+            msvcver: 2022
           - toolset: gcc
             cxxstd: "11,14,17,2a"
             addrmd: 64
-            os: windows-2019
+            os: windows-2022
+            msvcver: 2019
+            set_env: "set GCC_ON_WINDOWS=1"
+          - toolset: gcc
+            cxxstd: "11,14,17,2a"
+            addrmd: 64
+            os: windows-2025
             msvcver: 2019
             set_env: "set GCC_ON_WINDOWS=1"
 
@@ -435,7 +473,7 @@ jobs:
 
 
   cuda-windows:
-    runs-on: windows-2019
+    runs-on: [windows-2022, windows-2025]
 
     steps:
       - uses: actions/checkout@v3
@@ -474,3 +512,4 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
