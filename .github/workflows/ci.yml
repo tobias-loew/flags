@@ -40,11 +40,13 @@ jobs:
             install: g++-6
           - toolset: gcc-7
             cxxstd: "11,14,17"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: g++-7
           - toolset: gcc-8
             cxxstd: "11,14,17,2a"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: g++-8
           - toolset: gcc-9
             cxxstd: "11,14,17,2a"
@@ -91,35 +93,42 @@ jobs:
           - toolset: clang
             compiler: clang++-6.0
             cxxstd: "11,14,17"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: clang-6.0
           - toolset: clang
             compiler: clang++-7
             cxxstd: "11,14,17"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: clang-7
           - toolset: clang
             compiler: clang++-8
             cxxstd: "11,14,17"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: clang-8
           - toolset: clang
             compiler: clang++-9
             cxxstd: "11,14,17,2a"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: clang-9
           - toolset: clang
             compiler: clang++-10
             cxxstd: "11,14,17,2a"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,2a"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,2a"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
@@ -442,7 +451,7 @@ jobs:
 
 
   cuda-windows:
-    runs-on: windows-2025
+    runs-on: windows-2022
 
     steps:
       - uses: actions/checkout@v3
@@ -481,6 +490,7 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
 
 
 
