@@ -118,17 +118,17 @@ jobs:
             compiler: clang++-10
             cxxstd: "11,14,17,2a"
             os: ubuntu-latest
-            container: ubuntu:18.04
+            container: ubuntu:22.04
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,2a"
             os: ubuntu-latest
-            container: ubuntu:18.04
+            container: ubuntu:22.04
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,2a"
             os: ubuntu-latest
-            container: ubuntu:18.04
+            container: ubuntu:22.04
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
@@ -463,7 +463,7 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - uses: Jimver/cuda-toolkit@v0.2.21
+      - uses: Jimver/cuda-toolkit@v0.2.24
       - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup Boost
@@ -490,6 +490,7 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
 
 
 
