@@ -1,19 +1,12 @@
-//////////////////////////////////////////////////////////////////
-//
-//  Boost.Flags
-//  non-intrusive bitwise operators for flag-like enumerations
-//
-//  Copyright Tobias Loew 2024. Use, modification and
-//  distribution is subject to the Boost Software License, Version
-//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
-//  http://www.boost.org/LICENSE_1_0.txt)
-//
-// For more information, see https://github.com/tobias-loew/flags
-//
-
-
 #ifndef BOOST_FLAGS_HPP_INCLUDED
 #define BOOST_FLAGS_HPP_INCLUDED
+
+//  Copyright 2024 Tobias Loew
+//
+//  Distributed under the Boost Software License, Version 1.0.
+//
+//  See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt
 
 #include <cstdint>
 #include <iterator>
