@@ -452,7 +452,7 @@ jobs:
 
 
   cuda-windows:
-    runs-on: windows-2019
+    runs-on: windows-2025
 
     steps:
       - uses: actions/checkout@v4
@@ -483,6 +483,7 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
 
 
 
