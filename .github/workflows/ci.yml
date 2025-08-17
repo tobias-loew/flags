@@ -120,13 +120,6 @@ jobs:
             container: ubuntu:20.04
             os: ubuntu-latest
             install: clang-10
-            package: libstdc++-10
-          - toolset: clang
-            compiler: clang++-10
-            cxxstd: "11,14,17,20"
-            container: ubuntu:20.04
-            os: ubuntu-latest
-            install: clang-10
             package: libstdc++-10-dev
           - toolset: clang
             compiler: clang++-11
@@ -134,42 +127,14 @@ jobs:
             container: ubuntu:20.04
             os: ubuntu-latest
             install: clang-11
-            package: libstdc++-10
-          - toolset: clang
-            compiler: clang++-11
-            cxxstd: "11,14,17,20"
-            container: ubuntu:20.04
-            os: ubuntu-latest
-            install: clang-11
-            package: libstdc++-11
-          - toolset: clang
-            compiler: clang++-11
-            cxxstd: "11,14,17,20"
-            container: ubuntu:20.04
-            os: ubuntu-latest
-            install: clang-11
-            package: libstdc++-11-dev
+            package: libstdc++-10-dev
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
             install: clang-12
-            package: libstdc++-12
-          - toolset: clang
-            compiler: clang++-12
-            cxxstd: "11,14,17,20"
-            container: ubuntu:20.04
-            os: ubuntu-latest
-            install: clang-12
-            package: libstdc++-10
-          - toolset: clang
-            compiler: clang++-12
-            cxxstd: "11,14,17,20"
-            container: ubuntu:20.04
-            os: ubuntu-latest
-            install: clang-12
-            package: libstdc++-12-dev
+            package: libstdc++-10-dev
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
