@@ -119,19 +119,49 @@ jobs:
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: clang-10
+            install: [clang-10,libstdc++-10]
+          - toolset: clang
+            compiler: clang++-10
+            cxxstd: "11,14,17,20"
+            container: ubuntu:20.04
+            os: ubuntu-latest
+            install: [clang-10,libstdc++-10-dev]
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: clang-11
+            install: [clang-11,libstdc++-10]
+          - toolset: clang
+            compiler: clang++-11
+            cxxstd: "11,14,17,20"
+            container: ubuntu:20.04
+            os: ubuntu-latest
+            install: [clang-11,libstdc++-11]
+          - toolset: clang
+            compiler: clang++-11
+            cxxstd: "11,14,17,20"
+            container: ubuntu:20.04
+            os: ubuntu-latest
+            install: [clang-11,libstdc++-11-dev]
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: clang-12
+            install: [clang-12,libstdc++-12]
+          - toolset: clang
+            compiler: clang++-12
+            cxxstd: "11,14,17,20"
+            container: ubuntu:20.04
+            os: ubuntu-latest
+            install: [clang-12,libstdc++-10]
+          - toolset: clang
+            compiler: clang++-12
+            cxxstd: "11,14,17,20"
+            container: ubuntu:20.04
+            os: ubuntu-latest
+            install: [clang-12,libstdc++-12-dev]
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
@@ -424,9 +454,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: Jimver/cuda-toolkit@v0.2.16
+  
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - uses: Jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '11.7.1'
+          cuda: '12.5.0'
           linux-local-args: '["--toolkit"]'
 
       - name: Setup Boost
