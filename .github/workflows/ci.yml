@@ -119,49 +119,49 @@ jobs:
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-10,libstdc++-10]
+            install: clang-10,libstdc++-10
           - toolset: clang
             compiler: clang++-10
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-10,libstdc++-10-dev]
+            install: clang-10,libstdc++-10-dev
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-11,libstdc++-10]
+            install: clang-11,libstdc++-10
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-11,libstdc++-11]
+            install: clang-11,libstdc++-11
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-11,libstdc++-11-dev]
+            install: clang-11,libstdc++-11-dev
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-12,libstdc++-12]
+            install: clang-12,libstdc++-12
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-12,libstdc++-10]
+            install: clang-12,libstdc++-10
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
             container: ubuntu:20.04
             os: ubuntu-latest
-            install: [clang-12,libstdc++-12-dev]
+            install: clang-12,libstdc++-12-dev
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
