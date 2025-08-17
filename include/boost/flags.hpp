@@ -14,105 +14,7 @@
 #include <utility>
 
 
-/////////////////////////////////////////////////////////////////
-//
-// purpose: 
-// 
-// - provides type-safe bitwise operations for flag-like 
-//   scoped / unscoped enumerations
-// 
-// - turns logical errors undetectable by th compiler
-//   into type errors
-// 
-// = is non-intrusive, only requires a template specialization
-//
-// Example:
-/*
-    #include <boost/flags.hpp>
-
-    enum class pizza_toppings : unsigned int {
-        tomato      = boost::flags::nth_bit(0), // == 0x01
-        cheese      = boost::flags::nth_bit(1), // == 0x02
-        salami      = boost::flags::nth_bit(2), // == 0x04
-        olives      = boost::flags::nth_bit(3), // == 0x08
-    };
-    // enable Boost.Flags for pizza_toppings
-    BOOST_FLAGS(pizza_toppings)
-
-    enum class ice_cream_flavours : unsigned int {
-        vanilla     = boost::flags::nth_bit(0), // == 0x01
-        chocolate   = boost::flags::nth_bit(1), // == 0x02
-        strawberry  = boost::flags::nth_bit(2), // == 0x04
-    };
-    // enable Boost.Flags for ice_cream_flavours
-    BOOST_FLAGS(ice_cream_flavours)
-
-    void order_pizza(pizza_toppings toppings) { ... }
-    void order_ice_cream(ice_cream_flavours flavours) { ... }
-
-    int main() {
-        pizza_toppings toppings = pizza_toppings::tomato | pizza_toppings::cheese; // a decent start
-        toppings |= pizza_toppings::salami | pizza_toppings::olives;    // even better
-        order_pizza(toppings);                              // order main course
-        order_pizza(toppings & ~pizza_toppings::salami);    // order a vegetarian pizza
-        order_ice_cream(ice_cream_flavours::vanilla);       // order desert
-
-        // error: negative mask is not a pizza topping
-        order_pizza(~pizza_toppings::olives);
-
-        // error: mixing different enumerations
-        toppings |= ice_cream_flavours::strawberry;
-
-        // error: called with wrong enumeration
-        order_ice_cream(toppings);
-    }
-
-
-
-    // another example
-
-    enum class flags_t : unsigned int {
-        a = 0x1,
-        b = 0x2,
-        c = 0x4,
-    };
-
-    enum class flags2_t : unsigned int {
-        e = boost::flags::nth_bit(0), // == 0x1
-        f = boost::flags::nth_bit(1), // == 0x2
-        g = boost::flags::nth_bit(2), // == 0x4
-    };
-
-    BOOST_FLAGS(flags_t)
-    BOOST_FLAGS(flags2_t)
-
-    void foo() {
-        auto ab = flags_t::a | flags_t::b;  // type: flags_t
-        auto bc = flags_t::b | flags_t::c;  // type: flags_t
-        auto ab_and_bc = ab & bc;           // type: flags_t
-        auto not_a = ~flags_t::a;           // type: boost::flags::complement<flags_t>
-        auto not_not_a = ~not_a;            // type: flags_t
-
-        auto not_a_and_ab = not_a & ab;     // type: flags_t
-        auto not_a_or_ab = not_a | ab;      // type: boost::flags::complement<flags_t>
-
-        // auto ae = flags_t::a | flags2_t::e;  // compilation error (different enumerations)
-
-
-        // test with Boolean result
-        // using pseudo operator BOOST_FLAG_AND
-        // BOOST_FLAG_AND(x,y) -> bool
-        // BOOST_FLAG_AND(x,y) ::= (x != 0) && (y != 0)
-        if (ab_and_bc BOOST_FLAG_AND not_a) {
-            // ...
-        }
-    }
-*/
-
-
-
-
-// detecting g++
+// detect g++ compiler
 #if defined(__GNUC__) && (!defined(__clang__) || defined(__MINGW32__))
 # define BOOST_FLAGS_IS_GCC_COMPILER 1
 #else // defined(__GNUC__) && !defined(__clang__)
@@ -120,7 +22,7 @@
 #endif // defined(__GNUC__) && !defined(__clang__)
 
 
-// check if the spaceship has alreay landed
+// check if the spaceship has already landed
 #if !defined(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 // g++ does not allow overwriting rel. operators with spaceship for enums 
 // cf. https://cplusplus.github.io/CWG/issues/2673.html
@@ -153,10 +55,7 @@
 # define BOOST_FLAGS_HAS_PARTIAL_ORDERING 1
 #endif // (BOOST_FLAGS_HAS_THREE_WAY_COMPARISON) && !(BOOST_FLAGS_HAS_PARTIAL_ORDERING)
 
-//
 // [[nodiscard]] attribute
-//
-
 #if !defined(BOOST_FLAGS_ATTRIBUTE_NODISCARD)
 # if defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
 # if __has_attribute(nodiscard)
@@ -233,8 +132,7 @@
 #endif // defined(BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS) && (BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS)
 
 
-
-// check, if inline varibles are supported (MSVC requires at least v142)
+// check, if inline variables are supported (MSVC requires at least v142)
 #if !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
 # if defined(__cpp_inline_variables) && (__cpp_inline_variables >= 201606L) && (!defined(_MSC_VER) || _MSC_VER >= 1920)
 #  define BOOST_FLAGS_HAS_INLINE_VARIABLES 1
@@ -244,7 +142,7 @@
 #endif // !defined(BOOST_FLAGS_HAS_INLINE_VARIABLES)
 
 
-// workaround for MSVC v140 (VS 2015): constexpr function templates not recoginzed correctly
+// workaround for MSVC v140 (VS 2015): constexpr function templates not recognized correctly
 // thus, cannot be used to construct std::integral_constants
 #if !defined(BOOST_FLAGS_NO_CONSTEXPR_FUNCTION_TEMPLATES)
 # if defined(_MSC_VER) && _MSC_VER < 1910
@@ -306,26 +204,21 @@
 
 // operator rewritten candidates
 #if !defined(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
-
 # if __cplusplus < 202002L
-
 #  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 0
-
 # else // __cplusplus < 202002L
-
 #  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 1
-
 # endif // __cplusplus < 202002L
-
 #endif // !defined(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
 
+// include <compare> if available
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 #include <compare>
 #endif
 
 
-// check, if consteval is avaiable
+// check, if consteval is available
 #ifdef __cpp_consteval
 #define BOOST_FLAGS_CONSTEVAL consteval
 #else
@@ -343,7 +236,7 @@ namespace boost {
         // `boost_flags_enable` will be found by ADL
         // (alt. specialize `template<> struct boost::flags::enable<my_enum> : std::true_type {};`)
         // to enable operations for scoped or unscoped enums
-        // 'boost_flags_enable' returns an intergral_constant instead of a plain value: this is needed
+        // 'boost_flags_enable' returns an integral_constant instead of a plain value: this is needed
         // for class-local flags, where operators are used in the class definition of constants. Since
         // the 'friend boost_flags_enable' is only declared (but not yet defined - this happens directly
         // after the class definition) we cannot call it, but only 'decltype' its returned type.
@@ -1352,7 +1245,6 @@ namespace boost {
 
             enum class compare_incomparable : compare_underlying_t {
                 unordered = -2
-                //                unordered = -128
             };
 
             struct zero_t
@@ -2096,25 +1988,25 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
                                                                                           \
 
 
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                              \
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                 \
 /* matches better than built-in relational operators */                                   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator< (E l, E r) noexcept {                                            \
+FRIEND constexpr bool operator< (E l, E r) noexcept {                                     \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) < 0;               \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator<= (E l, E r) noexcept {                                           \
+FRIEND constexpr bool operator<= (E l, E r) noexcept {                                    \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) <= 0;              \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator> (E l, E r) noexcept {                                            \
+FRIEND constexpr bool operator> (E l, E r) noexcept {                                     \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) > 0;               \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator>= (E l, E r) noexcept {                                           \
+FRIEND constexpr bool operator>= (E l, E r) noexcept {                                    \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) >= 0;              \
 }                                                                                         \
                                                                                           \
@@ -2124,7 +2016,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                   \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator< (T1 l, T2 r) noexcept {                                          \
+FRIEND constexpr bool operator< (T1 l, T2 r) noexcept {                                   \
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                          \
 }                                                                                         \
                                                                                           \
@@ -2133,7 +2025,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                   \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator<= (T1 l, T2 r) noexcept {                                         \
+FRIEND constexpr bool operator<= (T1 l, T2 r) noexcept {                                  \
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                         \
 }                                                                                         \
                                                                                           \
@@ -2142,7 +2034,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                   \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator> (T1 l, T2 r) noexcept {                                          \
+FRIEND constexpr bool operator> (T1 l, T2 r) noexcept {                                   \
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                          \
 }                                                                                         \
                                                                                           \
@@ -2151,7 +2043,7 @@ template<typename T1, typename T2>                                              
     std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                                   \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                                  \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator>= (T1 l, T2 r) noexcept {                                         \
+FRIEND constexpr bool operator>= (T1 l, T2 r) noexcept {                                  \
     return boost::flags::impl::subset_induced_compare(l, r) >= 0;                         \
 }                                                                                         \
                                                                                           \
@@ -2203,25 +2095,25 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
 
 #else // defined(_MSC_VER) && _MSC_VER <= 1900
 
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                              \
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                 \
 /* matches better than built-in relational operators */                                   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator< (E l, E r) noexcept {                                            \
+FRIEND constexpr bool operator< (E l, E r) noexcept {                                     \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) < 0;               \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator<= (E l, E r) noexcept {                                           \
+FRIEND constexpr bool operator<= (E l, E r) noexcept {                                    \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) <= 0;              \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator> (E l, E r) noexcept {                                            \
+FRIEND constexpr bool operator> (E l, E r) noexcept {                                     \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) > 0;               \
 }                                                                                         \
                                                                                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator>= (E l, E r) noexcept {                                           \
+FRIEND constexpr bool operator>= (E l, E r) noexcept {                                    \
     return boost::flags::impl::normalized_subset_induced_compare(l, r) >= 0;              \
 }                                                                                         \
                                                                                           \
@@ -2231,7 +2123,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                              \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr>    \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator< (T1 l, T2 r) noexcept {                                          \
+FRIEND constexpr bool operator< (T1 l, T2 r) noexcept {                                   \
     return boost::flags::impl::subset_induced_compare(l, r) < 0;                          \
 }                                                                                         \
                                                                                           \
@@ -2241,7 +2133,7 @@ template<typename T1, typename T2,                                              
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                         \
     !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr>   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator<= (T1 l, T2 r) noexcept {                                         \
+FRIEND constexpr bool operator<= (T1 l, T2 r) noexcept {                                  \
     return boost::flags::impl::subset_induced_compare(l, r) <= 0;                         \
 }                                                                                         \
                                                                                           \
@@ -2251,7 +2143,7 @@ template<typename T1, typename T2,                                              
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                         \
     !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr>   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator> (T1 l, T2 r) noexcept {                                          \
+FRIEND constexpr bool operator> (T1 l, T2 r) noexcept {                                   \
     return boost::flags::impl::subset_induced_compare(l, r) > 0;                          \
 }                                                                                         \
                                                                                           \
@@ -2261,7 +2153,7 @@ template<typename T1, typename T2,                                              
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value &&                         \
     !(std::is_same<E, T1>::value && std::is_same<E, T2>::value), int*>::type = nullptr>   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr bool operator>= (T1 l, T2 r) noexcept {                                         \
+FRIEND constexpr bool operator>= (T1 l, T2 r) noexcept {                                  \
     return boost::flags::impl::subset_induced_compare(l, r) >= 0;                         \
 }                                                                                         \
 
@@ -2286,10 +2178,10 @@ template<typename T1, typename T2>                                              
 FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                              \
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                 \
 /* matches better than built-in relational operators */                                   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr std::partial_ordering operator<=> (E l, E r) noexcept {                         \
+FRIEND constexpr std::partial_ordering operator<=> (E l, E r) noexcept {                  \
     return boost::flags::impl::normalized_subset_induced_compare(l, r);                   \
 }                                                                                         \
                                                                                           \
@@ -2299,7 +2191,7 @@ template<typename T1, typename T2>                                              
               std::is_same_v<E, boost::flags::enum_type_t<T2>> &&                         \
                 boost::flags::IsCompatibleFlagsOrComplement<T1, T2>)                      \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                       \
+FRIEND constexpr std::partial_ordering operator<=> (T1 l, T2 r) noexcept {                \
     return boost::flags::impl::subset_induced_compare(l, r);                              \
 }
 
@@ -2316,10 +2208,10 @@ template<typename T1, typename T2,                                              
 FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
-#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                              \
+#define BOOST_FLAGS_REL_OPS_PARTIAL_ORDER_IMPL(E, FRIEND)                                 \
 /* matches better than built-in relational operators */                                   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr auto operator<=> (E l, E r) noexcept                                            \
+FRIEND constexpr auto operator<=> (E l, E r) noexcept                                     \
     -> decltype(boost::flags::impl::normalized_subset_induced_compare(l, r)) {            \
     return boost::flags::impl::normalized_subset_induced_compare(l, r);                   \
 }                                                                                         \
@@ -2330,7 +2222,7 @@ template<typename T1, typename T2,                                              
     std::is_same<E, boost::flags::enum_type_t<T2>>::value &&                              \
     boost::flags::IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >   \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                           \
-FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                                          \
+FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                                   \
     -> decltype(boost::flags::impl::subset_induced_compare(l, r)) {                       \
     return boost::flags::impl::subset_induced_compare(l, r);                              \
 }
@@ -2356,7 +2248,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 
 // enabling macro for enum E at namespace scope
 #define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                                    \
-    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) {                        \
+    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) { \
         return {};                                                                        \
     }                                                                                     \
 
@@ -2378,12 +2270,10 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
 
-
-
 // enabling macro for enum E at class scope
 #define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                                              \
-    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) {                 \
-        return {};                                                                      \
+    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) { \
+        return {};                                                                        \
     }                                                                                     \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
 
@@ -2404,8 +2294,6 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
 
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // VARIADIC MACRO:  BOOST_FLAGS(E, ...)
@@ -2414,7 +2302,7 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 // 
 // BOOST_FLAGS(E, OPTIONS)
 // 
-// where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be ommitted)
+// where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
 // containing at most one of each of the following options:
 // - BOOST_FLAGS_LOGICAL_AND            : enable operator&& for enum E
 // - BOOST_FLAGS_DISABLE_COMPLEMENT     : disable 'complement' template for enum E
@@ -2474,8 +2362,6 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 #define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 
-
-
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
@@ -2489,24 +2375,22 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 
 
 
-
-
-#define BOOST_FLAGS_GENERATE_OPS(E, OPS)                                                     \
-    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) {                        \
+#define BOOST_FLAGS_GENERATE_OPS(E, OPS)                                                  \
+    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) { \
         return {};                                        \
     }                                                                                     \
 
 
 // this is the default case, when no relation-option is specified
-#define BOOST_FLAGS_GENERATE_REL_(E)                                                     \
+#define BOOST_FLAGS_GENERATE_REL_(E)                                                      \
     BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_PARTIAL_ORDER_REL(E)                                                     \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_PARTIAL_ORDER_REL(E)                \
     BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                                                     \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                          \
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                                                     \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                       \
     BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)
 
 
@@ -2518,73 +2402,67 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 
 
 // forward once to enforce expansion
-#define BOOST_FLAGS_GENERATE_REL2(E, REL)                                                     \
+#define BOOST_FLAGS_GENERATE_REL2(E, REL)                                                 \
     BOOST_FLAGS_GENERATE_REL_##REL(E)
 
-#define BOOST_FLAGS_GENERATE_REL(E, REL)                                                     \
+#define BOOST_FLAGS_GENERATE_REL(E, REL)                                                  \
     BOOST_FLAGS_GENERATE_REL2(E, REL)
-
 
 
 // please see comment above about usage and possible errors with the variadic macro BOOST_FLAGS(E, ...)
 
-#define BOOST_FLAGS(E, ...)                                                        \
-    BOOST_FLAGS_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                         \
-    BOOST_FLAGS_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                                                         \
+#define BOOST_FLAGS(E, ...)                                                               \
+    BOOST_FLAGS_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                      \
+    BOOST_FLAGS_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                     \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
-
-
 
 
 // additional macros for BOOST_FLAGS_LOCAL
 
 #define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_0(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_1(E)                              \
+#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_1(E)                               \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
 
 #define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)                         \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_##VALUE(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, VALUE)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, VALUE)                          \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)
 
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND)                              \
-    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                              \
-    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND)                         \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
+    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                        \
 
 #define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)                   \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND)                    \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)
 
 
 
-
-
-#define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                                     \
-    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) {                 \
-        return {};                                        \
+#define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                            \
+    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) { \
+        return {};                                                                        \
     }                                                                                     \
 
 
-
 // this is the default case, when no relation-option is specified
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_(E)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_(E)                                                \
     BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_PARTIAL_ORDER_REL(E)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_PARTIAL_ORDER_REL(E)          \
     BOOST_FLAGS_LOCAL_REL_OPS_PARTIAL_ORDER(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                    \
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                 \
     BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)
 
 
@@ -2594,27 +2472,17 @@ FRIEND constexpr auto operator<=> (T1 l, T2 r) noexcept                         
 #define BOOST_FLAGS_LOCAL_GENERATE_PARTIAL_ORDER_REL(E) ; static_assert(false, "multiple relational operation options specified");
 
 
-
 // forward once to enforce expansion
-#define BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)                                           \
     BOOST_FLAGS_LOCAL_GENERATE_REL_##REL(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL(E, REL)                                                     \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL(E, REL)                                            \
     BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)
 
 
-
-
-
-
-
-
-#define BOOST_FLAGS_LOCAL(E, ...)                                                        \
-    BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                         \
+#define BOOST_FLAGS_LOCAL(E, ...)                                                         \
+    BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__), BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))  \
-    BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                                                         \
-
-
+    BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))               \
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
-
