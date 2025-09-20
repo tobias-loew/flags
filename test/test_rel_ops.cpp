@@ -43,27 +43,6 @@ BOOST_FLAGS_ENABLE(relops_delete_enum)
 BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
 
 
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-
-// BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
-
-#else // defined(_MSC_VER) && _MSC_VER <= 1900
-
-enum class relops_partial_order_enum : unsigned int {
-    bit_0 = boost::flags::nth_bit(0), // == 0x01
-    bit_1 = boost::flags::nth_bit(1), // == 0x02
-    bit_2 = boost::flags::nth_bit(2), // == 0x04
-    bit_3 = boost::flags::nth_bit(3), // == 0x08
-};
-
-// enable relops_partial_order_enum
-BOOST_FLAGS_ENABLE(relops_partial_order_enum)
-
-BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
-
-#endif // defined(_MSC_VER) && _MSC_VER <= 1900
-
-
 enum class relops_std_less_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
@@ -79,13 +58,7 @@ BOOST_FLAGS_ENABLE(relops_std_less_enum)
 
 } // namespace TEST_NAMESPACE
 
-BOOST_FLAGS_SPECIALIZE_STD_LESS(TEST_NAMESPACE::relops_std_less_enum)
-
 namespace TEST_NAMESPACE {
-
-#else  // defined(TEST_FLAGS_LINKING)
-
-BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 
 #endif // defined(TEST_FLAGS_LINKING)
 
@@ -458,10 +431,13 @@ void test_delete() {
     }
 }
 
+
+#if BOOST_FLAGS_HAS_PARTIAL_ORDERING
+
 // calculates bit inclusion bit for bit
 // deliberatly NOT using binary operators
 template<typename T>
-boost::flags::partial_ordering check_bit_incusion(T l, T r) {
+std::partial_ordering check_bit_incusion(T l, T r) {
 
     // start with equivalent
     boost::flags::partial_ordering result = boost::flags::partial_ordering::equivalent;
@@ -575,6 +551,8 @@ void test_partial_order() {
 #endif // defined(_MSC_VER) && _MSC_VER <= 1900
 }
 
+#endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
+
 
 void test_std_less() {
     using E = relops_std_less_enum;
@@ -650,7 +628,9 @@ int main() {
     report_config();
     test_builtin();
     test_delete();
+#if BOOST_FLAGS_HAS_PARTIAL_ORDERING
     test_partial_order();
+#endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
     test_std_less();
     return boost::report_errors();
 }
