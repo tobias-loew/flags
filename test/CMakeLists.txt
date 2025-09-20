@@ -4,6 +4,8 @@ include(CTest)
 
 enable_testing()
 
+set(CXX_STD 23)
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -j4 -C ${CMAKE_CFG_INTDIR})
 
 ##################################################
