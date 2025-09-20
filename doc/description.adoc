@@ -121,11 +121,11 @@ int main() {
 
 ## Characteristics of Boost.Flags
 
-* is non-intrusive - only a function overload or a template specializations required to opt-in
+* is non-intrusive - only a macro invocation is required to opt-in
 * single header-file library
 * no dependencies (only standard-library includes)
 * everything is `constexpr`
-* zero-overhead in optimized builds
+* zero-overhead (in optimized builds)
 * operator are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
 * requires at least C++11, uses newer features if available
 // * provides a bunch of bit manipulation utility functions
@@ -143,7 +143,7 @@ BOOST_FLAGS(E)
 // As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
 Best practice would be writing `BOOST_FLAGS(E)` right after the enumeration in the same namespace.
 
-In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_LOCAL` has to be used for enabling:
+In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_LOCAL` has to be used instead:
 
 [source]
 ----
@@ -174,7 +174,7 @@ class my_class {
 ----
 
 The reason is, that `BOOST_FLAGS_LOCAL(E)` generates `friend` operators which are _declared_ in the class but _defined_ is after it, thus they are 
-inaccessible for in-class `constexpr` constructions. To workaround this limitation, please use the following code:
+inaccessible for in-class `constexpr` constructions. To work around this limitation, please use the following code:
 [source]
 ----
 BOOST_FLAGS_USING_OPERATORS()
@@ -199,7 +199,7 @@ class my_class {
 // struct boost::flags::enable<E> : std::true_type {};
 // ----
 
-In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with
+In case you want to check that an enumeration is enabled for Boost.Flags, you can test it e.g. with
 [source]
 ----
 static_assert(boost::flags::enable<E>::value, "Please check if E is enabled correctly and boost/flags.hpp is included.");
@@ -207,18 +207,19 @@ static_assert(boost::flags::enable<E>::value, "Please check if E is enabled corr
 
 ## _scoped_ or _unscoped_ enumerations?
 
-The usage of scoped enumeration is strongly recommended, as they provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type.
+The usage of scoped enumeration is strongly recommended, as they provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type. Further, by default they do not pollute the current namespace with the names of their enumerators.
 
 Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.
 
 For unscoped enumerations Boost.Flags will delete binary operators `&`, `|`, `^`, `&&`, `||`, `==` and `!=` if
 
-* at least one is enabled for Boost.Flags and
+* at least one of its arguments is enabled for Boost.Flags and
 * both arguments are implicitly convertible to an integer type and
-* both arguments are not compatible (they are not the same enumeration or its xref:complementing_the_complement[complement])
+* both arguments are not compatible (i.e. they are not the same enumeration or its xref:complementing_the_complement[complement], or for operators `==` and `!=` they are not the same enumeration) 
 
-i.e. Boost.Flags will prohibit that in those cases the built-in version will be used. +
-(For scoped enumerations this is not necessary, as those cases cannot occur.)
+i.e. Boost.Flags will prohibit in those cases that the built-in version will be used. +
+
+For scoped enumerations this is not necessary, as it is already prohibited by the language.
 
 // (For scoped enumerations the language prohibits them anyway.) 
 // 
@@ -229,7 +230,9 @@ i.e. Boost.Flags will prohibit that in those cases the built-in version will be 
 ## What about the underlying type?
 
 * For language standards **before C++20** the underlying type is required as an `unsigned` type, for both scoped and unscoped enumerations!
-* For *unscoped* enumerations with the `disable_complement` option the underlying type is **always required**!
+* For *unscoped* enumerations using the `disable_complement` option the underlying type is **always required**!
+
+Please note, that this is not a requirement the language, when binary operators are used as endo-functions `(E,E) -> E` on an enumeration `E`.
 
 (For details xref:underlying_type[see below.])
 
@@ -240,18 +243,20 @@ Why do we use the bits of integer types for Boolean options?
 - easy to define, e.g. as macros, integer constants or enumerators
 - language support for setting and querying through bitwise operators
 - compact representation in memory
-- simple bulk transfer in interfaces (on many platforms an `int` can hold up to 32 different Boolean options)
-- enforces the usage of names, especially to prevent `bool` parameters in interfaces:
-[quote, C. Martin (Uncle Bob), Clean Code]   
-Boolean arguments loudly declare that the function does more than one thing. They are confusing and should be eliminated.
+- simple bulk transfer in interfaces (e.g. on many platforms an `unsigned int` can hold up to 32 different Boolean options)
+- enforces the usage of names, especially to prevent `bool` parameters in interfaces
 
-C++ has everything needed to work with flags, so why do we need Boost.Flags? 
+// - enforces the usage of names, especially to prevent `bool` parameters in interfaces:
+// [quote, C. Martin (Uncle Bob), Clean Code]   
+// Boolean arguments loudly declare that the function does more than one thing. They are confusing and should be eliminated.
 
-Because we can do **too much** with them!
+C++ has everything built-in to work with boolean flags, so why do we need Boost.Flags? 
+
+Because the language allows to do **too much** with them!
 
 ## Type-Safety
 
-For flags based on integer-types or enumerations all values are implicitly convertible to `int`. The compiler can't help, when we accidentally apply binary operators to unrelated flags. 
+For flags based on integer-types or unscoped enumerations all values are implicitly convertible to `int`. The compiler can't help, when we accidentally apply binary operators to unrelated flags. 
 
 Here's an example from the Win32-API: 
 
@@ -273,13 +278,14 @@ If we forget the leading `L` of `LBS_NOTIFY` and write
 instead, we produced syntactically correct code but semantical nonsense. 
 
 [discrete]
-### Switching to enumerations makes it even worse
+### Switching to unscoped enumerations makes it even worse
 If the Windows team had decided to use unscoped enumerations instead of macros it wouldn't have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration's semantic overhead. Even worse:
 
 
 * The built-in operators `&`, `|`, `^` and `~` return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.
 * The built-in operators `&=`, `|=`, `^=` require the left-hand type to be arithmetic, which excludes enumerations.
-* Scoped enumerations (which didn't exist when `WinUser.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
+
+Furthermore, scoped enumerations (which didn't exist when `WinUser.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
 
 
 [discrete]
@@ -287,7 +293,7 @@ If the Windows team had decided to use unscoped enumerations instead of macros i
 On the other hand, enumerations, and especially scoped ones, improve the type-safety of our code:
 
 * variables and arguments of enumeration type can only by assigned (resp. invoked) with a value of the same type
-* no implicit integral promotion for scoped enumerations
+* there is no implicit integral promotion for scoped enumerations
 
 [discrete]
 ### With Boost.Flags you can get both! 
@@ -319,9 +325,9 @@ BOOST_FLAGS(E)
 [#underlying_type]
 ## The underlying type
 
-Is the the specification of the underlying type required?
+Is the specification of the underlying type required?
 
-First, here the standard conforming decision diagram:
+First, a standard conforming decision diagram:
 [ditaa, target=underlying_type_decision_diagram_conforming]
 ----
                           /-------------\
@@ -357,10 +363,10 @@ First, here the standard conforming decision diagram:
 
 ----
 
-Ok, the `unsigned` is more a theoretical issue, since all C\\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
+Ok, the `unsigned` requirement for pre C\\++20 compilers is more a theoretical issue, since all C\\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
 Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[, window=_blank]).
 
-So, in case your compiler uses signed two's complement, you can use the following dicision diagram:
+So, in case your compiler uses signed two's complement, you can use the following simplified decision diagram:
 [ditaa, target=underlying_type_decision_diagram_practical]
 ----
                        /-------------\
@@ -390,7 +396,7 @@ So, in case your compiler uses signed two's complement, you can use the followin
 
 
 
-It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator ~` will invoke UB. +
+It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator ~` will invoke undefined behavior. +
 Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
 Starting with Clang 16 this is diagnosed as a hard error.
 
@@ -398,13 +404,13 @@ Starting with Clang 16 this is diagnosed as a hard error.
 ====
 For unscoped enums with unspecified underlying type, the compiler infers two types:
 
-* the underlying type (https://eel.is/c++draft/dcl.enum#7[,window=_blank]), which we can query using `std::underlying_type`
+* the underlying type (https://eel.is/c++draft/dcl.enum#7[,window=_blank]), which can be queried using `std::underlying_type`
 * a hypothetical integer value type with minimal width such that all enumerators can be represented (https://eel.is/c++draft/dcl.enum#8[,window=_blank]) +
   "The width of the smallest bit-field large enough to hold all the values of the enumeration type [...]." 
   
 //  This type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.)
 
-This hypothetical integer value type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.
+The deduction of this hypothetical integer value type requires static reflection which is only available in C++26. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.
 [source]
 ----
 enum TriBool {
@@ -433,7 +439,7 @@ has underlying type `int` on all major compilers, but its valid values are just
 
 ## Complementing the `complement`
 
-Before going into details, let me tell you a little tale
+Before going into details, here is a little story:
 
 [#queen_of_hearts_tale]
 ====
@@ -486,14 +492,21 @@ There are two morals of this tale:
 // };
 // ----
 
-In a nutshell: the following two operations on sets of flags return another set of flags 
-// the semantics of a set of flags supports
 
-* conjunction (`operator&`): taking the flags that appear in *all* sets
-* disjunction (`operator|`): taking the flags that appear in *any* of the sets
+Even though the underlying type together with its operators `&`, `|` and `~` denotes a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank], when using it as set of flags only the operator `&` and `|` are endo-functions. The operator `~` returns an element from a __complemented__ set. 
 
-but negation (`operator~`) in general *does not*. +
-Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] rather than the semantics of a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank].
+So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] and both are entangled by the operator `~`. 
+
+
+
+
+// In a nutshell: the following two operations on sets of flags return another set of flags 
+
+// * conjunction (`operator&`): taking the flags that appear in *all* sets
+// * disjunction (`operator|`): taking the flags that appear in *any* of the sets
+
+// but negation (`operator~`) in general *does not*. +
+// Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] rather than the semantics of a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank].
 
 
 ## Mathematical justification for `complement`
@@ -501,7 +514,7 @@ Sets of flags resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(o
 This section provides a mathematical explanation, why `complement` is required. It can easily be xref:from_flags_to_bool[skipped].
 
 * The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] pass:[<span style="font-size:115%">(<span style="font-style:italic">U</span>, 0, -1, &sim;, &amp;, &mid;)</span>] 
-* The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure pass:[<span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span>] of pass:[<span style="font-size:115%;font-style: italic">U</span>] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
+* The defined flags (usually given by the single-bit enumerators) with the bitwise operations `&, |` form a substructure pass:[<span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span>] of pass:[<span style="font-size:115%;font-style: italic">U</span>] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
 * Building the closure pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span></span>] of pass:[<span style="font-size:115%;font-style: italic">F</span>] wrt. pass:[<span style="font-size:115%">&sim;</span>] generates a Boolean algebra which is a Boolean subalgebra of pass:[<span style="font-size:115%;font-style: italic">U</span>].
 // * The underlying type `U` with the bitwise operations `~, &, |` and the constants `0` and `-1` (all bits set) form a _(bitcount of U)_-dimensional https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank] latexmath:[(U,0,-1,{\raise.17ex\hbox{$\scriptstyle\sim$}},\&,\mid)] 
 // * The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
@@ -534,9 +547,9 @@ Finally, for the binary operators we have
 //Which means, on the meta-level the typeset latexmath:[\{\textrm{E}, \textrm{complement<E>} \}] and the operation latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}], latexmath:[\&] and latexmath:[\mid] form a two-element Boolean algebra.
 Which means, on the meta-level the typeset pass:[<span style="font-size:115%">{E, complement&lt;E&gt;}</span>] and the operation pass:[<span style="font-size:115%">&sim;</span>], pass:[<span style="font-size:115%">&amp;</span>] and  pass:[<span style="font-size:115%">&mid; </span>] form a two-element Boolean algebra.
 
-For the rare case where 
+For the rare cases where 
 
-* the set of flags semantically forms a Boolean algebra and additionally
+* the set of flags semantically form a Boolean algebra and additionally
 * all bits of the underlying type correspond to flags
 
 there exists the option xref:disable_complement[`disable_complement`] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
@@ -585,7 +598,7 @@ But, when there is more than one flag, then this order is inherently partial and
 As there are applications for two different orders on the same type, the best would be different sets of relational operators, but C++ offers only one such. +
 One approach would be, deleting all relational operators for flags and forcing the user to call a function / pass a _Compare_ type as predicate.
 
-But here comes the next obstacle from the language:
+Currently, the language does not allow overloading relational operators for enumerations with a function template (see note),
 
 [NOTE]
 ====
@@ -614,8 +627,7 @@ https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank
  which would make the latter also call the user defined operator template.
 ====
 
-Currently, we simply cannot overload relational operators for Boost.Flags enabled enumerations with a function template - 
-it requires the definition of a function. Thus Boost.Flags provides the following macros
+Boost.Flags provides the following macros:
 
 * `BOOST_FLAGS_REL_OPS_DELETE(E)`: deletes all relational operators for enumeration `E`
 * `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)`: defines all relational operators to reflect the partial order induced by `subseteq` (xref:contained_induced_partial_order[see below])
@@ -764,21 +776,84 @@ To achieve short-circuit evaluation for expresions with flags, convert the flag-
 
 Boost.Flags provides the following functions for an enabled enumeration `E`:
 
-* `make_null(E) \-> E { return E{}; }`
-* `make_if(E e, bool set) \-> E { return set ? e : E{}; }`
-* `modify(E e, E mod, bool set)  \-> E { return set ? e | mod : e & ~mod; }`
-* `modify_inplace(E& e, E mod, bool set)  \-> E& { e = modify(e, mod, set); return e; }`
-* `add_if(E e, E mod, bool add)  \-> E { return add ? e | mod : e; }`
-* `add_if_inplace(E& e, E mod, bool add)  \-> E& { e = add_if(e, mod, add); return e; }`
-* `remove_if(E e, E mod, bool remove)  \-> E { return remove ? e & ~mod : e; }`
-* `remove_if_inplace(E& e, E mod, bool remove)  \-> E& { e = remove_if(e, mod, remove); return e; }`
-* `get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }`
-* `from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }`
+
+[cols="1,1,1"]
+|===
+|Name
+|Type
+|Definition
+
+|`make_null`
+|`(E) \-> E`
+|`return E{};`
+
+|`make_if`
+|`(E e, bool set) \-> E`
+|`return set ? e : E{};`
+
+|`modify`
+|`(E e, E mod, bool set)  \-> E`
+|`return set ? e \| mod : e & ~mod;`
+
+|`modify_inplace`
+|`(E& e, E mod, bool set)  \-> E&`
+|`e = modify(e, mod, set); return e;`
+
+|`add_if`
+|`(E e, E mod, bool add)  \-> E`
+|`return add ? e \| mod : e;`
+
+|`add_if_inplace`
+|`(E& e, E mod, bool add)  \-> E&`
+|`e = add_if(e, mod, add); return e;`
+
+|`remove_if`
+|`(E e, E mod, bool remove)  \-> E`
+|`return remove ? e & ~mod : e;`
+
+|`remove_if_inplace`
+|`(E& e, E mod, bool remove)  \-> E&`
+|`e = remove_if(e, mod, remove); return e;`
+
+|`get_underlying`
+|`(E e) \-> typename underlying_type<E>::type`
+|`return static_cast<typename underlying_type<E>::type>(e);`
+
+|`from_underlying`
+|`(typename underlying_type<E>::type u) \-> E`
+|`return static_cast<E>(u);`
+|===
+
+
+// * `make_null(E) \-> E { return E{}; }`
+// * `make_if(E e, bool set) \-> E { return set ? e : E{}; }`
+// * `modify(E e, E mod, bool set)  \-> E { return set ? e | mod : e & ~mod; }`
+// * `modify_inplace(E& e, E mod, bool set)  \-> E& { e = modify(e, mod, set); return e; }`
+// * `add_if(E e, E mod, bool add)  \-> E { return add ? e | mod : e; }`
+// * `add_if_inplace(E& e, E mod, bool add)  \-> E& { e = add_if(e, mod, add); return e; }`
+// * `remove_if(E e, E mod, bool remove)  \-> E { return remove ? e & ~mod : e; }`
+// * `remove_if_inplace(E& e, E mod, bool remove)  \-> E& { e = remove_if(e, mod, remove); return e; }`
+// * `get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }`
+// * `from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }`
 
 All utility functions are defined in `namespace boost::flags`. +
-The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except `from_underlying`, into the current naespace.
+The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except `from_underlying`, into the current namespace.
 
 and for generating the values of enumerators:
+[source]
+----
+    // generates from first to last (incl.)
+    template<typename T = int> 
+    constexpr auto nth_bit(unsigned int n) \-> underlying_or_identity<T>::type 
+    { return static_cast<underlying_or_identity<T>::type>(1) << n; }
+    constexpr flag_generator<E> flags_from_to(E first, E last);
+
+    // generates from E(1) to last (incl.)
+    constexpr flag_generator<E> flags_to(E last);               
+
+    // generates all bits of the underlying type of E, starting from E(1)
+    constexpr flag_generator<E> flags_all();
+----
 
 * `template<typename T = int> nth_bit(unsigned int n) \-> underlying_or_identity<T>::type { return static_cast<underlying_or_identity<T>::type>(1) << n; }` +
   where type `T` can be either an enumeration or an integral type, and `underlying_or_identity` is a type-trait returning the underlying type of the enumeration or is the type-identity respectively

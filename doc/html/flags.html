@@ -829,7 +829,7 @@ pre.rouge .gs {
 <div class="ulist">
 <ul>
 <li>
-<p>is non-intrusive - only a function overload or a template specializations required to opt-in</p>
+<p>is non-intrusive - only a macro invocation is required to opt-in</p>
 </li>
 <li>
 <p>single header-file library</p>
@@ -841,7 +841,7 @@ pre.rouge .gs {
 <p>everything is <code>constexpr</code></p>
 </li>
 <li>
-<p>zero-overhead in optimized builds</p>
+<p>zero-overhead (in optimized builds)</p>
 </li>
 <li>
 <p>operator are found by <a href="https://en.cppreference.com/w/cpp/language/adl" target="_blank" rel="noopener">ADL</a></p>
@@ -867,7 +867,7 @@ pre.rouge .gs {
 <p>Best practice would be writing <code>BOOST_FLAGS(E)</code> right after the enumeration in the same namespace.</p>
 </div>
 <div class="paragraph">
-<p>In case the enumeration <code>E</code> is defined inside a class or class template, the macro <code>BOOST_FLAGS_LOCAL</code> has to be used for enabling:</p>
+<p>In case the enumeration <code>E</code> is defined inside a class or class template, the macro <code>BOOST_FLAGS_LOCAL</code> has to be used instead:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -905,7 +905,7 @@ pre.rouge .gs {
 </div>
 <div class="paragraph">
 <p>The reason is, that <code>BOOST_FLAGS_LOCAL(E)</code> generates <code>friend</code> operators which are <em>declared</em> in the class but <em>defined</em> is after it, thus they are
-inaccessible for in-class <code>constexpr</code> constructions. To workaround this limitation, please use the following code:</p>
+inaccessible for in-class <code>constexpr</code> constructions. To work around this limitation, please use the following code:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -928,7 +928,7 @@ inaccessible for in-class <code>constexpr</code> constructions. To workaround th
 </table>
 </div>
 <div class="paragraph">
-<p>In case you want to ensure that an enumeration is enabled for Boost.Flags, you can test it e.g. with</p>
+<p>In case you want to check that an enumeration is enabled for Boost.Flags, you can test it e.g. with</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -939,7 +939,7 @@ inaccessible for in-class <code>constexpr</code> constructions. To workaround th
 <div class="sect2">
 <h3 id="scoped_or_unscoped_enumerations"><em>scoped</em> or <em>unscoped</em> enumerations?</h3>
 <div class="paragraph">
-<p>The usage of scoped enumeration is strongly recommended, as they provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type.</p>
+<p>The usage of scoped enumeration is strongly recommended, as they provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type. Further, by default they do not pollute the current namespace with the names of their enumerators.</p>
 </div>
 <div class="paragraph">
 <p>Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.</p>
@@ -950,19 +950,21 @@ inaccessible for in-class <code>constexpr</code> constructions. To workaround th
 <div class="ulist">
 <ul>
 <li>
-<p>at least one is enabled for Boost.Flags and</p>
+<p>at least one of its arguments is enabled for Boost.Flags and</p>
 </li>
 <li>
 <p>both arguments are implicitly convertible to an integer type and</p>
 </li>
 <li>
-<p>both arguments are not compatible (they are not the same enumeration or its <a href="#complementing_the_complement">complement</a>)</p>
+<p>both arguments are not compatible (i.e. they are not the same enumeration or its <a href="#complementing_the_complement">complement</a>, or for operators <code>==</code> and <code>!=</code> they are not the same enumeration)</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>i.e. Boost.Flags will prohibit that in those cases the built-in version will be used.<br>
-(For scoped enumerations this is not necessary, as those cases cannot occur.)</p>
+<p>i.e. Boost.Flags will prohibit in those cases that the built-in version will be used.<br></p>
+</div>
+<div class="paragraph">
+<p>For scoped enumerations this is not necessary, as it is already prohibited by the language.</p>
 </div>
 </div>
 <div class="sect2">
@@ -973,9 +975,12 @@ inaccessible for in-class <code>constexpr</code> constructions. To workaround th
 <p>For language standards <strong>before C++20</strong> the underlying type is required as an <code>unsigned</code> type, for both scoped and unscoped enumerations!</p>
 </li>
 <li>
-<p>For <strong>unscoped</strong> enumerations with the <code>disable_complement</code> option the underlying type is <strong>always required</strong>!</p>
+<p>For <strong>unscoped</strong> enumerations using the <code>disable_complement</code> option the underlying type is <strong>always required</strong>!</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>Please note, that this is not a requirement the language, when binary operators are used as endo-functions <code>(E,E) &#8594; E</code> on an enumeration <code>E</code>.</p>
 </div>
 <div class="paragraph">
 <p>(For details <a href="#underlying_type">see below.</a>)</p>
@@ -1001,32 +1006,23 @@ inaccessible for in-class <code>constexpr</code> constructions. To workaround th
 <p>compact representation in memory</p>
 </li>
 <li>
-<p>simple bulk transfer in interfaces (on many platforms an <code>int</code> can hold up to 32 different Boolean options)</p>
+<p>simple bulk transfer in interfaces (e.g. on many platforms an <code>unsigned int</code> can hold up to 32 different Boolean options)</p>
 </li>
 <li>
-<p>enforces the usage of names, especially to prevent <code>bool</code> parameters in interfaces:</p>
-<div class="quoteblock">
-<blockquote>
-Boolean arguments loudly declare that the function does more than one thing. They are confusing and should be eliminated.
-</blockquote>
-<div class="attribution">
-&#8212; C. Martin (Uncle Bob)<br>
-<cite>Clean Code</cite>
-</div>
-</div>
+<p>enforces the usage of names, especially to prevent <code>bool</code> parameters in interfaces</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>C++ has everything needed to work with flags, so why do we need Boost.Flags?</p>
+<p>C++ has everything built-in to work with boolean flags, so why do we need Boost.Flags?</p>
 </div>
 <div class="paragraph">
-<p>Because we can do <strong>too much</strong> with them!</p>
+<p>Because the language allows to do <strong>too much</strong> with them!</p>
 </div>
 <div class="sect2">
 <h3 id="type_safety">Type-Safety</h3>
 <div class="paragraph">
-<p>For flags based on integer-types or enumerations all values are implicitly convertible to <code>int</code>. The compiler can&#8217;t help, when we accidentally apply binary operators to unrelated flags.</p>
+<p>For flags based on integer-types or unscoped enumerations all values are implicitly convertible to <code>int</code>. The compiler can&#8217;t help, when we accidentally apply binary operators to unrelated flags.</p>
 </div>
 <div class="paragraph">
 <p>Here&#8217;s an example from the Win32-API:</p>
@@ -1058,7 +1054,7 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <div class="paragraph">
 <p>instead, we produced syntactically correct code but semantical nonsense.</p>
 </div>
-<h4 id="switching_to_enumerations_makes_it_even_worse" class="discrete">Switching to enumerations makes it even worse</h4>
+<h4 id="switching_to_unscoped_enumerations_makes_it_even_worse" class="discrete">Switching to unscoped enumerations makes it even worse</h4>
 <div class="paragraph">
 <p>If the Windows team had decided to use unscoped enumerations instead of macros it wouldn&#8217;t have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration&#8217;s semantic overhead. Even worse:</p>
 </div>
@@ -1070,10 +1066,10 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <li>
 <p>The built-in operators <code>&amp;=</code>, <code>|=</code>, <code>^=</code> require the left-hand type to be arithmetic, which excludes enumerations.</p>
 </li>
-<li>
-<p>Scoped enumerations (which didn&#8217;t exist when <code>WinUser.h</code> was created) prohibit implicit integral promotion and therefore don&#8217;t work with built-in bitwise operators at all.</p>
-</li>
 </ul>
+</div>
+<div class="paragraph">
+<p>Furthermore, scoped enumerations (which didn&#8217;t exist when <code>WinUser.h</code> was created) prohibit implicit integral promotion and therefore don&#8217;t work with built-in bitwise operators at all.</p>
 </div>
 <h4 id="but_enumerations_provide_type_safety" class="discrete">But enumerations provide type-safety</h4>
 <div class="paragraph">
@@ -1085,7 +1081,7 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <p>variables and arguments of enumeration type can only by assigned (resp. invoked) with a value of the same type</p>
 </li>
 <li>
-<p>no implicit integral promotion for scoped enumerations</p>
+<p>there is no implicit integral promotion for scoped enumerations</p>
 </li>
 </ul>
 </div>
@@ -1116,10 +1112,10 @@ Boolean arguments loudly declare that the function does more than one thing. The
 <div class="sect2">
 <h3 id="underlying_type">The underlying type</h3>
 <div class="paragraph">
-<p>Is the the specification of the underlying type required?</p>
+<p>Is the specification of the underlying type required?</p>
 </div>
 <div class="paragraph">
-<p>First, here the standard conforming decision diagram:</p>
+<p>First, a standard conforming decision diagram:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1127,11 +1123,11 @@ Boolean arguments loudly declare that the function does more than one thing. The
 </div>
 </div>
 <div class="paragraph">
-<p>Ok, the <code>unsigned</code> is more a theoretical issue, since all C++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C++20 (<a href="https://en.cppreference.com/w/cpp/language/types" class="bare" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/types</a>).
-Furthermore, scoped enumerations always have a fixed underlying type, which is <code>int</code> if not specified (<a href="https://eel.is/c++draft/dcl.enum#5" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#5</a>).</p>
+<p>Ok, the <code>unsigned</code> requirement for pre C++20 compilers is more a theoretical issue, since all C\\++ compilers already used two&#8217;s complement for signed integers, even before it got mandatory with C20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
+Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/cdraft/dcl.enum#5[, window=_blank]).</p>
 </div>
 <div class="paragraph">
-<p>So, in case your compiler uses signed two&#8217;s complement, you can use the following dicision diagram:</p>
+<p>So, in case your compiler uses signed two&#8217;s complement, you can use the following simplified decision diagram:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1139,7 +1135,7 @@ Furthermore, scoped enumerations always have a fixed underlying type, which is <
 </div>
 </div>
 <div class="paragraph">
-<p>It may seem pedantic, but defining the underlying type in the unscoped and <a href="#disable_complement"><code>disable_complement</code></a> case is crucial, as otherwise the <code>operator ~</code> will invoke UB.<br>
+<p>It may seem pedantic, but defining the underlying type in the unscoped and <a href="#disable_complement"><code>disable_complement</code></a> case is crucial, as otherwise the <code>operator ~</code> will invoke undefined behavior.<br>
 Compilers can track this down, e.g. when evaluating constant expressions (cf. <a href="https://eel.is/c++draft/expr.static.cast#10" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/expr.static.cast#10</a>).<br>
 Starting with Clang 16 this is diagnosed as a hard error.</p>
 </div>
@@ -1156,7 +1152,7 @@ Starting with Clang 16 this is diagnosed as a hard error.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#7</a>), which we can query using <code>std::underlying_type</code></p>
+<p>the underlying type (<a href="https://eel.is/c++draft/dcl.enum#7" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#7</a>), which can be queried using <code>std::underlying_type</code></p>
 </li>
 <li>
 <p>a hypothetical integer value type with minimal width such that all enumerators can be represented (<a href="https://eel.is/c++draft/dcl.enum#8" class="bare" target="_blank" rel="noopener">https://eel.is/c++draft/dcl.enum#8</a>)<br>
@@ -1165,7 +1161,7 @@ Starting with Clang 16 this is diagnosed as a hard error.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>This hypothetical integer value type is not deducible from the type of the enumeration. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.</p>
+<p>The deduction of this hypothetical integer value type requires static reflection which is only available in C++26. (It requires to know the values of all enumerators.) Furthermore, it is in general not the same as the underlying type. E.g.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1188,7 +1184,7 @@ Starting with Clang 16 this is diagnosed as a hard error.</p>
 <div class="sect2">
 <h3 id="complementing_the_complement">Complementing the <code>complement</code></h3>
 <div class="paragraph">
-<p>Before going into details, let me tell you a little tale</p>
+<p>Before going into details, here is a little story:</p>
 </div>
 <div id="queen_of_hearts_tale" class="exampleblock">
 <div class="content">
@@ -1244,21 +1240,10 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </ul>
 </div>
 <div class="paragraph">
-<p>In a nutshell: the following two operations on sets of flags return another set of flags</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>conjunction (<code>operator&amp;</code>): taking the flags that appear in <strong>all</strong> sets</p>
-</li>
-<li>
-<p>disjunction (<code>operator|</code>): taking the flags that appear in <strong>any</strong> of the sets</p>
-</li>
-</ul>
+<p>Even though the underlying type together with its operators <code>&amp;</code>, <code>|</code> and <code>~</code> denotes a <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)" target="_blank" rel="noopener">Boolean algebra</a>, when using it as set of flags only the operator <code>&amp;</code> and <code>|</code> are endo-functions. The operator <code>~</code> returns an element from a <em>complemented</em> set.</p>
 </div>
 <div class="paragraph">
-<p>but negation (<code>operator~</code>) in general <strong>does not</strong>.<br>
-Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="<em>blank">mathematical lattices</a> rather than the semantics of a <a href="https://en.wikipedia.org/wiki/Boolean_algebra</em>(structure)" target="_blank" rel="noopener">Boolean algebra</a>.</p>
+<p>So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a> and both are entangled by the operator <code>~</code>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1272,7 +1257,7 @@ Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/L
 <p>The underlying type <code>U</code> with the bitwise operations <code>~, &amp;, |</code> and the constants <code>0</code> and <code>-1</code> (all bits set) form a <em>(bitcount of U)</em>-dimensional <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)" target="_blank" rel="noopener">Boolean algebra</a> <span style="font-size:115%">(<span style="font-style:italic">U</span>, 0, -1, &sim;, &amp;, &mid;)</span></p>
 </li>
 <li>
-<p>The defined flags (e.g. <code>bold</code>, <code>italic</code> etc.) with the bitwise operations <code>&amp;, |</code> form a substructure <span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span> of <span style="font-size:115%;font-style: italic">U</span> (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
+<p>The defined flags (usually given by the single-bit enumerators) with the bitwise operations <code>&amp;, |</code> form a substructure <span style="font-size:115%">(<span style="font-style:italic">F</span>, &amp;, &mid;)</span> of <span style="font-size:115%;font-style: italic">U</span> (cf. <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a>) which in general <strong>is not closed under bitwise negation <code>~</code></strong>.</p>
 </li>
 <li>
 <p>Building the closure <span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span></span> of <span style="font-size:115%;font-style: italic">F</span> wrt. <span style="font-size:115%">&sim;</span> generates a Boolean algebra which is a Boolean subalgebra of <span style="font-size:115%;font-style: italic">U</span>.</p>
@@ -1350,12 +1335,12 @@ Sets of flags resemble the semantics of <a href="https://en.wikipedia.org/wiki/L
 <p>Which means, on the meta-level the typeset <span style="font-size:115%">{E, complement&lt;E&gt;}</span> and the operation <span style="font-size:115%">&sim;</span>, <span style="font-size:115%">&amp;</span> and  <span style="font-size:115%">&mid; </span> form a two-element Boolean algebra.</p>
 </div>
 <div class="paragraph">
-<p>For the rare case where</p>
+<p>For the rare cases where</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>the set of flags semantically forms a Boolean algebra and additionally</p>
+<p>the set of flags semantically form a Boolean algebra and additionally</p>
 </li>
 <li>
 <p>all bits of the underlying type correspond to flags</p>
@@ -1444,7 +1429,7 @@ This order is a total order, which we usually want to use as <em>Compare</em> pr
 One approach would be, deleting all relational operators for flags and forcing the user to call a function / pass a <em>Compare</em> type as predicate.</p>
 </div>
 <div class="paragraph">
-<p>But here comes the next obstacle from the language:</p>
+<p>Currently, the language does not allow overloading relational operators for enumerations with a function template (see note),</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1488,8 +1473,7 @@ When an operator template for a relational operator is invoked with the same enu
 </table>
 </div>
 <div class="paragraph">
-<p>Currently, we simply cannot overload relational operators for Boost.Flags enabled enumerations with a function template -
-it requires the definition of a function. Thus Boost.Flags provides the following macros</p>
+<p>Boost.Flags provides the following macros:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1752,40 +1736,70 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 <div class="paragraph">
 <p>Boost.Flags provides the following functions for an enabled enumeration <code>E</code>:</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>make_null(E) -&gt; E { return E{}; }</code></p>
-</li>
-<li>
-<p><code>make_if(E e, bool set) -&gt; E { return set ? e : E{}; }</code></p>
-</li>
-<li>
-<p><code>modify(E e, E mod, bool set)  -&gt; E { return set ? e | mod : e &amp; ~mod; }</code></p>
-</li>
-<li>
-<p><code>modify_inplace(E&amp; e, E mod, bool set)  -&gt; E&amp; { e = modify(e, mod, set); return e; }</code></p>
-</li>
-<li>
-<p><code>add_if(E e, E mod, bool add)  -&gt; E { return add ? e | mod : e; }</code></p>
-</li>
-<li>
-<p><code>add_if_inplace(E&amp; e, E mod, bool add)  -&gt; E&amp; { e = add_if(e, mod, add); return e; }</code></p>
-</li>
-<li>
-<p><code>remove_if(E e, E mod, bool remove)  -&gt; E { return remove ? e &amp; ~mod : e; }</code></p>
-</li>
-<li>
-<p><code>remove_if_inplace(E&amp; e, E mod, bool remove)  -&gt; E&amp; { e = remove_if(e, mod, remove); return e; }</code></p>
-</li>
-<li>
-<p><code>get_underlying(E e) -&gt; typename underlying_type&lt;E&gt;::type { return static_cast&lt;typename underlying_type&lt;E&gt;::type&gt;(e); }</code></p>
-</li>
-<li>
-<p><code>from_underlying(typename underlying_type&lt;E&gt;::type u) -&gt; E { return static_cast&lt;E&gt;(u); }</code></p>
-</li>
-</ul>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Type</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definition</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>make_null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E) -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>make_if</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, bool set) -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return set ? e : E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, E mod, bool set)  -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return set ? e | mod : e &amp; ~mod;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify_inplace</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E&amp; e, E mod, bool set)  -&gt; E&amp;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = modify(e, mod, set); return e;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>add_if</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, E mod, bool add)  -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return add ? e | mod : e;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>add_if_inplace</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E&amp; e, E mod, bool add)  -&gt; E&amp;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = add_if(e, mod, add); return e;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>remove_if</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, E mod, bool remove)  -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return remove ? e &amp; ~mod : e;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>remove_if_inplace</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E&amp; e, E mod, bool remove)  -&gt; E&amp;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = remove_if(e, mod, remove); return e;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>get_underlying</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e) -&gt; typename underlying_type&lt;E&gt;::type</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return static_cast&lt;typename underlying_type&lt;E&gt;::type&gt;(e);</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>from_underlying</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(typename underlying_type&lt;E&gt;::type u) -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return static_cast&lt;E&gt;(u);</code></p></td>
+</tr>
+</tbody>
+</table>
 <div class="paragraph">
 <p>All utility functions are defined in <code>namespace boost::flags</code>.<br>
 The macro <code>BOOST_FLAGS_USING_UTILITIES()</code> imports all utility functions, except <code>from_underlying</code>, into the current naespace.</p>
