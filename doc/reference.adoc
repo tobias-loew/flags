@@ -27,7 +27,7 @@ Most of the function signatures for operators are written with trailing return t
 
 Boost.Flags requires at least C++11.
 
-Concepts are used if available and not disabled using xref:BOOST_FLAGS_HAS_CONCEPTS[`BOOST_FLAGS_HAS_CONCEPTS`].
+Concepts are used if available and not disabled by xref:BOOST_FLAGS_HAS_CONCEPTS[`BOOST_FLAGS_HAS_CONCEPTS`].
 
 ## Macros to opt-in
 
@@ -51,13 +51,13 @@ containing at most one of each of the following options:
 
 * `BOOST_FLAGS_LOGICAL_AND`            : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 * `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
-* `BOOST_FLAGS_NO_FORWARDING`       : do not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
+* `BOOST_FLAGS_NO_FORWARDING`       : will not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
 
 
 furthermore at most one of the following relational-operator options may be specified:
 
 * `BOOST_FLAGS_STD_REL`                : use operators <, <=, >, >= and <=> which accept two compatible flag-arguments and compare their underlying values (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[`BOOST_FLAGS_SPECIALIZE_STD_LESS`])
-* `BOOST_FLAGS_PARTIAL_ORDER_REL`      : use order induced by flag entailment relation for operators <, <=, >, >= and <=> (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[`BOOST_FLAGS_REL_OPS_PARTIAL_ORDER`])
+// * `BOOST_FLAGS_PARTIAL_ORDER_REL`      : use order induced by flag entailment relation for operators <, <=, >, >= and <=> (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[`BOOST_FLAGS_REL_OPS_PARTIAL_ORDER`])
 * `BOOST_FLAGS_DELETE_REL`             : delete operators <, <=, >, >= and <=> for type E (cf. xref:BOOST_FLAGS_REL_OPS_DELETE[`BOOST_FLAGS_REL_OPS_DELETE`])
 
 If no relational-operator option is specified, the macro defaults to using 'BOOST_FLAGS_STD_REL`.
@@ -477,25 +477,25 @@ By default the usage of `complement` is enabled but can be disabled using xref:d
 
 
 
-### total_order_t
+// ### total_order_t
 
-The type `boost::flags::total_order_t` defines a call-operator which accepts two compatible flag-arguments and compares their underlying values.
-(cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[BOOST_FLAGS_SPECIALIZE_STD_LESS]).
+// The type `boost::flags::total_order_t` defines a call-operator which accepts two compatible flag-arguments and compares their underlying values.
+// (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[BOOST_FLAGS_SPECIALIZE_STD_LESS]).
 
-There is also a functions object
+// There is also a functions object
 
-`static constexpr boost::flags::total_order_t total_order;`
+// `static constexpr boost::flags::total_order_t total_order;`
 
 
 
-### partial_order_t
+// ### partial_order_t
 
-The type `boost::flags::partial_order_t` defines a call-operator which accepts two compatible flag-arguments and compares them based on flag entailment.
-(cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER]).
+// The type `boost::flags::partial_order_t` defines a call-operator which accepts two compatible flag-arguments and compares them based on flag entailment.
+// (cf. xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER]).
 
-There is also a functions object
+// There is also a functions object
 
-`static constexpr boost::flags::partial_order_t partial_order;`
+// `static constexpr boost::flags::partial_order_t partial_order;`
 
 
 
@@ -723,18 +723,17 @@ The relational operators for enumerations (scoped and unscoped) are provided by 
 Furthermore, the current wording doesn't allow overloading or deleting those operators by a templated operator (there is a pending Defect Report on this topic: 
 https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]).
 
-There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER] to overload and xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE] to delete relational operators.
+The macro xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE] can be used to delete relational operators.
+// There are macros xref:BOOST_FLAGS_REL_OPS_PARTIAL_ORDER[BOOST_FLAGS_REL_OPS_PARTIAL_ORDER] to overload and xref:BOOST_FLAGS_REL_OPS_DELETE[BOOST_FLAGS_REL_OPS_DELETE] to delete relational operators.
 
 [WARNING]
 ====
-It is recommended to define either `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
+It is recommended to define `BOOST_FLAGS_REL_OPS_DELETE` for flag-like enumerations.
 
 This prohibits the accidental usage of relational operators with flag values ( 
 The built-in semantics for relational operators compare the underlying numerical values and do not coincide with flag entailment!).
 
-When flags have to be stored in ordered container or sorted, please either define `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` for the enumeration or specify `boost::flags::total_order_t` as _Compare_ predicate type.
-
-Range algorithms require the specification of `boost::flags::total_order` as compare object.
+When flags have to be stored in ordered container or sorted, the macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` to specialize `std::less`.
 
 ====
 
@@ -969,40 +968,40 @@ The behaviour is undefined if more than one bit is set in value `v`.
 
 
 
-## Flags generator
+// ## Flags generator
 
-### flag_generator
+// ### flag_generator
 
-The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
-It is contructed with the lowest and highest flag that shall be iterated over.
-If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
+// The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
+// It is contructed with the lowest and highest flag that shall be iterated over.
+// If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
 
-### flags_from_to
-The function
-[source]
-----
-    template<typename E> 
-    [[nodiscard]] constexpr flag_generator<E> flags_from_to(E first, E last);
-----
-returns a `flag_generator` instance iterating from `first` to `last` (incl.).
+// ### flags_from_to
+// The function
+// [source]
+// ----
+//     template<typename E> 
+//     [[nodiscard]] constexpr flag_generator<E> flags_from_to(E first, E last);
+// ----
+// returns a `flag_generator` instance iterating from `first` to `last` (incl.).
     
-### flags_to
-The function
-[source]
-----
-    template<typename E> 
-    [[nodiscard]] constexpr flag_generator<E> flags_to(E last);
-----
-returns a `flag_generator` instance iterating from `E(1)` to `last` (incl.).
+// ### flags_to
+// The function
+// [source]
+// ----
+//     template<typename E> 
+//     [[nodiscard]] constexpr flag_generator<E> flags_to(E last);
+// ----
+// returns a `flag_generator` instance iterating from `E(1)` to `last` (incl.).
     
-### flags_all
-The function
-[source]
-----
-    template<typename E> 
-    [[nodiscard]] constexpr flag_generator<E> flags_all();
-----
-returns a `flag_generator` instance iterating from `E(1)` to the most significant bit of the underlying type of `E` (incl.), i.e. all bits of the underlying type.
+// ### flags_all
+// The function
+// [source]
+// ----
+//     template<typename E> 
+//     [[nodiscard]] constexpr flag_generator<E> flags_all();
+// ----
+// returns a `flag_generator` instance iterating from `E(1)` to the most significant bit of the underlying type of `E` (incl.), i.e. all bits of the underlying type.
     
 
 
@@ -1031,45 +1030,35 @@ The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global names
 
 [INFO]
 ====
-The definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` will not enablerange algorithms to use that total order. Here it is required to explicitely specify `boost::flags::total_order` as compare object.
+The definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` will not enable range algorithms to use that total order. Here it is required to explicitly specify `boost::flags::total_order` as compare object.
 ====
 
 
-### BOOST_FLAGS_REL_OPS_PARTIAL_ORDER
+// ### BOOST_FLAGS_REL_OPS_PARTIAL_ORDER
 
-The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines all relational operators for a Boost.Flags enabled enumeration `E`. +
-The following semantics apply
+// The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines all relational operators for a Boost.Flags enabled enumeration `E`. +
+// The following semantics apply
 
-* `e1 \<= e2` : equivalent to `contained(e1, e2)`
-* `e1 >= e2` : equivalent to `contained(e2, e1)`
-* `e1 < e2` : equivalent to `(contained(e1, e2) && e1 != e2)`
-* `e1 > e2` : equivalent to `(contained(e2, e1) && e1 != e2)`
-* `e1 \<\=> e2` : has type `std::partial_ordering` and is equivalent to
-[source]
-----
-    e1 == e2
-    ? std::partial_ordering::equivalent
-    : contained(e1, e2)
-    ? std::partial_ordering::less
-    : contained(e2, e1)
-    ? std::partial_ordering::greater
-    : std::partial_ordering::unordered
-----
-
-
-The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` has to be defined at global namespace.
+// * `e1 \<= e2` : equivalent to `contained(e1, e2)`
+// * `e1 >= e2` : equivalent to `contained(e2, e1)`
+// * `e1 < e2` : equivalent to `(contained(e1, e2) && e1 != e2)`
+// * `e1 > e2` : equivalent to `(contained(e2, e1) && e1 != e2)`
+// * `e1 \<\=> e2` : has type `std::partial_ordering` and is equivalent to
+// [source]
+// ----
+//     e1 == e2
+//     ? std::partial_ordering::equivalent
+//     : contained(e1, e2)
+//     ? std::partial_ordering::less
+//     : contained(e2, e1)
+//     ? std::partial_ordering::greater
+//     : std::partial_ordering::unordered
+// ----
 
 
+// The macro `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` has to be defined at global namespace.
 
 
-
-
-### BOOST_FLAGS_SPECIALIZE_STD_LESS
-
-The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` specializes `std::less` for `E` to use `boost::flags::total_order`.
-
-
-The macro `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` has to be defined at global namespace.
 
 ## Configuration Macros
 
@@ -1117,12 +1106,12 @@ Specifies, if the `inline` variables are available (and work correctly: broken i
 
 Possible values: 0 or 1
 
-### BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS
+// ### BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS
 
-Specifies, if the partial_ordering emulation is defined. +
-Only used, when `std::partial_ordering` is not available.
+// Specifies, if the partial_ordering emulation is defined. +
+// Only used, when `std::partial_ordering` is not available.
 
-Possible values: 0 or 1
+// Possible values: 0 or 1
 
 
 ### BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES
@@ -1132,12 +1121,12 @@ Specifies, if https://en.cppreference.com/w/cpp/language/operators[rewitten cand
 Possible values: 0 or 1
 
 
-### BOOST_FLAGS_WEAK_SYMBOL
+// ### BOOST_FLAGS_WEAK_SYMBOL
 
-Text used to specify a symbol with weak linkage 
+// Text used to specify a symbol with weak linkage 
 
-* `__declspec(selectany)` for mscv and clang-cl, ICC on windows
-* `\\__attribute__\((weak))` for g++ and clang, except for g++ on mingw: in that case please define `BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS=1` in exactly one translation unit
+// * `__declspec(selectany)` for mscv and clang-cl, ICC on windows
+// * `\\__attribute__\((weak))` for g++ and clang, except for g++ on mingw: in that case please define `BOOST_FLAGS_DEFINE_PARTIAL_ORDERING_OBJECTS=1` in exactly one translation unit
 
 
 

@@ -1157,6 +1157,25 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 
+        // explicit total order for using enabled flags as (part of) keys in ordered associative containers
+
+        struct total_order_t {
+#if BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2>
+                requires IsCompatibleFlagsOrComplement<T1, T2>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+            template<typename T1, typename T2,
+                typename std::enable_if<IsCompatibleFlagsOrComplement<T1, T2>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr auto operator()(T1 e1, T2 e2) const noexcept -> decltype(get_underlying(e1) < get_underlying(e2)) {
+                return get_underlying(e1) < get_underlying(e2);
+            }
+
+            using is_transparent = int;
+        };
+        static constexpr total_order_t total_order{};
+
 ///////////////////////////////////////////////////////////////////////////////////////
 //
 // utility functions
@@ -1557,10 +1576,36 @@ BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                               
 
 #define BOOST_FLAGS_EMPTY()
 
-#define BOOST_FLAGS_FORWARD_OPERATORS(E) BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, BOOST_FLAGS_EMPTY())
-#define BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E) BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, friend)
+#define BOOST_FLAGS_FORWARD_OPERATORS(E)                                                  \
+BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, BOOST_FLAGS_EMPTY())
+
+#define BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                            \
+BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, friend)
 
 
+#define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                                \
+ /* specialize std::less for E and complement<E> */                                       \
+ /* at least gcc < version 7 is not conforming with template specialization */            \
+ /* put it explicitly into namespace std to make them all happy */                        \
+namespace std {                                                                           \
+    template<>                                                                            \
+    struct less<E> {                                                                      \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                   \
+            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {        \
+            return boost::flags::total_order(lhs, rhs);                                   \
+        }                                                                                 \
+    };                                                                                    \
+    template<>                                                                            \
+    struct less<boost::flags::complement<E>> {                                            \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                   \
+            constexpr bool operator()(                                                    \
+                boost::flags::complement<E> const& lhs,                                   \
+                boost::flags::complement<E> const& rhs                                    \
+                ) const noexcept {                                                        \
+            return boost::flags::total_order(lhs, rhs);                                   \
+        }                                                                                 \
+    };                                                                                    \
+} /* namespace std */                                                               
 
 #if !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
@@ -1670,7 +1715,8 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
-#define BOOST_FLAGS_REL_OPS_DELETE(E)  BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, BOOST_FLAGS_EMPTY())
+#define BOOST_FLAGS_REL_OPS_DELETE(E)                                                     \
+BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, BOOST_FLAGS_EMPTY())
 #define BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)  BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, friend)
 
 
@@ -1684,7 +1730,8 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 // enabling macro for enum E at namespace scope
 #define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                                    \
-    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) { \
+    BOOST_FLAGS_CONSTEVAL inline                                                          \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
         return {};                                                                        \
     }                                                                                     \
 
@@ -1694,21 +1741,25 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 #define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                                          \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::disable_complement)                                        \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
 #define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)                              \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
 #define BOOST_FLAGS_ENABLE_LOGICAL_AND(E)                                                 \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::logical_and)                                               \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
 
 // enabling macro for enum E at class scope
 #define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                                              \
-    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<OPTS> boost_flags_enable(E) { \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
         return {};                                                                        \
     }                                                                                     \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
@@ -1719,14 +1770,17 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 #define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                                    \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement) \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement)                                        \
 
 #define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)                        \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::disable_complement | boost::flags::options::logical_and) \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
 #define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                                           \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::logical_and) \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::logical_and)                                               \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
 
@@ -1762,12 +1816,20 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 // - specifying more than one relational-operator option
 //
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) | boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) | boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                          \
+| boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                   \
+| boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                        \
+BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_STD_REL(NAME, ...)                              \
+BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                           \
+BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_OP_(...) 
 #define BOOST_FLAGS_EXPAND_OPS(NAME, ...) BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
@@ -1775,31 +1837,55 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) 1
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)          \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)               \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_STD_REL(NAME, ...)                     \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                  \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_(...) 0
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP(NAME, ...) BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP(NAME, ...)                                         \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_NO_FORWARDING(NAME, ...) 1 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                   \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
+
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)            \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_STD_REL(NAME, ...)                       \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...)                    \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_IS_NO_FORWARDING_(...) 0
-#define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...)                                           \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                         \
+BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_STD_REL(NAME, ...) BOOST_FLAGS_GENERATE_STD_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DELETE_REL(NAME, ...) BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                  \
+BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                       \
+BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_STD_REL(NAME, ...)                             \
+BOOST_FLAGS_GENERATE_STD_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DELETE_REL(NAME, ...)                          \
+BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_(...) 
 #define BOOST_FLAGS_EXPAND_RELS(NAME, ...) BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
@@ -1807,8 +1893,10 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 #define BOOST_FLAGS_GENERATE_OPS(E, OPS)                                                  \
-    BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) { \
-        return {};                                        \
+    BOOST_FLAGS_CONSTEVAL inline                                                          \
+    boost::flags::options_constant<boost::flags::options::enable OPS>                     \
+    boost_flags_enable(E) {                                                               \
+        return {};                                                                        \
     }                                                                                     \
 
 
@@ -1823,17 +1911,18 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_GENERATE_STD_REL(E) ; static_assert(false, "multiple relational operation options specified");
-#define BOOST_FLAGS_GENERATE_DELETE_REL(E) ; static_assert(false, "multiple relational operation options specified");
+#define BOOST_FLAGS_GENERATE_STD_REL(E) ;                                                 \
+static_assert(false, "multiple relational operation options specified");
+
+#define BOOST_FLAGS_GENERATE_DELETE_REL(E) ;                                              \
+static_assert(false, "multiple relational operation options specified");
 
 
 
 // forward once to enforce expansion
-#define BOOST_FLAGS_GENERATE_REL2(E, REL)                                                 \
-    BOOST_FLAGS_GENERATE_REL_##REL(E)
+#define BOOST_FLAGS_GENERATE_REL2(E, REL) BOOST_FLAGS_GENERATE_REL_##REL(E)
 
-#define BOOST_FLAGS_GENERATE_REL(E, REL)                                                  \
-    BOOST_FLAGS_GENERATE_REL2(E, REL)
+#define BOOST_FLAGS_GENERATE_REL(E, REL) BOOST_FLAGS_GENERATE_REL2(E, REL)
 
 
 // please see comment above about usage and possible errors with the variadic macro BOOST_FLAGS(E, ...)
@@ -1875,7 +1964,9 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 #define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                            \
-    friend BOOST_FLAGS_CONSTEVAL inline boost::flags::options_constant<boost::flags::options::enable OPS> boost_flags_enable(E) { \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
+    boost::flags::options_constant<boost::flags::options::enable OPS>                     \
+    boost_flags_enable(E) {                                                               \
         return {};                                                                        \
     }                                                                                     \
 
@@ -1891,21 +1982,23 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_LOCAL_GENERATE_STD_REL(E) ; static_assert(false, "multiple relational operation options specified");
-#define BOOST_FLAGS_LOCAL_GENERATE_DELETE_REL(E) ; static_assert(false, "multiple relational operation options specified");
+#define BOOST_FLAGS_LOCAL_GENERATE_STD_REL(E) ;                                           \
+static_assert(false, "multiple relational operation options specified");
+
+#define BOOST_FLAGS_LOCAL_GENERATE_DELETE_REL(E) ;                                        \
+static_assert(false, "multiple relational operation options specified");
 
 
 // forward once to enforce expansion
-#define BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)                                           \
-    BOOST_FLAGS_LOCAL_GENERATE_REL_##REL(E)
+#define BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL) BOOST_FLAGS_LOCAL_GENERATE_REL_##REL(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL(E, REL)                                            \
-    BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)
+#define BOOST_FLAGS_LOCAL_GENERATE_REL(E, REL)  BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)
 
 
 #define BOOST_FLAGS_LOCAL(E, ...)                                                         \
     BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__), BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))  \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__),     \
+        BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))                                      \
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))               \
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
