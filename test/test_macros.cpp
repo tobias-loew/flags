@@ -63,7 +63,7 @@ enum class macro_3_enum : unsigned int {
 
 // enable macro_3_enum
 #if defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
-BOOST_FLAGS_ENABLE_LOGICAL_AND(macro_2_enum)
+BOOST_FLAGS_ENABLE_LOGICAL_AND(macro_3_enum)
 #else
 BOOST_FLAGS(macro_3_enum, BOOST_FLAGS_LOGICAL_AND)
 #endif
