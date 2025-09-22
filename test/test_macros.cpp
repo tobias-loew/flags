@@ -164,9 +164,11 @@ void test_macro_1() {
 	BOOST_TEST((to_underlying(v12) == u12));
 
 	bool bu = u1 < u12;
+	BOOST_TEST((bu || !bu));	// to prevent unused warnings
 
 #ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL1
 	bool bv = v1 < v12;
+	BOOST_TEST((bv || !bv));	// to prevent unused warnings
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL1
 
 }
@@ -194,11 +196,14 @@ void test_macro_4() {
 	BOOST_TEST((to_underlying(v12) == u12));
 
 	bool bu = u1 < u12;
+	BOOST_TEST((bu || !bu));	// to prevent unused warnings
 	bool b = (v12 && v2);
+	BOOST_TEST((b || !b));	// to prevent unused warnings
 	v1 = ~v1;
 
 #ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL2
 	bool bv = v1 < v12;
+	BOOST_TEST((bv || !bv));	// to prevent unused warnings
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL2
 
 }
@@ -214,7 +219,9 @@ void test_macro_5() {
 	BOOST_TEST((to_underlying(v12) == u12));
 
 	bool bu = u1 < u12;
+	BOOST_TEST((bu || !bu));	// to prevent unused warnings
 	bool bv = v1 < v12;
+	BOOST_TEST((bv || !bv));	// to prevent unused warnings
 
 
 	std::vector<macro_5_enum> vec = { v1, v2, v12 };
@@ -258,9 +265,11 @@ void test_macro_6() {
 	BOOST_TEST((to_underlying(v12) == u12));
 
 	bool bu = u1 < u12;
+	BOOST_TEST((bu || !bu));	// to prevent unused warnings
 
 #ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL3
 	bool bv = v1 < v12;
+	BOOST_TEST((bv || !bv));	// to prevent unused warnings
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL3
 
 
