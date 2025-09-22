@@ -4,7 +4,14 @@ include(CTest)
 
 enable_testing()
 
-set(CXX_STD 23)
+if (MSVC)
+   set(CXX_STANDARD "/std:c++latest")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STANDARD} /EHsc /permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /Zc:preprocessor")
+else()
+
+endif()
+
+#set(CXX_STD 23)
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -j4 -C ${CMAKE_CFG_INTDIR})
 
@@ -51,7 +58,7 @@ macro(add_test_executable name)
     if (Boost_FOUND)
        target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})
     endif()
-    set_property(TARGET ${name} PROPERTY CXX_STANDARD ${CXX_STD})
+ #   set_property(TARGET ${name} PROPERTY CXX_STANDARD ${CXX_STD})
     add_test(NAME ${name} COMMAND ${name} --gtest_catch_exceptions=1)
 endmacro()
 
@@ -65,6 +72,7 @@ add_test_executable(test_incompat)
 add_test_executable(test_logical_and)
 add_test_executable(test_rel_ops)
 add_test_executable(test_utilities)
+add_test_executable(test_macros)
 
 
 
@@ -76,7 +84,7 @@ macro(add_test_executable_link name)
        target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})
     endif()
     target_compile_definitions(${name} PUBLIC TEST_FLAGS_LINKING)
-    set_property(TARGET ${name} PROPERTY CXX_STANDARD ${CXX_STD})
+#    set_property(TARGET ${name} PROPERTY CXX_STANDARD ${CXX_STD})
     add_test(NAME ${name} COMMAND ${name} --gtest_catch_exceptions=1)
 endmacro()
 
