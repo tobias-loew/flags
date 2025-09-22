@@ -110,7 +110,7 @@ compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL1 : te
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL2 : test_container_algorithm_DELETE_REL2 ;
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL3 : test_container_algorithm_DELETE_REL3 ;
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1 : test_container_algorithm_DELETE_REL_SORT1 ;
-compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2: test_container_algorithm_DELETE_REL_SORT2 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2 : test_container_algorithm_DELETE_REL_SORT2 ;
 # compile-fail test_container_algorithm.cpp : <define>TEST_COMPILE_FAIL_CONTAINER_DELETE_LT <define>TEST_COMPILE_FAIL_MULTISET : test_container_algorithm_FAIL_MULTISET ;
 
 
