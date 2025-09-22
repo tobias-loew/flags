@@ -14,6 +14,7 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include "include_test_post.hpp"
 
@@ -217,9 +218,33 @@ void test_macro_5() {
 
 
 	std::vector<macro_5_enum> vec = { v1, v2, v12 };
+	std::sort(vec.begin(), vec.end());
+	std::sort(vec.begin(), vec.end(), std::less{});
+	std::sort(vec.begin(), vec.end(), std::less<macro_5_enum>{});
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
 	std::ranges::sort(vec);
 	std::ranges::sort(vec, std::less{});
 	std::ranges::sort(vec, std::less<macro_5_enum>{});
+#endif // defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L
+
+	{
+		std::set<macro_5_enum> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
+	{
+		std::set<macro_5_enum, std::less<void>> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
+	{
+		std::set<macro_5_enum, std::less<macro_5_enum>> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
 }
 
 
@@ -241,12 +266,43 @@ void test_macro_6() {
 
 	std::vector<macro_6_enum> vec = { v1, v2, v12 };
 #ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
+	std::sort(vec.begin(), vec.end());
+#endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
+#ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2
+	std::sort(vec.begin(), vec.end(), std::less{});
+#endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2
+	std::sort(vec.begin(), vec.end(), std::less<macro_6_enum>{});
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+#ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
 	std::ranges::sort(vec);
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
 #ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2
 	std::ranges::sort(vec, std::less{});
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2
 	std::ranges::sort(vec, std::less<macro_6_enum>{});
+#endif // defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L
+
+	{
+		std::set<macro_6_enum> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
+#ifdef TEST_COMPILE_FAIL_MACROS_DELETE_REL_SET
+	{
+		std::set<macro_6_enum, std::less<void>> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
+#endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SET
+	{
+		std::set<macro_6_enum, std::less<macro_6_enum>> s;
+		s.insert(v1);
+		s.insert(v2);
+		s.insert(v12);
+	}
 }
 
 
