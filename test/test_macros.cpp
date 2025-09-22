@@ -183,6 +183,7 @@ void test_macro_3() {
 	macro_3_enum v2 = macro_3_enum::bit_1;
 	macro_3_enum v12 = v1 | v2;
 	bool b = (v12 && v2);
+	BOOST_TEST((b || !b));	// to prevent unused warnings
 }
 
 
