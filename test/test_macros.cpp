@@ -227,11 +227,16 @@ void test_macro_5() {
 
 	std::vector<macro_5_enum> vec = { v1, v2, v12 };
 	std::sort(vec.begin(), vec.end());
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 	std::sort(vec.begin(), vec.end(), std::less{});
+#endif // defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 	std::sort(vec.begin(), vec.end(), std::less<macro_5_enum>{});
+
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
 	std::ranges::sort(vec);
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 	std::ranges::sort(vec, std::less{});
+#endif // defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 	std::ranges::sort(vec, std::less<macro_5_enum>{});
 #endif // defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L
 
