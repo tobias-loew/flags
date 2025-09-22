@@ -8,3 +8,4 @@
 /test/.vs
 /test/out
 test/testEnvironments.json
+/.vscode/settings.json

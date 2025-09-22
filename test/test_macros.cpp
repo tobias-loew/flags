@@ -246,12 +246,14 @@ void test_macro_5() {
 		s.insert(v2);
 		s.insert(v12);
 	}
+#if defined(__cpp_lib_transparent_operators) && (__cpp_lib_transparent_operators >= 201210L)
 	{
 		std::set<macro_5_enum, std::less<void>> s;
 		s.insert(v1);
 		s.insert(v2);
 		s.insert(v12);
 	}
+#endif // defined(__cpp_lib_transparent_operators) && (__cpp_lib_transparent_operators >= 201210L)
 	{
 		std::set<macro_5_enum, std::less<macro_5_enum>> s;
 		s.insert(v1);
