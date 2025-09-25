@@ -660,7 +660,7 @@ queen_of_hearts_name queen_of_hearts_name queen_of_hearts_name queen_of_hearts_n
 <span style="font-size:150%">
 Proclamation:
 
-<span style="visibility:hidden"> All persons whose names are striken out are enemies of the kingdom,</span><br/> &nbsp;  
+<span style="visibility:hidden"> All persons whose names are stricken out are enemies of the kingdom,</span><br/> &nbsp;  
 </span>
 </td>
 
@@ -719,7 +719,7 @@ Proclamation:
 <span style="font-size:150%">
 Proclamation:
 
-All persons whose name is striken out are enemies of the kingdom,<br/> &nbsp;  
+All persons whose name is stricken out are enemies of the kingdom,<br/> &nbsp;  
 </span>
 </td>
 
@@ -778,7 +778,7 @@ All persons whose name is striken out are enemies of the kingdom,<br/> &nbsp;
 <span style="font-size:150%">
 Proclamation:
 
-All persons whose name is striken out are enemies of the kingdom,<br/> <s><i><u> The Queen</u></i></s>! 
+All persons whose name is stricken out are enemies of the kingdom,<br/> <s><i><u> The Queen</u></i></s>! 
 </span>
 </td>
 

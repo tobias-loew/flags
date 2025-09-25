@@ -228,7 +228,7 @@ For scoped enumerations all above is already provided by the language.
 
 // (For scoped enumerations the language prohibits them anyway.) 
 // 
-// To test whether When testing for emptyness (i.e. the underlying value is `0`) an (in-)equality test against `nullptr` or the macro `BOOST_FLAGS_NULL` can be executed.
+// To test whether When testing for emptiness (i.e. the underlying value is `0`) an (in-)equality test against `nullptr` or the macro `BOOST_FLAGS_NULL` can be executed.
 // For scoped enumerations an (in-)equality test against `0` produces the same result.
 
 
@@ -469,7 +469,7 @@ One day, the troublemaker Alice came to the kingdom and the Queen ordered the cr
 +++<span style="font-family:'Times New Roman'">
 which should be used for Alice's name. So it got added to the `font_styles` enumeration.<br/>
 The next day the following proclamation appeared in the newspaper:<br/>
-<span style="font-size:150%">All persons whose names are striken out are enemies of the kingdom, <i><s><u>the Queen</u></s></i>!</span><br/> 
+<span style="font-size:150%">All persons whose names are stricken out are enemies of the kingdom, <i><s><u>the Queen</u></s></i>!</span><br/> 
 The last thing the programmer heard, as he ran away from the kingdom, was the queen shouting "Off with his head!".
 +++
 ====
@@ -606,7 +606,7 @@ Let's first take a look at the semantics of the built-in `operator &&`:
 
 This is quite different from the semantics of the built-in bitwise `&` operator in a Boolean context:
 
-* it performs intergral promotion on both arguments and compute their bitwise AND
+* it performs integral promotion on both arguments and compute their bitwise AND
 * returns `false` if the outcome is equal to `0` otherwise `true`
 
 E.g. in Boolean contexts `(1 && 2)` evaluates to `true`, while `(1 & 2)` evaluates to `false`.
@@ -650,13 +650,13 @@ So, before enabling `operator&&`, it is best to compile the code without it and 
 
 [NOTE]
 ====
-To achieve short-circuit evaluation for expresions with flags, convert the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
+To achieve short-circuit evaluation for expressions with flags, convert the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
 ====
 
 
 // [NOTE]
 // ====
-// Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break exisiting code!
+// Overloading `operator &&` and `operator ||` is not an option as it looses short-circuit evaluation, which would silently break existing code!
 // 
 // // Furthermore, due to the precedence rules, which for historical reasons gave logical operations a higher precedence than bitwise
 // // https://www.bell-labs.com/usr/dmr/www/chist.html[,window=_blank]
@@ -955,8 +955,8 @@ where type `T` can be either an enumeration or an integral type, and `underlying
 
 
 // The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
-// It is contructed with the lowest and highest flag that shall be iterated over.
-// If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
+// It is constructed with the lowest and highest flag that shall be iterated over.
+// If `flag_generator` is constructor with flags not having exactly one bit set, then the behavior is undefined.
 
 
 // # Summary

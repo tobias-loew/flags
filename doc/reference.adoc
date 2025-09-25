@@ -340,7 +340,7 @@ class my_class {
 // 
 // [source]
 // ----
-// constexpt operator&&(e1, e2) -> bool { return !!(e1 & e2); }
+// constexpr operator&&(e1, e2) -> bool { return !!(e1 & e2); }
 // ----
 // 
 // `boost_flags_logical_and` is looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
@@ -940,7 +940,7 @@ The type `T` can be either an enumeration or an integral type, and `underlying_o
 ----
 
 Returns to a value `v` of type `T` the value with the next higher bit set (if available). +
-The behaviour is undefined if more than one bit is set in value `v`.
+The behavior is undefined if more than one bit is set in value `v`.
 
 
 
@@ -949,8 +949,8 @@ The behaviour is undefined if more than one bit is set in value `v`.
 // ### flag_generator
 
 // The `template<typename E> flag_generator` provides an internal iterator and member functions `begin()` and `end()` returning the resp. iterators. +
-// It is contructed with the lowest and highest flag that shall be iterated over.
-// If `flag_generator` is constructor with flags not having exactly one bit set, then the behaviour is undefined.
+// It is constructed with the lowest and highest flag that shall be iterated over.
+// If `flag_generator` is constructor with flags not having exactly one bit set, then the behavior is undefined.
 
 // ### flags_from_to
 // The function
@@ -985,7 +985,7 @@ The behaviour is undefined if more than one bit is set in value `v`.
 
 ### BOOST_FLAGS_NULL
 
-The macro `BOOST_FLAGS_NULL` can be used for (in-)equailty testing with a flag-value.
+The macro `BOOST_FLAGS_NULL` can be used for (in-)equality testing with a flag-value.
 
 For any value `e` of type flags `E` the expression `e == BOOST_FLAGS_NULL` is equivalent to `e == E{}`. +
 Similarly for  `e != BOOST_FLAGS_NULL`, `BOOST_FLAGS_NULL == e` and `BOOST_FLAGS_NULL != e`.
@@ -1090,7 +1090,7 @@ Possible values: 0 or 1
 
 ### BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES
 
-Specifies, if https://en.cppreference.com/w/cpp/language/operators[rewitten candidates,window=_blank] are availabe.
+Specifies, if https://en.cppreference.com/w/cpp/language/operators[rewitten candidates,window=_blank] are available.
 
 Possible values: 0 or 1
 
