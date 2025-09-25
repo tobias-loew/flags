@@ -22,6 +22,22 @@
 namespace TEST_NAMESPACE {
 #endif // defined(TEST_FLAGS_LINKING)
 
+enum class macro_0_enum : unsigned int {
+    bit_0 = boost::flags::nth_bit(0), // == 0x01
+    bit_1 = boost::flags::nth_bit(1), // == 0x02
+    bit_2 = boost::flags::nth_bit(2), // == 0x04
+    bit_3 = boost::flags::nth_bit(3), // == 0x08
+};
+
+// enable macro_0_enum
+#if defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+BOOST_FLAGS_ENABLE(macro_0_enum)
+#else
+BOOST_FLAGS(macro_0_enum, BOOST_FLAGS_DEFAULT_REL)
+#endif
+
+
+
 enum class macro_1_enum : unsigned int {
     bit_0 = boost::flags::nth_bit(0), // == 0x01
     bit_1 = boost::flags::nth_bit(1), // == 0x02
@@ -32,7 +48,7 @@ enum class macro_1_enum : unsigned int {
 // enable macro_1_enum
 #if defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 BOOST_FLAGS_ENABLE(macro_1_enum)
-BOOST_FLAGS_REL_OPS_DELETE(macro_1_enum)
+BOOST_FLAGS_DELETE_REL(macro_1_enum)
 #else
 BOOST_FLAGS(macro_1_enum, BOOST_FLAGS_DELETE_REL)
 #endif
@@ -79,7 +95,7 @@ enum class macro_4_enum : unsigned int {
 // enable macro_4_enum
 #if defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(macro_4_enum)
-BOOST_FLAGS_REL_OPS_DELETE(macro_4_enum)
+BOOST_FLAGS_DELETE_REL(macro_4_enum)
 #else
 BOOST_FLAGS(macro_4_enum, BOOST_FLAGS_DELETE_REL, BOOST_FLAGS_DISABLE_COMPLEMENT, BOOST_FLAGS_LOGICAL_AND)
 #endif
@@ -115,7 +131,7 @@ enum class macro_6_enum : unsigned int {
 // enable macro_6_enum
 #if defined(_MSC_VER) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 BOOST_FLAGS_ENABLE(macro_6_enum)
-BOOST_FLAGS_REL_OPS_DELETE(macro_6_enum)
+BOOST_FLAGS_DELETE_REL(macro_6_enum)
 #else
 BOOST_FLAGS(macro_6_enum, BOOST_FLAGS_DELETE_REL)
 #endif
@@ -152,6 +168,23 @@ auto make_off_on(T v)
 #endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
 {
     return std::array<T, 2>{{T{}, v}};  // use double braces to prevent C++11 clang warning "suggest braces around initialization of subobject"
+}
+
+void test_macro_0() {
+	macro_0_enum v1 = macro_0_enum::bit_0;
+	macro_0_enum v2 = macro_0_enum::bit_1;
+	macro_0_enum v12 = v1 | v2;
+	auto u1 = to_underlying(macro_0_enum::bit_0);
+	auto u2 = to_underlying(macro_0_enum::bit_1);
+	auto u12 = u1 | u2;
+	BOOST_TEST((to_underlying(v12) == u12));
+
+	bool bu = u1 < u12;
+	BOOST_TEST((bu || !bu));	// to prevent unused warnings
+
+	bool bv = v1 < v12;
+	BOOST_TEST((bv || !bv));	// to prevent unused warnings
+
 }
 
 void test_macro_1() {
@@ -238,6 +271,7 @@ void test_macro_5() {
 	std::ranges::sort(vec, std::less{});
 #endif // defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 	std::ranges::sort(vec, std::less<macro_5_enum>{});
+	std::ranges::sort(vec, boost::flags::total_order);
 #endif // defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L
 
 	{
@@ -298,6 +332,7 @@ void test_macro_6() {
 	std::ranges::sort(vec, std::less{});
 #endif // TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2
 	std::ranges::sort(vec, std::less<macro_6_enum>{});
+	std::ranges::sort(vec, boost::flags::total_order);
 #endif // defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L
 
 	{
@@ -335,6 +370,7 @@ void test_macro_6() {
 
 int main() {
     report_config();
+	test_macro_0();
 	test_macro_1();
 	test_macro_2();
 	test_macro_3();

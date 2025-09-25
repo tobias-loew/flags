@@ -14,7 +14,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :idprefix:
 // :stem: latexmath
 
-## How to use Boost.Flags?
+## How to use Boost.Flags
 
 * include the header ``<boost/flags.hpp>``
 * opt-in for an enumeration `E` by defining
@@ -24,13 +24,110 @@ BOOST_FLAGS(E)
 ----
 in the same namespace as `E`.
 
-Example:  https://godbolt.org/z/PPoKaGrzc[on Godbolt compiler explorer, window=_blank]
+
+## Why use Boost.Flags
+
+* provides type-safe bitwise operations for flag-like scoped / unscoped enumerations
+* turns undetected logical errors into type errors
+// ** when applying bitwise operators to incompatible enumerations
+// ** when accidentally converting bitmasks (negation of flags) to `bool`
+
+## Characteristics of Boost.Flags
+
+* is non-intrusive - only a macro invocation is required to opt-in
+* single header-file library
+* no dependencies (only standard-library includes)
+* compile-time usable - everything is `constexpr`
+* zero-overhead (in optimized builds)
+* operators are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
+* requires at least C++11, uses newer features if available
+
+## Opt-in
+
+To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS` for `E` in the same namespace as `E`
+[source]
+----
+enum class E { ... };
+BOOST_FLAGS(E)
+----
+
+// As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
+Best practice would be writing `BOOST_FLAGS(E)` right after the enumeration in the same namespace.
+
+In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_LOCAL` has to be used instead:
+
+[source]
+----
+class my_class {
+    // ...
+    enum class E { ... };
+    BOOST_FLAGS_LOCAL(E)
+    // ...
+};
+----
+
+
+[NOTE]
+====
+Inside class definitions, `constexpr` constructions using Boost.Flags enabled operators may fail to compile:
+[source,subs="+quotes,+macros"]
+----
+class my_class {
+    // ...
+    enum class E { 
+        flag_0 = 0x1,
+        flag_1 = 0x2,
+    };
+    BOOST_FLAGS_LOCAL(E)
+    
+    static constexpr E flag_0_or_flag_1 = pass:[<span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>]
+};
+----
+
+The reason is, that `BOOST_FLAGS_LOCAL(E)` generates `friend` operators which are _declared_ in the class but _defined_ is after it, thus they are 
+inaccessible for in-class `constexpr` constructions. To work around this limitation, please use the following code:
+[source]
+----
+BOOST_FLAGS_USING_OPERATORS()
+
+class my_class {
+    // ...
+    enum class E { 
+        flag_0 = 0x1,
+        flag_1 = 0x2,
+    };
+    BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_NO_FORWARDING)
+    
+    static constexpr E flag_0_or_flag_1 = E::flag_0 | E::flag_1;
+};
+----
+====
+
+// Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling:
+// [source]
+// ----
+// template<>
+// struct boost::flags::enable<E> : std::true_type {};
+// ----
+
+In case you want to check that an enumeration is enabled for Boost.Flags, you can test it e.g. with
+[source]
+----
+static_assert(boost::flags::enable<E>::value, "Please check if E is enabled correctly and boost/flags.hpp is included.");
+----
+
+
+
+[#intro_example]
+## Example
+
+https://godbolt.org/z/PPoKaGrzc[on Godbolt compiler explorer, window=_blank]
 
 [source,subs="+quotes,+macros"]
 ----
 #include <boost/flags.hpp>
 
-enum class pizza_toppings : unsigned int {
+enum class pizza_toppings {
     tomato       = boost::flags::nth_bit(0), // == 0x01
     cheese       = boost::flags::nth_bit(1), // == 0x02
     salami       = boost::flags::nth_bit(2), // == 0x04
@@ -42,7 +139,7 @@ enum class pizza_toppings : unsigned int {
 // enable Boost.Flags for pizza_toppings
 BOOST_FLAGS(pizza_toppings)
 
-enum class ice_cream_flavours : unsigned int {
+enum class ice_cream_flavours {
     vanilla      = boost::flags::nth_bit(0), // == 0x01
     chocolate    = boost::flags::nth_bit(1), // == 0x02
     strawberry   = boost::flags::nth_bit(2), // == 0x04
@@ -112,102 +209,10 @@ int main() {
 ----
 // "
 
-## Why use Boost.Flags?
 
-* provides type-safe bitwise operations for flag-like scoped / unscoped enumerations
-* turns undetected logical errors into type errors
-// ** when applying bitwise operators to incompatible enumerations
-// ** when accidentally converting bitmasks (negation of flags) to `bool`
+## Use _scoped_ or _unscoped_ enumerations
 
-## Characteristics of Boost.Flags
-
-* is non-intrusive - only a macro invocation is required to opt-in
-* single header-file library
-* no dependencies (only standard-library includes)
-* everything is `constexpr`
-* zero-overhead (in optimized builds)
-* operator are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
-* requires at least C++11, uses newer features if available
-// * provides a bunch of bit manipulation utility functions
-// * enforces additional type-checks for existing flag-like unscoped enumerations, while still allowing implicit conversion to `int` and `bool`
-
-## Opt-in
-
-To opt-in to Boost.Flags for an enumeration `E` the easiest and most comfortable way is to use the macro `BOOST_FLAGS` for `E` in the same namespace as `E`
-[source]
-----
-enum class E:unsigned int { ... };
-BOOST_FLAGS(E)
-----
-
-// As Boost.Flags will call `boost_flags_enable` unqualified, it will be looked up using https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank].
-Best practice would be writing `BOOST_FLAGS(E)` right after the enumeration in the same namespace.
-
-In case the enumeration `E` is defined inside a class or class template, the macro `BOOST_FLAGS_LOCAL` has to be used instead:
-
-[source]
-----
-class my_class {
-    // ...
-    enum class E:unsigned int { ... };
-    BOOST_FLAGS_LOCAL(E)
-    // ...
-};
-----
-
-
-[NOTE]
-====
-Inside class definitions, `constexpr` constructions using Boost.Flags enabled operators may fail to compile:
-[source,subs="+quotes,+macros"]
-----
-class my_class {
-    // ...
-    enum class E:unsigned int { 
-        flag_0 = 0x1,
-        flag_1 = 0x2,
-    };
-    BOOST_FLAGS_LOCAL(E)
-    
-    static constexpr E flag_0_or_flag_1 = pass:[<span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>]
-};
-----
-
-The reason is, that `BOOST_FLAGS_LOCAL(E)` generates `friend` operators which are _declared_ in the class but _defined_ is after it, thus they are 
-inaccessible for in-class `constexpr` constructions. To work around this limitation, please use the following code:
-[source]
-----
-BOOST_FLAGS_USING_OPERATORS()
-
-class my_class {
-    // ...
-    enum class E:unsigned int { 
-        flag_0 = 0x1,
-        flag_1 = 0x2,
-    };
-    BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_NO_FORWARDING)
-    
-    static constexpr E flag_0_or_flag_1 = E::flag_0 | E::flag_1;
-};
-----
-====
-
-// Instead of defining `boost_flags_enable` the class template xref:types_enable[`boost::flags::enable`] can be specialized for enabling:
-// [source]
-// ----
-// template<>
-// struct boost::flags::enable<E> : std::true_type {};
-// ----
-
-In case you want to check that an enumeration is enabled for Boost.Flags, you can test it e.g. with
-[source]
-----
-static_assert(boost::flags::enable<E>::value, "Please check if E is enabled correctly and boost/flags.hpp is included.");
-----
-
-## _scoped_ or _unscoped_ enumerations?
-
-The usage of scoped enumeration is strongly recommended, as they provide more type safety than unscoped by prohibiting implicit conversion to the underlying integer type. Further, by default they do not pollute the current namespace with the names of their enumerators.
+The usage of scoped enumeration is strongly recommended, as they prohibit implicit conversion to the underlying integer type and thus provide more type safety. Further, by default scoped enumerations do not pollute the current namespace with the names of their enumerators.
 
 Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.
 
@@ -215,11 +220,11 @@ For unscoped enumerations Boost.Flags will delete binary operators `&`, `|`, `^`
 
 * at least one of its arguments is enabled for Boost.Flags and
 * both arguments are implicitly convertible to an integer type and
-* both arguments are not compatible (i.e. they are not the same enumeration or its xref:complementing_the_complement[complement], or for operators `==` and `!=` they are not the same enumeration) 
+* both arguments are not compatible (i.e. they are not of the same enumeration or its xref:complementing_the_complement[complement], or for operators `==` and `!=` they are not the same type) 
 
-i.e. Boost.Flags will prohibit in those cases that the built-in version will be used. +
+i.e. Boost.Flags will prohibit in those cases that the built-in version is used. +
 
-For scoped enumerations this is not necessary, as it is already prohibited by the language.
+For scoped enumerations all above is already provided by the language.
 
 // (For scoped enumerations the language prohibits them anyway.) 
 // 
@@ -227,14 +232,10 @@ For scoped enumerations this is not necessary, as it is already prohibited by th
 // For scoped enumerations an (in-)equality test against `0` produces the same result.
 
 
-## What about the underlying type?
+## The underlying type
 
-* For language standards **before C++20** the underlying type is required as an `unsigned` type, for both scoped and unscoped enumerations!
-* For *unscoped* enumerations using the `disable_complement` option the underlying type is **always required**!
-
-Please note, that this is not a requirement the language, when binary operators are used as endo-functions `(E,E) -> E` on an enumeration `E`.
-
-(For details xref:underlying_type[see below.])
+In most situations the usage of Boost.Flags does not depend on the (existence of the) enumeration's underlying type.
+Only when Boost.Flags is used with an *unscoped* enumeration `E` and the option `disable_complement` is used (i.e. `operator~(E) \-> E`) then the specification of the underlying type is required to prevent undefined behavior. For details xref:underlying_type[see below.]
 
 # The long story
 
@@ -278,7 +279,7 @@ If we forget the leading `L` of `LBS_NOTIFY` and write
 instead, we produced syntactically correct code but semantical nonsense. 
 
 [discrete]
-### Switching to unscoped enumerations makes it even worse
+### Switching to enumerations makes it even worse
 If the Windows team had decided to use unscoped enumerations instead of macros it wouldn't have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration's semantic overhead. Even worse:
 
 
@@ -290,23 +291,23 @@ Furthermore, scoped enumerations (which didn't exist when `WinUser.h` was create
 
 [discrete]
 ### But enumerations provide type-safety
-On the other hand, enumerations, and especially scoped ones, improve the type-safety of our code:
+On the other hand, enumerations, and especially scoped enumerations, improve the type-safety of our code:
 
-* variables and arguments of enumeration type can only by assigned (resp. invoked) with a value of the same type
+* variables and arguments of enumeration type can only by assigned (resp. invoked) with a values of the correct type
 * there is no implicit integral promotion for scoped enumerations
 
 [discrete]
-### With Boost.Flags you can get both! 
+### With Boost.Flags you can get both 
 With Boost.Flags we get support for all bitwise operators and type-safety. E.g. the following code
 [source]
 ----
-enum class E : unsigned int { a=1, b=2, c=4, d=8 };
+enum class E { a=1, b=2, c=4, d=8 };
 BOOST_FLAGS(E)
 ----
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])
-* the binary operators require both arguments to be from the enumeration or its `complement`
 * the bitwise negation `~` changes the type from `E` to `complement<E>` and vice-versa
+* the binary operators require both arguments to be from the enumeration resp. its `complement`
 // * all other operators are disabled by default (cf. xref:overloading_relational_operators[overloading relational operators])
 
 // [#overloading_relational_operators]
@@ -325,9 +326,7 @@ BOOST_FLAGS(E)
 [#underlying_type]
 ## The underlying type
 
-Is the specification of the underlying type required?
-
-First, a standard conforming decision diagram:
+Here is a standard conforming decision diagram, whether the specification of the underlying type required:
 [ditaa, target=underlying_type_decision_diagram_conforming]
 ----
                           /-------------\
@@ -363,8 +362,9 @@ First, a standard conforming decision diagram:
 
 ----
 
-Ok, the `unsigned` requirement for pre C\\++20 compilers is more a theoretical issue, since all C\\++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
-Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[, window=_blank]).
+Ok, the `unsigned` requirement for pre C\\++20 compilers is more of a theoretical issue, since all C++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
+
+// Furthermore, scoped enumerations always have a fixed underlying type, which is `int` if not specified (https://eel.is/c++draft/dcl.enum#5[, window=_blank]).
 
 So, in case your compiler uses signed two's complement, you can use the following simplified decision diagram:
 [ditaa, target=underlying_type_decision_diagram_practical]
@@ -396,10 +396,11 @@ So, in case your compiler uses signed two's complement, you can use the followin
 
 
 
-It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator ~` will invoke undefined behavior. +
-Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#10[, window=_blank]). +
+It may seem pedantic, but defining the underlying type in the unscoped and xref:disable_complement[`disable_complement`] case is crucial, as otherwise the `operator~` will invoke undefined behavior, when its result is not within the value range of the enumeration. +
+Compilers can track this down, e.g. when evaluating constant expressions (cf. https://eel.is/c++draft/expr.static.cast#8[, window=_blank]). +
 Starting with Clang 16 this is diagnosed as a hard error.
 
+[#unscoped_complement]
 [NOTE]
 ====
 For unscoped enums with unspecified underlying type, the compiler infers two types:
@@ -493,7 +494,7 @@ There are two morals of this tale:
 // ----
 
 
-Even though the underlying type together with its operators `&`, `|` and `~` denotes a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank], when using it as set of flags only the operator `&` and `|` are endo-functions. The operator `~` returns an element from a __complemented__ set. 
+Even though the underlying type together with its operators `&`, `|` and `~` denotes a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank], when using it as set of flags only the operator `&` and `|` are endo-functions: the operator `~` returns an element from a __complemented__ set. 
 
 So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] and both are entangled by the operator `~`. 
 
@@ -520,7 +521,7 @@ This section provides a mathematical explanation, why `complement` is required. 
 // * The defined flags (e.g. `bold`, `italic` etc.) with the bitwise operations `&, |` form a substructure latexmath:[(F,\&,\mid)] of latexmath:[U] (cf. https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank]) which in general *is not closed under bitwise negation `~`*.
 // * Building the closure latexmath:[\overline{F}] of latexmath:[F] wrt. latexmath:[{\raise.17ex\hbox{$\scriptstyle\sim$}}] generates a Boolean algebra which is a Boolean subalgebra of latexmath:[U].
 
-Semantically the elements of pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span>&setminus; F</span>] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
+Semantically, the elements of pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span>&setminus; F</span>] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
 // Semantically the elements of latexmath:[\overline{F}\setminus F] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
 
 Finally, for the binary operators we have
@@ -557,7 +558,7 @@ there exists the option xref:disable_complement[`disable_complement`] which disa
 
 ## From flags to `bool`
 
-Since scoped enumerations prevent implicit conversion to `bool`, Boost.Flags provides the following functions (see also xref:not_not[`operator!`]):
+Since scoped enumerations prevent implicit conversion to `bool`, Boost.Flags provides the following functions:
 
 * `any(e) \-> bool` : equivalent to `e != E{}`
 * `none(e) \-> bool` : equivalent to `e == E{}`
@@ -569,115 +570,10 @@ Furthermore, to test for intersection and entailment of flag-sets:
 * `subseteq(e1, e2) \-> bool` : equivalent to `e1 & e2 == e1`
 * `subset(e1, e2) \-> bool` : equivalent to `subseteq(e1, e2) && e1 != e2`
 
-// But usually, we prefer to use operators.
-
-[#not_not]
-## `not`, `not not`, why not?
 Instead of calling `any` and `none` we can use `operator!`
 
 * `!e` : equivalent to `none(e)`
 * `!!e` : equivalent to `any(e)`
-
-## Everything in order?
-[#overloading_relational_operators]
-Let's take a look at the relational operators `<`, `\<=`, `>` and `>=`.
-
-For enumerations (scoped and unscoped) C++ provides built-in relational operators which apply the operator to the values of the underlying type.
-This order is a total order, which we usually want to use as _Compare_ predicate for sorted containers and sorting algorithms. 
-
-There is another order, which naturally arises, when we abstract away from the underlying type
- (which is what enumerations are usually about). It is the order induced by flag entailment:
-
-[.text-center]
-`e1 < e2`   if and only if   `subset(e1, e2) == true`
-
-(xref:contained_induced_partial_order[see below])
-
-But, when there is more than one flag, then this order is inherently partial and should never be used as _Compare_ predicate for containers or algorithms.
-
-As there are applications for two different orders on the same type, the best would be different sets of relational operators, but C++ offers only one such. +
-One approach would be, deleting all relational operators for flags and forcing the user to call a function / pass a _Compare_ type as predicate.
-
-Currently, the language does not allow overloading relational operators for enumerations with a function template (see note),
-
-[NOTE]
-====
-C++ allows overloading operators when at least one of its arguments is of `class` or `enum` type
-[source]
-----
-enum E{};
-bool operator<(E,E){ return true; }
-bool test(){
-    return E{} < E{};       // calls our operator< and returns true
-}
-----
-This also works for operator templates, but there is one exception: +
-When an operator template for a relational operator is invoked with the same enumeration type for both arguments, then the built-in operator is called.
-[source]
-----
-enum E{};
-template<typename T1, typename T2> bool operator<(T1,T2){ return true; }
-bool test(){
-    return E{} < E{};       // calls built-in < and returns false
-}
-----
-
-There is a Defect Report pending
-https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]
- which would make the latter also call the user defined operator template.
-====
-
-Boost.Flags provides the following macro:
-
-* `BOOST_FLAGS_REL_OPS_DELETE(E)`: deletes all relational operators for enumeration `E`
-//* `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)`: defines all relational operators to reflect the partial order induced by `subseteq` (xref:contained_induced_partial_order[see below])
-
-// Additionally, there exist the following _Compare_ structs and objects:
-
-// * totally ordered: `struct boost::flags::total_order_t` and object `boost::flags::total_order`
-// * partially ordered: `struct boost::flags::partial_order_t` and object `boost::flags::partial_order`
-
-As C++ allows to specialize `std::less` for user-defined types, we can provide a macro
-
-* `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)`: specializes `std::less` to use the total order induced by the underlying values
-
-which ensures always total ordering for `std::less` based compare in containers and algorithms.
-
-// But for range-algorithms the language strikes back again: range compare uses
-// `std::ranges::less` which is a struct and thus cannot be specialized. Internally it will do some checks and call `operator <` if available. +
-// This means, when we define `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` then for any range algorithm that compares values of type `E` we must provide
-// `boost::flags::total_order` (or another total ordering) as _Compare_. Otherwise, we're in UB land.
-
-So, our recommendation (and the currently most comfortable way without loosing any safety) would be
-defining both `BOOST_FLAGS_REL_OPS_DELETE(E)` and `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)`.
-
-
-[NOTE]
-====
-[#contained_induced_partial_order]
-For the mathematically inclined programmer: +
-The function `subseteq` reflects the partial order (in the mathematical sense) pass:[<span style="font-size:115%">&leq;</span>] of the generated Boolean algebra.
-// The function `subseteq` reflects the partial order (in the mathematical sense) latexmath:[\leq] of the generated Boolean algebra.
-// You can enable relational operators using the `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` macro at global namespace. +
-// `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines the following semantics for the relational operators
-
-// * `e1 \<= e2` : equivalent to `subseteq(e1, e2)`
-// * `e1 >= e2` : equivalent to `subseteq(e2, e1)`
-// * `e1 < e2` : equivalent to `subset(e1, e2)`
-// * `e1 > e2` : equivalent to `subset(e2, e1)`
-// * `e1 \<\=> e2` : has type `std::partial_ordering` and is equivalent to
-// [source]
-// ----
-//     e1 == e2
-//     ? std::partial_ordering::equivalent
-//     : subseteq(e1, e2)
-//     ? std::partial_ordering::less
-//     : subseteq(e2, e1)
-//     ? std::partial_ordering::greater
-//     : std::partial_ordering::unordered
-// ----
-
-====
 
 ## Flags `and` Flags
 Instead of `disjoint` and `intersect` we can write:
@@ -769,12 +665,179 @@ To achieve short-circuit evaluation for expresions with flags, convert the flag-
 // // Those overloads would loose _short-circuit_ evaluation, which could lead to runtime errors in existing code.
 // ====
 
+## Calls to order
+[#overloading_relational_operators]
+Let's take a look at the relational operators `<`, `\<=`, `>`, `>=` and `\<\=>`.
+
+For integer-based types, including scoped and unscoped enumerations, C++ provides built-in relational operators which apply the operator to the values (of the underlying type in case of enumerations). The induced order is a total: for any two values exactly one of the operators `<`, `==`, `>` evaluates to `true`.
+These total orders are **syntactically** important, as we normally use them as _Compare_ predicate for sorted containers and sorting algorithms.
+
+But **semantically**, these orders do not carry much information: for the (xref:intro_example[introducing example]), the meaning of
+
+[.text-center]
+`pizza_toppings::cheese | pizza_toppings::salami < pizza_toppings::olives`
+
+reduces to some information about, which bits of the underlying type might be used by the different options. But this is something **we wanted to abstract away in the first place**. So, there is a dilemma: on the one hand, we require a total order for sorted containers and sorting algorithms. But on the other hand, the use of this order in other places may indicate logical errors and should be prohibited.
+
+To handle this Boost.Flags provides the following macros:
+
+* `BOOST_FLAGS_DELETE_REL(E)`: deletes all relational operators for enumeration `E`
+* `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)`: specializes `std::less` for enumeration `E` to use the total order induced by the underlying values
+
+The recommendation is defining both `BOOST_FLAGS_DELETE_REL(E)` and `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` as it allows standard sorting and sorted containers for `E` while disabling usage of relational operators in user code.
+
+
+[NOTE]
+====
+In case `BOOST_FLAGS_DELETE_REL(E)` is defined, then for range-algorithms like `std::ranges::sort` the definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` is unfortunately not sufficient. Range based algorithms by default use `std::ranges::less` as predicate, which eventually will call `operator <`, furthermore, `std::ranges::less` is not a template but a struct and cannot be specialized. 
+
+So, to use range-algorithms in this case we have to provide the sort-predicate explicitly, which can be either `std::less<E>{}` or the generic xref:partial_order_t[`boost::flags::total_order`].
+
+// is a struct and cannot be specialized. Internally, it will do some checks and call `operator <` if available.
+
+//  language strikes back again: range compare uses
+// // `std::ranges::less` which is a struct and thus cannot be specialized. Internally it will do some checks and call `operator <` if available. +
+// // This means, when we define `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` then for any range algorithm that compares values of type `E` we must provide
+// // `boost::flags::total_order` (or another total ordering) as _Compare_. Otherwise, we're in UB land.
+
+// C++ allows overloading operators when at least one of its arguments is of `class` or `enum` type
+// [source]
+// ----
+// enum E{};
+// bool operator<(E,E){ return true; }
+// bool test(){
+//     return E{} < E{};       // calls our operator< and returns true
+// }
+// ----
+// This also works for operator templates, but there is one exception: +
+// When an operator template for a relational operator is invoked with the same enumeration type for both arguments, then the built-in operator is called.
+// [source]
+// ----
+// enum E{};
+// template<typename T1, typename T2> bool operator<(T1,T2){ return true; }
+// bool test(){
+//     return E{} < E{};       // calls built-in < and returns false
+// }
+// ----
+
+// There is a Defect Report pending
+// https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]
+//  which would make the latter also call the user defined operator template.
+====
+
+
+// For flag-like values, where the bits represent different options, has a special meaning that 
+
+// For enumerations (scoped and unscoped) C++ provides built-in relational operators which apply the operator to the values of the underlying type.
+// This order is a total order, which we usually want to use as _Compare_ predicate for sorted containers and sorting algorithms. 
+
+// There is another order, which naturally arises, when we abstract away from the underlying type
+//  (which is what enumerations are usually about). It is the order induced by flag entailment:
+
+// [.text-center]
+// `e1 < e2`   if and only if   `subset(e1, e2) == true`
+
+// //(xref:contained_induced_partial_order[see below])
+
+// But, when there is more than one flag, then this order is inherently partial and must not be used as _Compare_ predicate for containers or algorithms.
+
+// As there are applications for two different orders on the same type, the best would be different sets of relational operators, but C++ offers only one such. +
+// One approach would be, deleting all relational operators for flags and forcing the user to call a function / pass a _Compare_ type as predicate.
+
+// Currently, the language does not allow overloading relational operators for enumerations with a function template (see note),
+
+// [NOTE]
+// ====
+// // For range-algorithms the language strikes back again: range compare uses
+// // `std::ranges::less` which is a struct and thus cannot be specialized. Internally it will do some checks and call `operator <` if available. +
+// // This means, when we define `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` then for any range algorithm that compares values of type `E` we must provide
+// // `boost::flags::total_order` (or another total ordering) as _Compare_. Otherwise, we're in UB land.
+
+// C++ allows overloading operators when at least one of its arguments is of `class` or `enum` type
+// [source]
+// ----
+// enum E{};
+// bool operator<(E,E){ return true; }
+// bool test(){
+//     return E{} < E{};       // calls our operator< and returns true
+// }
+// ----
+// This also works for operator templates, but there is one exception: +
+// When an operator template for a relational operator is invoked with the same enumeration type for both arguments, then the built-in operator is called.
+// [source]
+// ----
+// enum E{};
+// template<typename T1, typename T2> bool operator<(T1,T2){ return true; }
+// bool test(){
+//     return E{} < E{};       // calls built-in < and returns false
+// }
+// ----
+
+// There is a Defect Report pending
+// https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#2730[,window=_blank]
+//  which would make the latter also call the user defined operator template.
+// ====
+
+// Boost.Flags provides the following macro:
+
+// * `BOOST_FLAGS_DELETE_REL(E)`: deletes all relational operators for enumeration `E`
+// //* `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)`: defines all relational operators to reflect the partial order induced by `subseteq` (xref:contained_induced_partial_order[see below])
+
+// // Additionally, there exist the following _Compare_ structs and objects:
+
+// // * totally ordered: `struct boost::flags::total_order_t` and object `boost::flags::total_order`
+// // * partially ordered: `struct boost::flags::partial_order_t` and object `boost::flags::partial_order`
+
+// As C++ allows to specialize `std::less` for user-defined types, we can provide a macro
+
+// * `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)`: specializes `std::less` to use the total order induced by the underlying values
+
+// which ensures always total ordering for `std::less` based compare in containers and algorithms.
+
+// // But for range-algorithms the language strikes back again: range compare uses
+// // `std::ranges::less` which is a struct and thus cannot be specialized. Internally it will do some checks and call `operator <` if available. +
+// // This means, when we define `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` then for any range algorithm that compares values of type `E` we must provide
+// // `boost::flags::total_order` (or another total ordering) as _Compare_. Otherwise, we're in UB land.
+
+// So, our recommendation (and the currently most comfortable way without loosing any safety) would be
+// defining both `BOOST_FLAGS_DELETE_REL(E)` and `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)`.
+
+
+// [NOTE]
+// ====
+// [#contained_induced_partial_order]
+// For the mathematically inclined programmer: +
+// The function `subseteq` reflects the partial order (in the mathematical sense) pass:[<span style="font-size:115%">&leq;</span>] of the generated Boolean algebra.
+// // The function `subseteq` reflects the partial order (in the mathematical sense) latexmath:[\leq] of the generated Boolean algebra.
+// // You can enable relational operators using the `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER` macro at global namespace. +
+// // `BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(E)` defines the following semantics for the relational operators
+
+// // * `e1 \<= e2` : equivalent to `subseteq(e1, e2)`
+// // * `e1 >= e2` : equivalent to `subseteq(e2, e1)`
+// // * `e1 < e2` : equivalent to `subset(e1, e2)`
+// // * `e1 > e2` : equivalent to `subset(e2, e1)`
+// // * `e1 \<\=> e2` : has type `std::partial_ordering` and is equivalent to
+// // [source]
+// // ----
+// //     e1 == e2
+// //     ? std::partial_ordering::equivalent
+// //     : subseteq(e1, e2)
+// //     ? std::partial_ordering::less
+// //     : subseteq(e2, e1)
+// //     ? std::partial_ordering::greater
+// //     : std::partial_ordering::unordered
+// // ----
+
+// ====
+
+
 
 # Utilities
 
 ## Functions
 
-Boost.Flags provides the following functions for an enabled enumeration `E`:
+All following utility functions are defined in `namespace boost::flags`. For an enabled enumeration `E`
+Boost.Flags provides the following functions:
 
 
 [cols="1,1,1"]
@@ -836,8 +899,7 @@ Boost.Flags provides the following functions for an enabled enumeration `E`:
 // * `get_underlying(E e) \-> typename underlying_type<E>::type { return static_cast<typename underlying_type<E>::type>(e); }`
 // * `from_underlying(typename underlying_type<E>::type u) \-> E { return static_cast<E>(u); }`
 
-All utility functions are defined in `namespace boost::flags`. +
-The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except `from_underlying`, into the current namespace.
+The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except `from_underlying`, through using-directives into the current namespace.
 
 // and for generating the values of enumerators:
 // [source]
@@ -855,10 +917,14 @@ The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions, except 
 //     constexpr flag_generator<E> flags_all();
 // ----
 
-* `template<typename T = int> nth_bit(unsigned int n) \-> underlying_or_identity<T>::type { return static_cast<underlying_or_identity<T>::type>(1) << n; }` +
-  where type `T` can be either an enumeration or an integral type, and `underlying_or_identity` is a type-trait returning the underlying type of the enumeration or is the type-identity respectively
-* `template<typename T> next_bit(T v) \-> T { return v << 1; }`
+For generating the values of enumerators Boost.Flags provides furthermore:
 
+* `template<typename T = int> nth_bit(unsigned int n) \-> underlying_or_identity<T>::type` +
+returning the n-th power of 2
+* `template<typename T> next_bit(T v) \-> underlying_or_identity<T>::type` +
+returning the next power of 2 (if applied to a power of 2)
+
+where type `T` can be either an enumeration or an integral type, and `underlying_or_identity` is a type-trait returning the underlying type of the enumeration or is the type-identity respectively
 // ## Flags generator
 
 // Boost.Flags provides a `flag_generator` class template to iterate over the bits of a flag-enum. The class template is usually not create directly but through a call the one of the following functions

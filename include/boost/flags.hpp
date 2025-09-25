@@ -1429,8 +1429,8 @@ namespace boost {
 // next_bit : returns a value with the next bit set, requires `n` to exactly 1 bit set
         template<typename T>
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
-            inline constexpr auto next_bit(T n) noexcept -> T {
-            return n << 1;
+            inline constexpr auto next_bit(T n) noexcept -> typename impl::underlying_or_identity<T>::type {
+            return static_cast<typename impl::underlying_or_identity<T>::type>(n) << 1;
         }
 
         namespace impl {
@@ -1611,7 +1611,7 @@ namespace std {                                                                 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, FRIEND)                                        \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
 FRIEND bool operator< (E l, E r) = delete;                                                \
 FRIEND bool operator<= (E l, E r) = delete;                                               \
@@ -1647,7 +1647,7 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, FRIEND)                                        \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
 FRIEND bool operator< (E l, E r) = delete;                                                \
 FRIEND bool operator<= (E l, E r) = delete;                                               \
@@ -1687,7 +1687,7 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, FRIEND)                                        \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
 FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
                                                                                           \
@@ -1700,7 +1700,7 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, FRIEND)                                        \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
 FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
                                                                                           \
@@ -1715,9 +1715,9 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
-#define BOOST_FLAGS_REL_OPS_DELETE(E)                                                     \
-BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, BOOST_FLAGS_EMPTY())
-#define BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)  BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, friend)
+#define BOOST_FLAGS_DELETE_REL(E)                                                         \
+BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
+#define BOOST_FLAGS_LOCAL_DELETE_REL(E)  BOOST_FLAGS_DELETE_REL_IMPL(E, friend)
 
 
 #define BOOST_FLAGS_PSEUDO_AND_OPERATOR & boost::flags::pseudo_and_op_tag{} &
@@ -1802,10 +1802,10 @@ BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, BOOST_FLAGS_EMPTY())
 //                                        namespace before its definition). See documentation for further details.
 //  
 // furthermore at most one of the following relational-operator options may be specified:
-// - BOOST_FLAGS_STD_REL                : use operators <, <=, >, >= and <=> as specified by the C++ standard
+// - BOOST_FLAGS_DEFAULT_REL            : use operators <, <=, >, >= and <=> as specified by the C++ standard
 // - BOOST_FLAGS_DELETE_REL             : delete operators <, <=, >, >= and <=> if at least on e argument is of type E (or `complement`s of E)
 //
-// If no relational-operator option is specified, the macro defaults to using BOOST_FLAGS_STD_REL
+// If no relational-operator option is specified, the macro defaults to using BOOST_FLAGS_DEFAULT_REL
 // 
 // When you encounter errors using BOOST_FLAGS(E, ...) this can have multiple reasons (list is NOT exhaustive)
 //
@@ -1825,7 +1825,7 @@ BOOST_FLAGS_REL_OPS_DELETE_IMPL(E, BOOST_FLAGS_EMPTY())
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                        \
 BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_STD_REL(NAME, ...)                              \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                          \
 BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                           \
@@ -1843,7 +1843,7 @@ BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__)
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)               \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_STD_REL(NAME, ...)                     \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                 \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                  \
@@ -1861,7 +1861,7 @@ BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)            \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_STD_REL(NAME, ...)                       \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                   \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...)                    \
@@ -1881,8 +1881,8 @@ BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__)
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                       \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_STD_REL(NAME, ...)                             \
-BOOST_FLAGS_GENERATE_STD_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                         \
+BOOST_FLAGS_GENERATE_DEFAULT_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DELETE_REL(NAME, ...)                          \
 BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
@@ -1902,16 +1902,16 @@ BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__)
 
 // this is the default case, when no relation-option is specified
 #define BOOST_FLAGS_GENERATE_REL_(E)                                                      \
-    BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)
+    BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                          \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                      \
 
 #define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                       \
-    BOOST_FLAGS_REL_OPS_DELETE(E)
+    BOOST_FLAGS_DELETE_REL(E)
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_GENERATE_STD_REL(E) ;                                                 \
+#define BOOST_FLAGS_GENERATE_DEFAULT_REL(E) ;                                             \
 static_assert(false, "multiple relational operation options specified");
 
 #define BOOST_FLAGS_GENERATE_DELETE_REL(E) ;                                              \
@@ -1973,16 +1973,16 @@ static_assert(false, "multiple relational operation options specified");
 
 // this is the default case, when no relation-option is specified
 #define BOOST_FLAGS_LOCAL_GENERATE_REL_(E)                                                \
-    BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)
+    BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_STD_REL(E)                    \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                \
 
 #define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                 \
-    BOOST_FLAGS_LOCAL_REL_OPS_DELETE(E)
+    BOOST_FLAGS_LOCAL_DELETE_REL(E)
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_LOCAL_GENERATE_STD_REL(E) ;                                           \
+#define BOOST_FLAGS_LOCAL_GENERATE_DEFAULT_REL(E) ;                                       \
 static_assert(false, "multiple relational operation options specified");
 
 #define BOOST_FLAGS_LOCAL_GENERATE_DELETE_REL(E) ;                                        \

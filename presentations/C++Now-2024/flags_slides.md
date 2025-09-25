@@ -1149,7 +1149,7 @@ https://godbolt.org/z/5ffq6eGaW
 * enums abstract away underlying values
   * program logic should not depend on underlying values
 
-* `BOOST_FLAGS_REL_OPS_DELETE(E)` deletes all relational operators
+* `BOOST_FLAGS_DELETE_REL(E)` deletes all relational operators
 
 * constexpr objects `total_order`, `partial_order`
 

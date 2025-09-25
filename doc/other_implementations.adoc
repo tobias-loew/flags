@@ -16,7 +16,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 
 
-There are several articles and libraries on flag-like enums available. The following is not exhaustive list found on the web in January 2024:
+There are several articles and libraries on flag-like enums available. The following list is not exhaustive:
 
 . https://www.boost.org/doc/libs/1_84_0/boost/detail/bitmask.hpp[,window=_blank] (BOOST_BITMASK, BB)
 . https://www.sandordargo.com/blog/2022/06/22/bitwise-enums[,window=_blank] (SD)
@@ -24,7 +24,7 @@ There are several articles and libraries on flag-like enums available. The follo
 . https://m-peko.github.io/craft-cpp/posts/different-ways-to-define-binary-flags/[,window=_blank] (MP)
 . https://doc.qt.io/qt-6/qflags.html[,window=_blank] (Qt)
 . https://github.com/foonathan/type_safe[,window=_blank] (JM)
-. https://learn.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms229062(v=vs.100)[,window=_blank] (.net, language built-in flags support - not usable with ISO-C++ !)
+. https://learn.microsoft.com/en-us/dotnet/fundamentals/runtime-libraries/system-flagsattribute[,window=_blank] (.net, language built-in flags support - not usable with ISO-C++ !)
 
 
 [%header,cols="3,^1,^1,^1,^1,^1,^1,^1,^1"]
@@ -146,7 +146,7 @@ There are several articles and libraries on flag-like enums available. The follo
 | +
 
 
-| library available
+| available as library
 // Boost.Flags
 | *+*
 // BOOST_BITMASK

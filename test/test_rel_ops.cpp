@@ -40,7 +40,7 @@ enum class relops_delete_enum : unsigned int {
 // enable relops_delete_enum
 BOOST_FLAGS_ENABLE(relops_delete_enum)
 
-BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
+BOOST_FLAGS_DELETE_REL(relops_delete_enum)
 
 
 enum class relops_std_less_enum : unsigned int {
