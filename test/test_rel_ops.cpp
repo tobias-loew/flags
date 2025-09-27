@@ -1,5 +1,5 @@
 
-// Copyright 2024 Tobias Loew.
+// Copyright 2024, 2025 Tobias Loew.
 //
 // Distributed under the Boost Software License, Version 1.0.
 //
@@ -40,28 +40,7 @@ enum class relops_delete_enum : unsigned int {
 // enable relops_delete_enum
 BOOST_FLAGS_ENABLE(relops_delete_enum)
 
-BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
-
-
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-
-// BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
-
-#else // defined(_MSC_VER) && _MSC_VER <= 1900
-
-enum class relops_partial_order_enum : unsigned int {
-    bit_0 = boost::flags::nth_bit(0), // == 0x01
-    bit_1 = boost::flags::nth_bit(1), // == 0x02
-    bit_2 = boost::flags::nth_bit(2), // == 0x04
-    bit_3 = boost::flags::nth_bit(3), // == 0x08
-};
-
-// enable relops_partial_order_enum
-BOOST_FLAGS_ENABLE(relops_partial_order_enum)
-
-BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
-
-#endif // defined(_MSC_VER) && _MSC_VER <= 1900
+BOOST_FLAGS_DELETE_REL(relops_delete_enum)
 
 
 enum class relops_std_less_enum : unsigned int {
@@ -79,13 +58,7 @@ BOOST_FLAGS_ENABLE(relops_std_less_enum)
 
 } // namespace TEST_NAMESPACE
 
-BOOST_FLAGS_SPECIALIZE_STD_LESS(TEST_NAMESPACE::relops_std_less_enum)
-
 namespace TEST_NAMESPACE {
-
-#else  // defined(TEST_FLAGS_LINKING)
-
-BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 
 #endif // defined(TEST_FLAGS_LINKING)
 
@@ -458,13 +431,16 @@ void test_delete() {
     }
 }
 
+
+#if BOOST_FLAGS_HAS_PARTIAL_ORDERING
+
 // calculates bit inclusion bit for bit
 // deliberatly NOT using binary operators
 template<typename T>
-boost::flags::partial_ordering check_bit_incusion(T l, T r) {
+std::partial_ordering check_bit_incusion(T l, T r) {
 
     // start with equivalent
-    boost::flags::partial_ordering result = boost::flags::partial_ordering::equivalent;
+    std::partial_ordering result = std::partial_ordering::equivalent;
 
     for (int i = 0; i < static_cast<int>(sizeof(T) * 8); ++i) {
         auto val = 1 << i;
@@ -476,21 +452,21 @@ boost::flags::partial_ordering check_bit_incusion(T l, T r) {
         }
         else if (sr) {
             // less
-            if (result == boost::flags::partial_ordering::greater) {
+            if (result == std::partial_ordering::greater) {
                 // incompatible with previous result
-                return boost::flags::partial_ordering::unordered;
+                return std::partial_ordering::unordered;
             }
             // set result to less
-            result = boost::flags::partial_ordering::less;
+            result = std::partial_ordering::less;
         }
         else if (sl) {
             // greater
-            if (result == boost::flags::partial_ordering::less) {
+            if (result == std::partial_ordering::less) {
                 // incompatible with previous result
-                return boost::flags::partial_ordering::unordered;
+                return std::partial_ordering::unordered;
             }
             // set result to greater
-            result = boost::flags::partial_ordering::greater;
+            result = std::partial_ordering::greater;
         }
     }
 
@@ -498,82 +474,7 @@ boost::flags::partial_ordering check_bit_incusion(T l, T r) {
 }
 
 
-void test_partial_order() {
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-
-    // BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
-
-#else // defined(_MSC_VER) && _MSC_VER <= 1900
-
-    using E = relops_partial_order_enum;
-
-    // partial order relational ops -> bitset inclusion
-
-    for (auto a1 : make_off_on(E::bit_0)) {
-        for (auto b1 : make_off_on(E::bit_1)) {
-            for (auto c1 : make_off_on(E::bit_2)) {
-                for (auto d1 : make_off_on(E::bit_3)) {
-
-                    for (auto a2 : make_off_on(E::bit_0)) {
-                        for (auto b2 : make_off_on(E::bit_1)) {
-                            for (auto c2 : make_off_on(E::bit_2)) {
-                                for (auto d2 : make_off_on(E::bit_3)) {
-
-                                    auto v1 = a1 | b1 | c1 | d1;
-                                    auto v2 = a2 | b2 | c2 | d2;
-
-                                    {
-#define OP <
-                                        bool bf = v1 OP v2;
-                                        bool bu = check_bit_incusion(to_underlying(v1), to_underlying(v2)) OP 0;
-                                        BOOST_TEST((bf == bu));
-#undef OP
-                                    }
-
-                                    {
-#define OP <=
-                                        bool bf = v1 OP v2;
-                                        bool bu = check_bit_incusion(to_underlying(v1), to_underlying(v2)) OP 0;
-                                        BOOST_TEST((bf == bu));
-#undef OP
-                                    }
-
-                                    {
-#define OP >
-                                        bool bf = v1 OP v2;
-                                        bool bu = check_bit_incusion(to_underlying(v1), to_underlying(v2)) OP 0;
-                                        BOOST_TEST((bf == bu));
-#undef OP
-                                    }
-
-                                    {
-#define OP >=
-                                        bool bf = v1 OP v2;
-                                        bool bu = check_bit_incusion(to_underlying(v1), to_underlying(v2)) OP 0;
-                                        BOOST_TEST((bf == bu));
-#undef OP
-                                    }
-
-#if BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
-                                    {
-#define OP <=>
-                                        auto bf = v1 OP v2;
-                                        auto bu = check_bit_incusion(to_underlying(v1), to_underlying(v2));
-                                        BOOST_TEST((bf == bu));
-#undef OP
-                                    }
-#endif // BOOST_FLAGS_HAS_THREE_WAY_COMPARISON
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-#endif // defined(_MSC_VER) && _MSC_VER <= 1900
-}
+#endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 
 void test_std_less() {
@@ -650,7 +551,6 @@ int main() {
     report_config();
     test_builtin();
     test_delete();
-    test_partial_order();
     test_std_less();
     return boost::report_errors();
 }

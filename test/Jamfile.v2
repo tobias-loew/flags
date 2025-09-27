@@ -1,7 +1,7 @@
 #  Boost.Flags Library Test Jamfile
 #
 #  Copyright 2015-2019 Peter Dimov
-#  Copyright 2024 Tobias Loew
+#  Copyright 2024, 2025 Tobias Loew
 #
 #  Distributed under the Boost Software License, Version 1.0.
 #  See accompanying file LICENSE_1_0.txt or copy at
@@ -14,8 +14,6 @@ import ../../config/checks/config : requires ;
 project
   : requirements
 
-#    [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_hdr_tuple ]
-#    <cxxstd>20
     <warnings>extra
 
     <toolset>msvc:<warnings-as-errors>on
@@ -104,6 +102,14 @@ run test_constexpr.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_constexpr_UNSC
 run test_container_algorithm.cpp ;
 compile-fail test_container_algorithm.cpp : <define>TEST_COMPILE_FAIL_CONTAINER_DELETE_LT <define>TEST_COMPILE_FAIL_SET : test_container_algorithm_FAIL_SET ;
 compile-fail test_container_algorithm.cpp : <define>TEST_COMPILE_FAIL_CONTAINER_DELETE_LT <define>TEST_COMPILE_FAIL_MULTISET : test_container_algorithm_FAIL_MULTISET ;
+
+run test_macros.cpp ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL1 : test_macros_algorithm_DELETE_REL1 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL2 : test_macros_algorithm_DELETE_REL2 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL3 : test_macros_algorithm_DELETE_REL3 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1 : test_macros_algorithm_DELETE_REL_SORT1 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2 : test_macros_algorithm_DELETE_REL_SORT2 ;
+compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SET : test_macros_algorithm_DELETE_REL_SET ;
 
 
 # text example

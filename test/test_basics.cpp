@@ -1,5 +1,5 @@
 
-// Copyright 2024 Tobias Loew.
+// Copyright 2024, 2025 Tobias Loew.
 //
 // Distributed under the Boost Software License, Version 1.0.
 //
@@ -31,6 +31,19 @@ enum
 
 // enable flags_enum
 BOOST_FLAGS_ENABLE(flags_enum)
+
+static_assert(boost::flags::enable<flags_enum>::value, "Please check if boost/flags.hpp is included and flags_enum is enabled correctly.");
+
+
+enum
+#ifndef TEST_COMPILE_UNSCOPED
+	class
+#endif // TEST_COMPILE_UNSCOPED
+flags_enum_predeclared: unsigned int;
+
+BOOST_FLAGS_ENABLE(flags_enum_predeclared)
+
+static_assert(boost::flags::enable<flags_enum_predeclared>::value, "Please check if boost/flags.hpp is included and flags_enum_predeclared is enabled correctly.");
 
 
 
@@ -328,6 +341,29 @@ void test_in_class() {
 }
 
 
+
+flags_enum_predeclared predeclared_compute_or(flags_enum_predeclared v1, flags_enum_predeclared v2) {
+	return v1 | v2;
+}
+
+enum
+#ifndef TEST_COMPILE_UNSCOPED
+	class
+#endif // TEST_COMPILE_UNSCOPED
+flags_enum_predeclared: unsigned int {
+flags_enum_predeclared_bit_0 = boost::flags::nth_bit(0), // == 0x01
+flags_enum_predeclared_bit_1 = boost::flags::nth_bit(1), // == 0x02
+flags_enum_predeclared_bit_2 = boost::flags::nth_bit(2), // == 0x04
+flags_enum_predeclared_bit_3 = boost::flags::nth_bit(3), // == 0x08
+};
+
+void test_predeclared() {
+	flags_enum_predeclared v1 = flags_enum_predeclared::flags_enum_predeclared_bit_0;
+	flags_enum_predeclared v2 = flags_enum_predeclared::flags_enum_predeclared_bit_1;
+	BOOST_TEST((v1 | v2) == predeclared_compute_or(v1, v2));
+}
+
+
 int main() {
     report_config();
     test_nth_bit();
@@ -339,6 +375,7 @@ int main() {
     test_null();
     test_bfand();
     test_in_class();
+	test_predeclared();
 
     return boost::report_errors();
 }

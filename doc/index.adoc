@@ -1,5 +1,5 @@
 ﻿////
-Copyright 2024 Tobias Loew
+Copyright 2024, 2025 Tobias Loew
 
 Distributed under the Boost Software License, Version 1.0.
 
@@ -24,6 +24,7 @@ Tobias Loew
 include::description.adoc[]
 include::other_implementations.adoc[]
 include::design_rationale.adoc[]
+include::changes.adoc[]
 include::reference.adoc[]
 
 :leveloffset: -1
@@ -32,5 +33,7 @@ include::reference.adoc[]
 
 This documentation is
 
-* Copyright 2024 Tobias Loew
+* Copyright 2024, 2025 Tobias Loew
 * Distributed under the http://www.boost.org/LICENSE_1_0.txt[Boost Software License, Version 1.0].
+
+Many thanks to Andreas Buhr, Thomas Forell and Thimo Neubauer for many comments and suggestions.

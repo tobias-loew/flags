@@ -1,5 +1,5 @@
 
-// Copyright 2024 Tobias Loew.
+// Copyright 2024, 2025 Tobias Loew.
 //
 // Distributed under the Boost Software License, Version 1.0.
 //
@@ -115,6 +115,8 @@ flags_enum : unsigned int {
     bit_1 = boost::flags::nth_bit(1), // == 0x02
     bit_2 = boost::flags::nth_bit(2), // == 0x04
     bit_3 = boost::flags::nth_bit(3), // == 0x08
+    bit_4 = boost::flags::next_bit(bit_3), // == 0x10
+    bit_5 = boost::flags::next_bit(bit_4), // == 0x20
 };
 
 // enable flags_enum
@@ -126,11 +128,13 @@ namespace a_namespace {
         class
 #endif // TEST_COMPILE_UNSCOPED
     flags_enum: unsigned int {
-    bit_0 = boost::flags::nth_bit(0), // == 0x01
+		bit_0 = boost::flags::nth_bit(0), // == 0x01
         bit_1 = boost::flags::nth_bit(1), // == 0x02
         bit_2 = boost::flags::nth_bit(2), // == 0x04
         bit_3 = boost::flags::nth_bit(3), // == 0x08
-    };
+		bit_4 = boost::flags::next_bit(bit_3), // == 0x10
+		bit_5 = boost::flags::next_bit(bit_4), // == 0x20
+	};
 
     // enable flags_enum
     BOOST_FLAGS_ENABLE(flags_enum)

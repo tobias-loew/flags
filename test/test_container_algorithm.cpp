@@ -1,5 +1,5 @@
 
-// Copyright 2024 Tobias Loew.
+// Copyright 2024, 2025 Tobias Loew.
 //
 // Distributed under the Boost Software License, Version 1.0.
 //
@@ -43,28 +43,7 @@ enum class relops_delete_enum : unsigned int {
 // enable relops_delete_enum
 BOOST_FLAGS_ENABLE(relops_delete_enum)
 
-BOOST_FLAGS_REL_OPS_DELETE(relops_delete_enum)
-
-
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-
-// BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
-
-#else // defined(_MSC_VER) && _MSC_VER <= 1900
-
-enum class relops_partial_order_enum : unsigned int {
-    bit_0 = boost::flags::nth_bit(0), // == 0x01
-    bit_1 = boost::flags::nth_bit(1), // == 0x02
-    bit_2 = boost::flags::nth_bit(2), // == 0x04
-    bit_3 = boost::flags::nth_bit(3), // == 0x08
-};
-
-// enable relops_delete_enum
-BOOST_FLAGS_ENABLE(relops_partial_order_enum)
-
-BOOST_FLAGS_REL_OPS_PARTIAL_ORDER(relops_partial_order_enum)
-
-#endif // defined(_MSC_VER) && _MSC_VER <= 1900
+BOOST_FLAGS_DELETE_REL(relops_delete_enum)
 
 
 enum class relops_std_less_enum : unsigned int {
@@ -82,13 +61,8 @@ BOOST_FLAGS_ENABLE(relops_std_less_enum)
 
 } // namespace TEST_NAMESPACE
 
-BOOST_FLAGS_SPECIALIZE_STD_LESS(TEST_NAMESPACE::relops_std_less_enum)
 
 namespace TEST_NAMESPACE {
-
-#else  // defined(TEST_FLAGS_LINKING)
-
-BOOST_FLAGS_SPECIALIZE_STD_LESS(relops_std_less_enum)
 
 #endif // defined(TEST_FLAGS_LINKING)
 
@@ -234,65 +208,6 @@ void test_delete() {
 #endif
 }
 
-void test_partial_order() {
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-
-    // BOOST_FLAGS_REL_OPS_PARTIAL_ORDER not supported for msvc <= v140
-
-#else // defined(_MSC_VER) && _MSC_VER <= 1900
-
-    using E = relops_partial_order_enum;
-
-    std::set<E> s;
-    std::multiset<E> m;
-
-    // partial order relational ops -> bitset inclusion
-
-    // a totally ordered subset
-    auto a1 = E{};
-    auto b1 = a1 | E::bit_0;
-    auto c1 = b1 | E::bit_1;
-    auto d1 = c1 | E::bit_2;
-    auto e1 = d1 | E::bit_3;
-
-    {
-        s.insert(a1);
-        s.insert(d1);
-        s.insert(e1);
-        s.insert(c1);
-
-        m.insert(a1);
-        m.insert(d1);
-        m.insert(e1);
-        m.insert(c1);
-    }
-    {
-        s.insert(a1);
-        s.insert(d1);
-        s.insert(e1);
-        s.insert(c1);
-
-        m.insert(a1);
-        m.insert(d1);
-        m.insert(e1);
-        m.insert(c1);
-    }
-
-    BOOST_TEST((s.size() == 4));
-    BOOST_TEST((s.count(a1) == 1));
-    BOOST_TEST((s.count(d1) == 1));
-    BOOST_TEST((s.count(b1) == 0));
-    check_container_order_lt(s);
-
-    BOOST_TEST((m.size() == 8));
-    BOOST_TEST((m.count(a1) == 2));
-    BOOST_TEST((m.count(d1) == 2));
-    BOOST_TEST((m.count(b1) == 0));
-    check_container_order_le(m);
-
-
-#endif // defined(_MSC_VER) && _MSC_VER <= 1900
-}
 
 
 void test_std_less() {
@@ -362,7 +277,6 @@ int main() {
     report_config();
     test_builtin();
     test_delete();
-    test_partial_order();
     test_std_less();
     return boost::report_errors();
 }
