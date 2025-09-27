@@ -128,8 +128,18 @@
 #  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 0
 # else // __cplusplus < 202002L
 #  define BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES 1
-# endif // __cplusplus < 202002L
+# endif // __cplusplus<202002L
 #endif // !defined(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
+
+
+// Variable templates
+#if !defined(BOOST_FLAGS_HAS_VARIABLE_TEMPLATES)
+# if defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+#  define BOOST_FLAGS_HAS_VARIABLE_TEMPLATES 0
+# else // __cplusplus < 202002L
+#  define BOOST_FLAGS_HAS_VARIABLE_TEMPLATES 1
+# endif // __cplusplus<202002L
+#endif // !defined(BOOST_FLAGS_HAS_VARIABLE_TEMPLATES)
 
 
 // include <compare> if available
@@ -197,9 +207,9 @@ namespace boost {
 
             // the `bool` versions for the options-detectors
             // the overloads for `options` are define below and will be found by ADL
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_enable(bool v) { return v; }
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_disable_complement(bool) { return false; }
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_logical_and(bool) { return false; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(bool v) { return v; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(bool) { return false; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(bool) { return false; }
 
 
             // type to calculate the enabling (using concepts/SFINAE)
@@ -221,11 +231,11 @@ namespace boost {
             template<typename E>
             struct enable_helper<E, typename std::enable_if<std::is_enum<E>::value>::type>
 #endif // BOOST_FLAGS_HAS_CONCEPTS
-                : std::integral_constant<bool, is_option_enable(decltype(boost_flags_enable(E{})){}.value) >
-                , std::conditional < is_option_disable_complement(decltype(boost_flags_enable(E{})){}.value),
-                                                disable_complement, impl::empty<disable_complement> > ::type
-                , std::conditional < is_option_logical_and(decltype(boost_flags_enable(E{})){}.value),
-                                                logical_and, impl::empty<logical_and> > ::type
+                : std::integral_constant<bool, has_option_enable(decltype(boost_flags_enable(E{})){}.value) >
+                , std::conditional<has_option_disable_complement(decltype(boost_flags_enable(E{})){}.value),
+                                                disable_complement, impl::empty<disable_complement>>::type
+                , std::conditional<has_option_logical_and(decltype(boost_flags_enable(E{})){}.value),
+                                                logical_and, impl::empty<logical_and>>::type
             {};
 
         }
@@ -237,6 +247,10 @@ namespace boost {
         template<typename E>
         struct enable : impl::enable_helper<E> {};
 
+#if BOOST_FLAGS_HAS_VARIABLE_TEMPLATES
+		template<typename E>
+		constexpr bool enable_v = enable<E>::value;
+#endif
 
         // explicitly disable error_tag
         template<>
@@ -256,7 +270,7 @@ namespace boost {
 #else
 # if BOOST_FLAGS_HAS_CONCEPTS
             template<typename E>
-            struct is_scoped_enum : std::bool_constant < requires
+            struct is_scoped_enum : std::bool_constant<requires
             {
                 requires std::is_enum_v<E>;
                 requires !std::is_convertible_v<E, std::underlying_type_t<E>>;
@@ -1129,14 +1143,14 @@ namespace boost {
             requires ((IsEnabled<T1> || IsEnabled<T2>) && (!LogicalAndEnabled<T1, T2>) && impl::BothImplicitIntegralConvertible<T1,T2>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2,
-            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && (!LogicalAndEnabled<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value), int*>::type = nullptr > // && (!IsCompatibleFlags<T1, T2>)
+            typename std::enable_if<(IsEnabled<T1>::value || IsEnabled<T2>::value) && (!LogicalAndEnabled<T1, T2>::value && impl::BothImplicitIntegralConvertible<T1, T2>::value), int*>::type = nullptr> // && (!IsCompatibleFlags<T1, T2>)
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator&& (T1, T2) = delete;
 
 
 
         // if at least one argument is enabled and both are integral-convertible
-        // disable logical or (to avoid builtin operator ||)
+        // disable logical or (to avoid builtin operator||)
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T1, typename T2>
             requires ((IsEnabled<T1> || IsEnabled<T2>) && impl::BothImplicitIntegralConvertible<T1, T2>)
@@ -1437,14 +1451,14 @@ namespace boost {
 
             // the `options` versions for the options-detectors
             // the overloads for `options` will be found by ADL
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_enable(options v) { return (v & options::enable) != 0; }
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_disable_complement(options v) { return (v & options::disable_complement) != 0; }
-            BOOST_FLAGS_CONSTEVAL inline bool is_option_logical_and(options v) { return (v & options::logical_and) != 0; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(options v) { return (v & options::enable) != 0; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(options v) { return (v & options::disable_complement) != 0; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(options v) { return (v & options::logical_and) != 0; }
 
         }
-        using impl::is_option_enable;
-        using impl::is_option_disable_complement;
-        using impl::is_option_logical_and;
+        using impl::has_option_enable;
+        using impl::has_option_disable_complement;
+        using impl::has_option_logical_and;
 
 
     }
@@ -1707,7 +1721,7 @@ FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                   
 /* matches all other E, complement<E> arguments */                                        \
 template<typename T1, typename T2,                                                        \
     typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr >        \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
 FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 

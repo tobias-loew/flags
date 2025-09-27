@@ -564,8 +564,7 @@ pre.rouge .gs {
 <li><a href="#why_use_boost_flags">Why use Boost.Flags</a></li>
 <li><a href="#characteristics_of_boost_flags">Characteristics of Boost.Flags</a></li>
 <li><a href="#opt_in">Opt-in</a></li>
-<li><a href="#intro_example">Example</a></li>
-<li><a href="#use_scoped_or_unscoped_enumerations">Use <em>scoped</em> or <em>unscoped</em> enumerations</a></li>
+<li><a href="#scoped_or_unscoped_enumerations"><em>Scoped</em> or <em>Unscoped</em> enumerations</a></li>
 <li><a href="#the_underlying_type">The underlying type</a></li>
 </ul>
 </li>
@@ -577,7 +576,7 @@ pre.rouge .gs {
 <li><a href="#mathematical_justification_for_complement">Mathematical justification for <code>complement</code></a></li>
 <li><a href="#from_flags_to_bool">From flags to <code>bool</code></a></li>
 <li><a href="#flags_and_flags">Flags <code>and</code> Flags</a></li>
-<li><a href="#logically_and_and_or">Logically <code>and</code> and <code>or</code></a></li>
+<li><a href="#logical_and_and_or">Logical <code>and</code> and <code>or</code></a></li>
 <li><a href="#calls_to_order">Calls to order</a></li>
 </ul>
 </li>
@@ -588,6 +587,11 @@ pre.rouge .gs {
 </li>
 <li><a href="#other_implementations">Other flags-like enum implementations</a></li>
 <li><a href="#design_rationale">Design rationale</a></li>
+<li><a href="#changes">Revision History</a>
+<ul class="sectlevel2">
+<li><a href="#changes_in_1_0">Changes in 1.??.0</a></li>
+</ul>
+</li>
 <li><a href="#reference">Reference</a>
 <ul class="sectlevel2">
 <li><a href="#supported_language_versions">Supported language versions</a></li>
@@ -668,6 +672,7 @@ pre.rouge .gs {
 <li><a href="#boost_flags_has_is_scoped_enum">BOOST_FLAGS_HAS_IS_SCOPED_ENUM</a></li>
 <li><a href="#boost_flags_has_logical_traits">BOOST_FLAGS_HAS_LOGICAL_TRAITS</a></li>
 <li><a href="#boost_flags_has_rewritten_candidates">BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES</a></li>
+<li><a href="#boost_flags_has_variable_templates">BOOST_FLAGS_HAS_VARIABLE_TEMPLATES</a></li>
 <li><a href="#boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</a></li>
 <li><a href="#boost_flags_attribute_nodiscard_ctor">BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR</a></li>
 </ul>
@@ -702,136 +707,8 @@ pre.rouge .gs {
 <div class="paragraph">
 <p>in the same namespace as <code>E</code>.</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="why_use_boost_flags">Why use Boost.Flags</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>provides type-safe bitwise operations for flag-like scoped / unscoped enumerations</p>
-</li>
-<li>
-<p>turns undetected logical errors into type errors</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="characteristics_of_boost_flags">Characteristics of Boost.Flags</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>is non-intrusive - only a macro invocation is required to opt-in</p>
-</li>
-<li>
-<p>single header-file library</p>
-</li>
-<li>
-<p>no dependencies (only standard-library includes)</p>
-</li>
-<li>
-<p>compile-time usable - everything is <code>constexpr</code></p>
-</li>
-<li>
-<p>zero-overhead (in optimized builds)</p>
-</li>
-<li>
-<p>operators are found by <a href="https://en.cppreference.com/w/cpp/language/adl" target="_blank" rel="noopener">ADL</a></p>
-</li>
-<li>
-<p>requires at least C++11, uses newer features if available</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="opt_in">Opt-in</h3>
-<div class="paragraph">
-<p>To opt-in to Boost.Flags for an enumeration <code>E</code> the easiest and most comfortable way is to use the macro <code>BOOST_FLAGS</code> for <code>E</code> in the same namespace as <code>E</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
-<span class="n">BOOST_FLAGS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Best practice would be writing <code>BOOST_FLAGS(E)</code> right after the enumeration in the same namespace.</p>
-</div>
-<div class="paragraph">
-<p>In case the enumeration <code>E</code> is defined inside a class or class template, the macro <code>BOOST_FLAGS_LOCAL</code> has to be used instead:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
-    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
-    <span class="c1">// ...</span>
-<span class="p">};</span></code></pre>
-</div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Inside class definitions, <code>constexpr</code> constructions using Boost.Flags enabled operators may fail to compile:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span>
-        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
-        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
-    <span class="p">};</span>
-    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
-
-    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>
-<span class="p">};</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The reason is, that <code>BOOST_FLAGS_LOCAL(E)</code> generates <code>friend</code> operators which are <em>declared</em> in the class but <em>defined</em> is after it, thus they are
-inaccessible for in-class <code>constexpr</code> constructions. To work around this limitation, please use the following code:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_USING_OPERATORS</span><span class="p">()</span>
-
-<span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span>
-        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
-        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
-    <span class="p">};</span>
-    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_NO_FORWARDING</span><span class="p">)</span>
-
-    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_0</span> <span class="o">|</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_1</span><span class="p">;</span>
-<span class="p">};</span></code></pre>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>In case you want to check that an enumeration is enabled for Boost.Flags, you can test it e.g. with</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="k">static_assert</span><span class="p">(</span><span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span> <span class="s">"Please check if E is enabled correctly and boost/flags.hpp is included."</span><span class="p">);</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="intro_example">Example</h3>
-<div class="paragraph">
-<p><a href="https://godbolt.org/z/PPoKaGrzc" target="_blank" rel="noopener">on Godbolt compiler explorer</a></p>
+<div id="intro_example" class="paragraph">
+<p><a href="https://godbolt.org/z/PPoKaGrzc" target="_blank" rel="noopener">Example</a> on Godbolt compiler explorer</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -920,7 +797,132 @@ inaccessible for in-class <code>constexpr</code> constructions. To work around t
 </div>
 </div>
 <div class="sect2">
-<h3 id="use_scoped_or_unscoped_enumerations">Use <em>scoped</em> or <em>unscoped</em> enumerations</h3>
+<h3 id="why_use_boost_flags">Why use Boost.Flags</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>provides type-safe bitwise operations for flag-like scoped / unscoped enumerations</p>
+</li>
+<li>
+<p>turns logical errors into type errors</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="characteristics_of_boost_flags">Characteristics of Boost.Flags</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>is non-intrusive - only a macro invocation is required to opt-in</p>
+</li>
+<li>
+<p>single header-file library</p>
+</li>
+<li>
+<p>no dependencies (only standard-library includes)</p>
+</li>
+<li>
+<p>compile-time usable - everything is <code>constexpr</code></p>
+</li>
+<li>
+<p>zero-overhead (in optimized builds)</p>
+</li>
+<li>
+<p>operators are found by <a href="https://en.cppreference.com/w/cpp/language/adl" target="_blank" rel="noopener">ADL</a></p>
+</li>
+<li>
+<p>requires at least C++11, uses newer features if available</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="opt_in">Opt-in</h3>
+<div class="paragraph">
+<p>To opt-in to Boost.Flags for an enumeration <code>E</code> the easiest and most comfortable way is to use the macro <code>BOOST_FLAGS</code> for <code>E</code> in the same namespace as <code>E</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+<span class="n">BOOST_FLAGS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Best practice would be writing <code>BOOST_FLAGS(E)</code> right after its definition / declaration.</p>
+</div>
+<div class="paragraph">
+<p>In case the enumeration <code>E</code> is defined inside a class or class template, the macro <code>BOOST_FLAGS_LOCAL</code> has to be used instead:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+    <span class="c1">// ...</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Inside class definitions, <code>constexpr</code> constructions using Boost.Flags enabled operators may fail to compile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span>
+        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
+        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+
+    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span style="text-decoration: red wavy underline; text-decoration-skip-ink: none;">E::flag_0 | E::flag_1;</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The reason is, that <code>BOOST_FLAGS_LOCAL(E)</code> generates <code>friend</code> operators which are <em>declared</em> in the class but <em>defined</em> is after it, thus they are
+inaccessible for in-class <code>constexpr</code> constructions. To work around this limitation, please use the following code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_USING_OPERATORS</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">my_class</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">E</span> <span class="p">{</span>
+        <span class="n">flag_0</span> <span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>
+        <span class="n">flag_1</span> <span class="o">=</span> <span class="mh">0x2</span><span class="p">,</span>
+    <span class="p">};</span>
+    <span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_NO_FORWARDING</span><span class="p">)</span>
+
+    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">E</span> <span class="n">flag_0_or_flag_1</span> <span class="o">=</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_0</span> <span class="o">|</span> <span class="n">E</span><span class="o">::</span><span class="n">flag_1</span><span class="p">;</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>In case you want to check whether an enumeration is enabled for Boost.Flags, you can test it using <code>boost::flags::enable</code> (resp. <code>boost::flags::enable_v</code> for C++14 or later), e.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">static_assert</span><span class="p">(</span><span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span> <span class="s">"Please check if boost/flags.hpp is included and E is enabled correctly."</span><span class="p">);</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="scoped_or_unscoped_enumerations"><em>Scoped</em> or <em>Unscoped</em> enumerations</h3>
 <div class="paragraph">
 <p>The usage of scoped enumeration is strongly recommended, as they prohibit implicit conversion to the underlying integer type and thus provide more type safety. Further, by default scoped enumerations do not pollute the current namespace with the names of their enumerators.</p>
 </div>
@@ -928,33 +930,44 @@ inaccessible for in-class <code>constexpr</code> constructions. To work around t
 <p>Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.</p>
 </div>
 <div class="paragraph">
-<p>For unscoped enumerations Boost.Flags will delete binary operators <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>==</code> and <code>!=</code> if</p>
+<p>For scoped enumerations the language does not provide built-in bitwise and logical operators, so Boost.Flags will provide them as requested.</p>
+</div>
+<div class="paragraph">
+<p>For unscoped enumerations the language provides built-in bitwise and logical operators. Hence, Boost.Flags will delete binary operators <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>==</code> and <code>!=</code> if</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>at least one of its arguments is enabled for Boost.Flags and</p>
-</li>
-<li>
-<p>both arguments are implicitly convertible to an integer type and</p>
-</li>
-<li>
-<p>both arguments are not compatible (i.e. they are not of the same enumeration or its <a href="#complementing_the_complement">complement</a>, or for operators <code>==</code> and <code>!=</code> they are not the same type)</p>
+<p>at least one of its arguments is enabled for Boost.Flags</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>i.e. Boost.Flags will prohibit in those cases that the built-in version is used.<br></p>
+<p>and</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>both arguments are implicitly convertible to an integer type</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>For scoped enumerations all above is already provided by the language.</p>
+<p>and</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>for enumeration <code>E</code> both arguments are not <a href="#compatible">compatible</a></p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
 <h3 id="the_underlying_type">The underlying type</h3>
 <div class="paragraph">
-<p>In most situations the usage of Boost.Flags does not depend on the (existence of the) enumeration&#8217;s underlying type.
-Only when Boost.Flags is used with an <strong>unscoped</strong> enumeration <code>E</code> and the option <code>disable_complement</code> is used (i.e. <code>operator~(E) -&gt; E</code>) then the specification of the underlying type is required to prevent undefined behavior. For details <a href="#underlying_type">see below.</a></p>
+<p>In most situations the usage of Boost.Flags does not depend on the enumeration&#8217;s underlying type.
+Only when Boost.Flags is used with an <strong>unscoped</strong> enumeration <code>E</code> in connection with option <code>disable_complement</code> (i.e. <code>operator~(E) -&gt; E</code>) then the specification of the underlying type is required to prevent undefined behavior. For details <a href="#underlying_type">see below.</a></p>
 </div>
 </div>
 </div>
@@ -1212,6 +1225,22 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <div class="paragraph">
 <p>So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a> and both are entangled by the operator <code>~</code>.</p>
 </div>
+<div class="paragraph">
+<p>Hence, for a Boost.Flags enabled enumeration <code>E</code> (where complement is not <a href="#disable_complement">disabled</a>) the bitwise not operator switches between the types <code>E</code> and <code>complement&lt;E&gt;</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>operator~(E) -&gt; complement&lt;E&gt;</code></p>
+</li>
+<li>
+<p><code>operator~(complement&lt;E&gt;) -&gt; E</code></p>
+</li>
+</ul>
+</div>
+<div id="compatible" class="paragraph">
+<p>We will call arguments for binary operators <em>compatible</em> if the Boost.Flags provided operators are viable, i.e. each one is implicitly convertible to <code>E</code> or <code>complement&lt;E&gt;</code>. Additionally, for <code>operator==</code> and <code>operator!=</code> both have to be convertible to <code>E</code> or both have to be convertible to <code>complement&lt;E&gt;</code>. For assignment operators additional requirements apply (cf. <a href="#operators">Operators</a>).</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="mathematical_justification_for_complement">Mathematical justification for <code>complement</code></h3>
@@ -1393,7 +1422,7 @@ Therefore, Boost.Flags provides a pseudo operator <code>BOOST_FLAGS_AND</code> w
 </ul>
 </div>
 <div class="paragraph">
-<p>Alternatively, there is the options <a href="#boost_flags_logical_and"><code>logical_and</code></a>, which enables <code>operator&amp;&amp;</code>, see <a href="#logically_and_and_or">next section</a>.</p>
+<p>Alternatively, there is the option <a href="#boost_flags"><code>BOOST_FLAGS_LOGICAL_AND</code></a>, which enables <code>operator&amp;&amp;</code>, see <a href="#logical_and_and_or">next section</a>.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1412,66 +1441,42 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </div>
 </div>
 <div class="sect2">
-<h3 id="logically_and_and_or">Logically <code>and</code> and <code>or</code></h3>
+<h3 id="logical_and_and_or">Logical <code>and</code> and <code>or</code></h3>
 <div class="paragraph">
-<p>The logical <code>operator &amp;&amp;</code> and <code>operator ||</code> have to handled with care, as they are the only ones to support short-circuit evaluation for the built-in versions.</p>
+<p>The logical <code>operator&amp;&amp;</code> and <code>operator||</code> are special among overloadable operators in C++: their built-in versions use short-circuit evaluation, but overloaded versions behave like regular functions and always evaluate both arguments.</p>
 </div>
 <div class="paragraph">
-<p>Let&#8217;s first take a look at the semantics of the built-in <code>operator &amp;&amp;</code>:</p>
+<p>Furthermore, for integer and (non Boost.Flags enabled) unscoped enumeration-typed expressions <code>a</code> and <code>b</code>, both <code>(a) &amp; (b)</code> and <code>(a) &amp;&amp; (b)</code> (resp. <code>(a) | (b)</code> and <code>(a) || (b)</code>) are all syntactically valid expressions but with different semantics</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>it converts its first arguments to <code>bool</code>, if its <code>false</code> then returns <code>false</code> (short-circuit evaluation)</p>
+<p><code>(a) &amp; (b)</code> (resp. <code>(a) | (b)</code>) always evaluates <code>b</code></p>
 </li>
 <li>
-<p>otherwise converts the second arguments to <code>bool</code> and returns it</p>
+<p><code>(a) &amp; (b)</code> and <code>(a) &amp;&amp; (b)</code> (resp. <code>(a) | (b)</code> and <code>(a) || (b)</code>) have different result-types</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>This is quite different from the semantics of the built-in bitwise <code>&amp;</code> operator in a Boolean context:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>it performs integral promotion on both arguments and compute their bitwise AND</p>
-</li>
-<li>
-<p>returns <code>false</code> if the outcome is equal to <code>0</code> otherwise <code>true</code></p>
-</li>
-</ul>
+<p>Even in Boolean contexts <code>(a) &amp; (b)</code> and <code>(a) &amp;&amp; (b)</code> return different results (e.g. for arguments <code>1</code> and <code>2</code>).</p>
 </div>
 <div class="paragraph">
-<p>E.g. in Boolean contexts <code>(1 &amp;&amp; 2)</code> evaluates to <code>true</code>, while <code>(1 &amp; 2)</code> evaluates to <code>false</code>.</p>
+<p>To be on the safe side, Boost.Flags by default deletes <code>operator&amp;&amp;</code> and <code>operator||</code> for enabled enumerations. When applied to existing code, this will lead to compilation errors and enforces revisiting their uses.</p>
 </div>
 <div class="paragraph">
-<p>Though, for <code>operator ||</code> and <code>operator |</code> and values <code>v1</code> and <code>v2</code>, in Boolean contexts <code>(v1 || v2)</code> and <code>(v1 | v2)</code> always evaluate to the same value, there is still the difference, that <code>operator ||</code> uses short-circuit evaluation and <code>operator |</code> does not.</p>
-</div>
-<div class="paragraph">
-<p>Furthermore, <code>operator &amp;&amp;</code> and <code>operator ||</code> have lower precedences than <code>operator &amp;</code> and <code>operator |</code> (cf. <a href="https://en.cppreference.com/w/cpp/language/operator_precedence" target="_blank" rel="noopener">C++ Operator Precedence</a>), which is another source for errors.</p>
-</div>
-<div class="paragraph">
-<p>Since logical operators <code>&amp;&amp;</code> and <code>||</code> can easily get confused with their bitwise counterparts <code>&amp;</code> and <code>|</code>, by default Boost.Flags disables <code>operator&amp;&amp;</code> and  <code>operator||</code>, when both arguments are implicitly convertible to integral types, to prevent accidentally calling the built-in versions.</p>
-</div>
-<div class="paragraph">
-<p>Nevertheless, sometimes <code>operator &amp;&amp;</code> comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. When for an enabled enumeration <code>E</code></p>
+<p>Nevertheless, sometimes <code>operator&amp;&amp;</code> comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. If for an enumeration <code>E</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_LOGICAL_AND</span><span class="p">)</span>
 
 <span class="c1">// resp. for a class local enum</span>
-<span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_LOGICAL_AND</span><span class="p">)</span>
-
-<span class="c1">// instead of</span>
-<span class="c1">// BOOST_FLAGS(E)</span>
-<span class="c1">// resp.</span>
-<span class="c1">// BOOST_FLAGS_LOCAL(E)</span></code></pre>
+<span class="n">BOOST_FLAGS_LOCAL</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">BOOST_FLAGS_LOGICAL_AND</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>is defined, then <code>operator &amp;&amp;</code> is overloaded for <code>E</code> with the semantics</p>
+<p>is defined, then <code>operator&amp;&amp;</code> is overloaded for <code>E</code> with the semantics</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1479,7 +1484,7 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </div>
 </div>
 <div class="paragraph">
-<p>And once more, there is no short-circuit evaluation!</p>
+<p>and there is <strong>no short-circuit</strong> evaluation!</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -1516,7 +1521,7 @@ The first <code>&amp;</code> stores its left-hand argument in an intermediate ty
 </td>
 <td class="content">
 <div class="paragraph">
-<p>To achieve short-circuit evaluation for expressions with flags, convert the flag-value arguments to <code>bool</code> by using e.g. <code>!!(&#8230;&#8203;) &amp;&amp; !!(&#8230;&#8203;)</code> or <code>any(&#8230;&#8203;) &amp;&amp; any(&#8230;&#8203;)</code>.</p>
+<p>To achieve short-circuit evaluation for expressions with flags, first convert the flag-value arguments to <code>bool</code> by using e.g. <code>!!(&#8230;&#8203;) &amp;&amp; !!(&#8230;&#8203;)</code> or <code>any(&#8230;&#8203;) &amp;&amp; any(&#8230;&#8203;)</code>.</p>
 </div>
 </td>
 </tr>
@@ -1887,6 +1892,21 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <div class="paragraph">
 <p>The first four principles are met by the library. The last principle of course has a notable exception:
  For a given enumeration <code>E</code> values of type <code>complement&lt;E&gt;</code> may invoke different overloads than values of <code>E</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="changes">Revision History</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="changes_in_1_0">Changes in 1.??.0</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Added to Boost</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div>
@@ -2330,6 +2350,18 @@ e.g.</p>
 <div class="paragraph">
 <p>When <code>boost::flags::enable</code> is specialized for <code>E</code> any definition of <code>boost_flags_enable</code> for <code>E</code> are ignored
 (cf. <a href="#boost_flags_enable"><code>boost_flags_enable</code></a>).</p>
+</div>
+<div class="paragraph">
+<p>In case variable templates are available (cf. <a href="#boost_flags_has_variable_templates"><code>BOOST_FLAGS_HAS_VARIABLE_TEMPLATES</code></a>) then</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">E</span><span class="p">&gt;</span>
+<span class="k">constexpr</span> <span class="kt">bool</span> <span class="n">enable_v</span> <span class="o">=</span> <span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is also provided.</p>
 </div>
 </div>
 <div class="sect3">
@@ -3114,6 +3146,15 @@ It must be defined at global namespace.</p>
 </div>
 </div>
 <div class="sect3">
+<h4 id="boost_flags_has_variable_templates">BOOST_FLAGS_HAS_VARIABLE_TEMPLATES</h4>
+<div class="paragraph">
+<p>Specifies, if <a href="https://en.cppreference.com/w/cpp/language/variable_template" target="_blank" rel="noopener">variable templates</a> are available.</p>
+</div>
+<div class="paragraph">
+<p>Possible values: 0 or 1</p>
+</div>
+</div>
+<div class="sect3">
 <h4 id="boost_flags_attribute_nodiscard">BOOST_FLAGS_ATTRIBUTE_NODISCARD</h4>
 <div class="paragraph">
 <p>Text used as nodiscard attribute (e.g. <code>[[nodiscard]]</code>).</p>
@@ -3137,19 +3178,22 @@ It must be defined at global namespace.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Copyright 2024 Tobias Loew</p>
+<p>Copyright 2024, 2025 Tobias Loew</p>
 </li>
 <li>
 <p>Distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</a>.</p>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>Many thanks to Andreas Buhr, Thomas Forell and Thimo Neubauer for many comments and suggestions.</p>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-04-11 21:19:05 +0200
+Last updated 2025-09-26 08:19:29 +0200
 </div>
 </div>
 <style>
