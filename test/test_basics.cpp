@@ -351,15 +351,15 @@ enum
 	class
 #endif // TEST_COMPILE_UNSCOPED
 flags_enum_predeclared: unsigned int {
-bit_0 = boost::flags::nth_bit(0), // == 0x01
-bit_1 = boost::flags::nth_bit(1), // == 0x02
-bit_2 = boost::flags::nth_bit(2), // == 0x04
-bit_3 = boost::flags::nth_bit(3), // == 0x08
+flags_enum_predeclared_bit_0 = boost::flags::nth_bit(0), // == 0x01
+flags_enum_predeclared_bit_1 = boost::flags::nth_bit(1), // == 0x02
+flags_enum_predeclared_bit_2 = boost::flags::nth_bit(2), // == 0x04
+flags_enum_predeclared_bit_3 = boost::flags::nth_bit(3), // == 0x08
 };
 
 void test_predeclared() {
-	flags_enum_predeclared v1 = flags_enum_predeclared::bit_0;
-	flags_enum_predeclared v2 = flags_enum_predeclared::bit_1;
+	flags_enum_predeclared v1 = flags_enum_predeclared::flags_enum_predeclared_bit_0;
+	flags_enum_predeclared v2 = flags_enum_predeclared::flags_enum_predeclared_bit_1;
 	BOOST_TEST((v1 | v2) == predeclared_compute_or(v1, v2));
 }
 
