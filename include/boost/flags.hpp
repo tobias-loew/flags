@@ -135,10 +135,10 @@
 // Variable templates
 #if !defined(BOOST_FLAGS_HAS_VARIABLE_TEMPLATES)
 # if defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
-#  define BOOST_FLAGS_HAS_VARIABLE_TEMPLATES 0
-# else // __cplusplus < 202002L
 #  define BOOST_FLAGS_HAS_VARIABLE_TEMPLATES 1
-# endif // __cplusplus<202002L
+# else // defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+#  define BOOST_FLAGS_HAS_VARIABLE_TEMPLATES 0
+# endif // defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
 #endif // !defined(BOOST_FLAGS_HAS_VARIABLE_TEMPLATES)
 
 
