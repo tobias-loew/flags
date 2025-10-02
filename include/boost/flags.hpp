@@ -183,6 +183,7 @@ namespace boost {
             enable              = 0x1,
             disable_complement  = 0x2,
             logical_and         = 0x4,
+            unary_plus          = 0x8,
         };
 
         template< options Opts >
@@ -194,13 +195,16 @@ namespace boost {
         // derive `enable` from this type to enable support for logical and
         struct logical_and {};
 
+        // derive `enable` from this type to enable support for uanry plus
+        struct unary_plus {};
+
 
 
         namespace impl {
             // error tag indicating invalid/incompatible types for operation
             struct error_tag {};
 
-            // empty struct
+            // empty struct (template as it may be used multiple times as base)
             template<typename Tag>
             struct empty {};
 
@@ -210,6 +214,7 @@ namespace boost {
             BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(bool v) { return v; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(bool) { return false; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(bool) { return false; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_unary_plus(bool) { return false; }
 
 
             // type to calculate the enabling (using concepts/SFINAE)
@@ -236,6 +241,8 @@ namespace boost {
                                                 disable_complement, impl::empty<disable_complement>>::type
                 , std::conditional<has_option_logical_and(decltype(boost_flags_enable(E{})){}.value),
                                                 logical_and, impl::empty<logical_and>>::type
+                , std::conditional< has_option_unary_plus(decltype(boost_flags_enable(E{})){}.value),
+                                                unary_plus, impl::empty<unary_plus>>::type
             {};
 
         }
@@ -248,8 +255,8 @@ namespace boost {
         struct enable : impl::enable_helper<E> {};
 
 #if BOOST_FLAGS_HAS_VARIABLE_TEMPLATES
-		template<typename E>
-		constexpr bool enable_v = enable<E>::value;
+        template<typename E>
+        constexpr bool enable_v = enable<E>::value;
 #endif
 
         // explicitly disable error_tag
@@ -321,6 +328,11 @@ namespace boost {
 
 #endif // BOOST_FLAGS_HAS_LOGICAL_TRAITS
 
+
+            // version for bool_convertible of enumeration/complement (not nesting)
+            template<typename T>
+            struct bool_convertible;
+
         } // namespace impl
 
 
@@ -338,10 +350,13 @@ namespace boost {
         struct enum_type<complement<E>> :enum_type<E> {};
 
         template<typename E>
+        struct enum_type<impl::bool_convertible<E>> :enum_type<E> {};
+
+        template<typename E>
         using enum_type_t = typename enum_type<E>::type;
 
 
-        // version for complement of enumeration (not nested)
+        // version for complement of enumeration (not nesting)
         template<typename E>
         struct complement {
             static_assert(std::is_enum<E>::value, "boost::flags::complement is only allowed on enum types.");
@@ -379,6 +394,50 @@ namespace boost {
         template<typename E>
         struct is_enabled;
 
+        namespace impl {
+
+
+            // version for bool_convertible of enumeration/complement (not nesting)
+            template<typename T>
+            struct bool_convertible {
+                static_assert(is_enabled<T>::value, "boost::flags::bool_convertible is only allowed on enabled enum types.");
+                using value_type = T;
+                using enumeration_type = enum_type_t<T>;
+                using underlying_type = typename std::underlying_type<enumeration_type>::type;
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                    constexpr bool_convertible(T v) :
+                    value{ v }
+                {
+                }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
+                    constexpr operator T() const { return value; }
+
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    constexpr explicit operator bool() const { return !!value; }
+
+                T value;
+            };
+
+            template<typename T>
+            struct make_bool_convertible {
+                using type = bool_convertible<T>;
+            };
+
+            template<typename T>
+            struct make_bool_convertible<bool_convertible<T>> {
+                using type = bool_convertible<T>;
+            };
+
+
+            template<typename T>
+            struct is_bool_convertible : std::false_type {};
+
+            template<typename T>
+            struct is_bool_convertible<bool_convertible<T>> : std::true_type {};
+        }
+
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
         concept IsComplementDisabled =
@@ -399,6 +458,18 @@ namespace boost {
         struct HasLogicalAnd : std::integral_constant<bool,
             std::is_base_of<logical_and, enable<typename enum_type<T>::type>>::value
         > {};
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
+        concept HasUnaryPlus =
+            std::is_base_of_v<unary_plus, enable<enum_type_t<T>>>;
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
+        struct HasUnaryPlus : std::integral_constant<bool,
+            std::is_base_of<unary_plus, enable<typename enum_type<T>::type>>::value
+        > {
+        };
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
         // test if E is a flags-enum:
@@ -428,6 +499,9 @@ namespace boost {
             impl::negation<is_flags<E>>,
             is_enabled<E>                       // ensure it's enabled
             > {};
+
+        template<typename E>
+        struct is_flags<impl::bool_convertible<E>> : is_flags<E> {};
 
 
         // test for complement (detects double-negation)
@@ -541,7 +615,7 @@ namespace boost {
             struct unary_operation_result {
                 using E1 = enum_type_t<T1>;
 
-                using type = typename std::conditional<
+                using op_type = typename std::conditional<
                     enable<E1>::value,        // check if undelying enum is enabled
                     typename std::conditional<
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -557,6 +631,12 @@ namespace boost {
                     >::type
                     >::type,
                     error_tag
+                >::type;
+
+                using type = typename std::conditional<
+                    impl::is_bool_convertible<T1>::value,
+                    typename make_bool_convertible<op_type>::type,
+                    op_type
                 >::type;
             };
 
@@ -576,7 +656,7 @@ namespace boost {
                 //    (!(enable<E1>::value || enable<E2>::value) || std::is_same_v<E1, E2>)
                 //    );
 
-                using type = typename std::conditional<
+                using op_type = typename std::conditional<
                     std::is_same<E1, E2>::value&& enable<E1>::value,        // check undelying enums are the same and enabled
                     typename std::conditional<
                     BinOp<is_complement<T1>, is_complement<T2>>::value,
@@ -584,6 +664,12 @@ namespace boost {
                     E1
                     >::type,
                     error_tag
+                >::type;
+
+                using type = typename std::conditional<
+                    impl::is_bool_convertible<T1>::value || impl::is_bool_convertible<T2>::value,
+                    typename make_bool_convertible<op_type>::type,
+                    op_type
                 >::type;
             };
 
@@ -652,11 +738,17 @@ namespace boost {
                 constexpr auto get_underlying_impl(complement<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
                 return value.get_underlying();
             }
-        } // namespace impl
+
+            template<typename T>
+            BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                constexpr auto get_underlying_impl(bool_convertible<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
+                return get_underlying_impl(value.value);
+            }
+} // namespace impl
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
-        // concept checking if arguments is enabled
+        // concept checking if argument is enabled
         template<typename T1, template<typename> class UnOp>
         concept UnaryOperationEnabled = is_enabled<typename impl::unary_operation_result<T1, UnOp>::type>::value;
 
@@ -678,6 +770,11 @@ namespace boost {
         // and logical_and is enabled
         template<typename T1, typename T2>
         concept LogicalAndEnabled = LogicalOperationEnabled<T1, T2, impl::conjunction>&& HasLogicalAnd<T1>;
+
+        // concept checking argument is flags
+        // and unary_plus is enabled
+        template<typename T1>
+        concept UnaryPlusEnabled = IsEnabled<T1> && HasUnaryPlus<T1>;
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
         // concept checking if arguments is enabled
@@ -711,6 +808,13 @@ namespace boost {
         template<typename T1, typename T2>
         struct  LogicalAndEnabled : std::integral_constant<bool,
             LogicalOperationEnabled<T1, T2, impl::conjunction>::value&& HasLogicalAnd<T1>::value
+        > {};
+
+        // concept checking argument is flags
+        // and unary_plus is enabled
+        template<typename T1>
+        struct UnaryPlusEnabled : std::integral_constant<bool,
+            is_flags<T1>::value && HasUnaryPlus<T1>::value
         > {};
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -811,10 +915,10 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
-            operator~(T value) noexcept -> typename impl::unary_operation_result<T, impl::negation>::type {
+            operator~(T arg) noexcept -> typename impl::unary_operation_result<T, impl::negation>::type {
             using result_t = typename impl::unary_operation_result<T, impl::negation>::type;
 
-            using underlying_type = decltype(impl::get_underlying_impl(value));
+            using underlying_type = decltype(impl::get_underlying_impl(arg));
 
             // Ensure we do not leave the valid value range: would be UB for constant expressions!
             // https://eel.is/c++draft/expr.static.cast#10
@@ -841,7 +945,7 @@ namespace boost {
                 "For C++ standard before C++20 and disabled complement, Boost.Flags requires an unsigned underlying type.");
 
             return result_t{
-                static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying_impl(value)))
+                static_cast<enum_type_t<T>>(static_cast<underlying_type>(~impl::get_underlying_impl(arg)))
             };
         }
 
@@ -1160,6 +1264,27 @@ namespace boost {
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr bool operator|| (T1, T2) = delete;
 
+
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
+            requires UnaryPlusEnabled<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<UnaryPlusEnabled<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD
+            constexpr auto
+            operator+(T arg) noexcept -> typename impl::make_bool_convertible<T>::type {
+            using result_t = typename impl::make_bool_convertible<T>::type;
+
+            return result_t{arg};
+        }
+
+
+
+
+
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
         // disable relational operators for non-compatible arguments
@@ -1189,6 +1314,74 @@ namespace boost {
             using is_transparent = int;
         };
         static constexpr total_order_t total_order{};
+
+
+#define BOOST_FLAGS_EMPTY()
+
+
+        // disable all other arithmetic operators
+        // 
+#if BOOST_FLAGS_HAS_CONCEPTS
+
+#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                                          \
+        template<typename T1, typename T2>                                                            \
+            requires (IsFlags<T1> || IsFlags<T2>) && impl::BothImplicitIntegralConvertible<T1, T2> \
+        constexpr result_type operator op (T1 ref, T2) = delete;
+
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                             \
+        template<typename T>                                                              \
+            requires IsFlags<T>                                                           \
+        constexpr T& operator op (T) = delete;
+
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                            \
+        template<typename T>                                                              \
+            requires IsFlags<T>                                                           \
+        constexpr T operator op (T, int) = delete;
+
+#else // BOOST_FLAGS_HAS_CONCEPTS
+
+#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                                            \
+        template<typename T1, typename T2,                                                           \
+            typename std::enable_if<(IsFlags<T1>::value || IsFlags<T2>::value) &&                    \
+            impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr >           \
+        constexpr result_type operator op (T1 ref, T2) = delete;
+
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                             \
+        template<typename T,                                                              \
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >            \
+        constexpr T& operator op (T) = delete;
+
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                            \
+        template<typename T,                                                              \
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >            \
+        constexpr T operator op (T, int) = delete;
+
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+
+
+
+
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(+, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(-, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(*, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(/, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(%, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<, BOOST_FLAGS_EMPTY(), unsigned int)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>, BOOST_FLAGS_EMPTY(), unsigned int)
+
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(+=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(-=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(*=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(/=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(%=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<=, &, T1&)
+        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>=, &, T1&)
+
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(++)
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(--)
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(++)
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(--)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1454,11 +1647,13 @@ namespace boost {
             BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(options v) { return (v & options::enable) != 0; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(options v) { return (v & options::disable_complement) != 0; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(options v) { return (v & options::logical_and) != 0; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_unary_plus(options v) { return (v & options::unary_plus) != 0; }
 
         }
         using impl::has_option_enable;
         using impl::has_option_disable_complement;
         using impl::has_option_logical_and;
+        using impl::has_option_unary_plus;
 
 
     }
@@ -1472,6 +1667,10 @@ namespace boost {
 
 
 
+// NOTE: The forwarding operators deliberately do not use concepts/SFINAE, as this will generate
+// ambiguity errors if the operators are also found via `uisng`-declarations.
+// Specifying the enum type directly as parameter type ensures that these overloads are 
+// distinguishable from the templates in namespace boost::flags.
 
 #define BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, op, RET)                           \
 BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E l, E r) noexcept {     \
@@ -1487,6 +1686,53 @@ BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E v) noexcept {
 FRIEND constexpr E& operator op(E& l, E r) noexcept {                                     \
     return ::boost::flags::operator op(l, r);                                             \
 }                                                                                         \
+
+
+// NOTE: The deleted forwarding operators must use concepts/SFINAE, as this may not be
+// instatiated eagerly, and otherwise would lead to hard errors.
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+
+#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                            \
+template<typename T> requires std::is_same<T, E>::value                                   \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {     \
+    return ::boost::flags::operator op(l, r);                                             \
+}                                                                                         \
+
+#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                             \
+template<typename T> requires std::is_same<T, E>::value                                   \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {          \
+    return ::boost::flags::operator op(v);                                                \
+}                                                                                         \
+
+#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                             \
+template<typename T> requires std::is_same<T, E>::value                                   \
+FRIEND constexpr E& operator op(T& l, T r) noexcept {                                     \
+    return ::boost::flags::operator op(l, r);                                             \
+}                                                                                         \
+
+#else // BOOST_FLAGS_HAS_CONCEPTS
+
+#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                           \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {     \
+    return ::boost::flags::operator op(l, r);                                             \
+}                                                                                         \
+
+#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                            \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {          \
+    return ::boost::flags::operator op(v);                                                \
+}                                                                                         \
+
+#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                            \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
+FRIEND constexpr E& operator op(T& l, T r) noexcept {                                     \
+    return ::boost::flags::operator op(l, r);                                             \
+}                                                                                         \
+
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+
 
 
 
@@ -1549,6 +1795,20 @@ BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                            
 BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                      \
 using ::boost::flags::operator&&;                                                         \
 using ::boost::flags::operator||;                                                         \
+using ::boost::flags::operator+;                                                          \
+using ::boost::flags::operator-;                                                          \
+using ::boost::flags::operator*;                                                          \
+using ::boost::flags::operator/;                                                          \
+using ::boost::flags::operator%;                                                          \
+using ::boost::flags::operator<<;                                                         \
+using ::boost::flags::operator>>;                                                         \
+using ::boost::flags::operator+=;                                                         \
+using ::boost::flags::operator-=;                                                         \
+using ::boost::flags::operator*=;                                                         \
+using ::boost::flags::operator/=;                                                         \
+using ::boost::flags::operator%=;                                                         \
+using ::boost::flags::operator<<=;                                                        \
+using ::boost::flags::operator>>=;
 
 
 #define BOOST_FLAGS_USING_UTILITIES()                                                     \
@@ -1586,9 +1846,21 @@ BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                          
 BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                    \
 BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                \
 BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                         \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, +, unsigned int)                              \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, -, unsigned int)                              \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, *, unsigned int)                              \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, / , unsigned int)                          \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, %, unsigned int)                              \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, << , unsigned int)                          \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, >> , unsigned int)                          \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, +=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, -=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, *=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, /=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, %=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, <<=)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, >>=)
 
-
-#define BOOST_FLAGS_EMPTY()
 
 #define BOOST_FLAGS_FORWARD_OPERATORS(E)                                                  \
 BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, BOOST_FLAGS_EMPTY())
@@ -1798,6 +2070,30 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
 
+#define BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, OPTS)                                              \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
+        return {};                                                                        \
+    }                                                                                     \
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL_NO_FORWARDING(E)                                                       \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable)                         \
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_NO_FORWARDING(E)                                    \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement)                                        \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_NO_FORWARDING(E)                        \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_NO_FORWARDING(E)                                           \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+        boost::flags::options::logical_and)                                               \
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // VARIADIC MACRO:  BOOST_FLAGS(E, ...)
@@ -1809,6 +2105,7 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 // where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
 // containing at most one of each of the following options:
 // - BOOST_FLAGS_LOGICAL_AND            : enable operator&& for enum E
+// - BOOST_FLAGS_UNARY_PLUS             : enable unary operator+ for enum E
 // - BOOST_FLAGS_DISABLE_COMPLEMENT     : disable 'complement' template for enum E
 // - BOOST_FLAGS_NO_FORWARDING          : do not forward operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS)
 //                                        This is required when using operators from namespace boost::flags inside classes 
@@ -1833,6 +2130,9 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                          \
 | boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                           \
+| boost::flags::options::unary_plus BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                   \
 | boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
@@ -1851,6 +2151,9 @@ BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__)
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) 1
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                  \
+BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
+
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)          \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
@@ -1868,8 +2171,32 @@ BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__)
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...) 1
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                  \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)           \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                  \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                   \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_(...) 0
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP(NAME, ...)                                          \
+BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
+
+// needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_NO_FORWARDING(NAME, ...) 1 
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                   \
+BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
+
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                   \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)            \
@@ -1887,6 +2214,9 @@ BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                         \
+BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
+
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                         \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                  \
@@ -1962,18 +2292,32 @@ static_assert(false, "multiple relational operation options specified");
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)
 
 
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_0(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_1(E)                                \
+    BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, friend, +, ::boost::flags::impl::bool_convertible<E>)
+
+
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_(E, VALUE)                          \
+    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_##VALUE(E)
+
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD(E, VALUE)                           \
+    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_(E, VALUE)
+
+
+
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND, UNARY_PLUS)             \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                        \
+    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD(E, UNARY_PLUS)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND, UNARY_PLUS)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)                   \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)       \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND, UNARY_PLUS)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND)                    \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)        \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)
 
 
 
@@ -1982,7 +2326,7 @@ static_assert(false, "multiple relational operation options specified");
     boost::flags::options_constant<boost::flags::options::enable OPS>                     \
     boost_flags_enable(E) {                                                               \
         return {};                                                                        \
-    }                                                                                     \
+    }
 
 
 // this is the default case, when no relation-option is specified
@@ -2012,7 +2356,8 @@ static_assert(false, "multiple relational operation options specified");
 #define BOOST_FLAGS_LOCAL(E, ...)                                                         \
     BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__),     \
-        BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__))                                      \
+        BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__),                                      \
+        BOOST_FLAGS_HAS_UNARY_PLUS_OP(__VA_ARGS__))                                       \
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))               \
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED
