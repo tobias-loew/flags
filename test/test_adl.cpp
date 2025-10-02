@@ -30,7 +30,11 @@ constexpr auto to_underlying(E value)
 
 namespace another_ns {
 	template<typename T1, typename T2>
-	auto apply_binary_and_operator(T1 t1, T2 t2) { return t1 & t2; }
+	auto apply_binary_and_operator(T1 t1, T2 t2)
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
+-> decltype(t1 & t2)
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
+    { return t1 & t2; }
 }
 
 namespace test_in_class_ns {
