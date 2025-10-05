@@ -111,6 +111,20 @@ compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2 : test_macros_algorithm_DELETE_REL_SORT2 ;
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SET : test_macros_algorithm_DELETE_REL_SET ;
 
+run test_unary_plus.cpp ;
+run test_unary_plus.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_unary_plus_UNSCOPED ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_1 : test_macros_algorithm_UNARY_PLUS_1 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_1 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_1 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_2 : test_macros_algorithm_UNARY_PLUS_2 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_2 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_2 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_3 : test_macros_algorithm_UNARY_PLUS_3 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_3 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_3 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_4 : test_macros_algorithm_UNARY_PLUS_4 ;
+# compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_4 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_4 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_5 : test_macros_algorithm_UNARY_PLUS_5 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_5 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_5 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_6 : test_macros_algorithm_UNARY_PLUS_6 ;
+compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_6 : test_macros_algorithm_UNSCOPED_UNARY_PLUS_6 ;
 
 # text example
 run order_pizza.cpp ;

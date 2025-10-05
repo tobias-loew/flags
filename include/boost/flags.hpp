@@ -2025,7 +2025,6 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)                               \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
-
 #define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                                          \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
         boost::flags::options::disable_complement)                                        \
@@ -2041,6 +2040,27 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
         boost::flags::options::logical_and)                                               \
     BOOST_FLAGS_USING_OPERATORS()                                                         \
 
+#define BOOST_FLAGS_ENABLE_UNARY_PLUS(E)                                                  \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::unary_plus)                                                \
+    BOOST_FLAGS_USING_OPERATORS()                                                         \
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS(E)                               \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)    \
+    BOOST_FLAGS_USING_OPERATORS()                                                         \
+
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                   \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and |  \
+        boost::flags::options::unary_plus)                                                \
+    BOOST_FLAGS_USING_OPERATORS()                                                         \
+
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS(E)                                      \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)           \
+    BOOST_FLAGS_USING_OPERATORS()                                                         \
+
 
 // enabling macro for enum E at class scope
 #define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                                              \
@@ -2053,7 +2073,6 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 
 #define BOOST_FLAGS_ENABLE_LOCAL(E)                                                       \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)                         \
-
 
 #define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                                    \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
@@ -2069,29 +2088,62 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
         boost::flags::options::logical_and)                                               \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
 
+#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)                                                       \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::unary_plus)                         \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, OPTS)                                              \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS(E)                                    \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)                                        \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                        \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and | boost::flags::options::unary_plus)   \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS(E)                                           \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)                                               \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+
+
+
+
+#define BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, OPTS)                                \
     friend BOOST_FLAGS_CONSTEVAL inline                                                   \
     boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
         return {};                                                                        \
     }                                                                                     \
 
 
-#define BOOST_FLAGS_ENABLE_LOCAL_NO_FORWARDING(E)                                                       \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable)                         \
+#define BOOST_FLAGS_ENABLE_LOCAL_NO_FORWARDING(E)                                         \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable)           \
 
-
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_NO_FORWARDING(E)                                    \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_NO_FORWARDING(E)                      \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
         boost::flags::options::disable_complement)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_NO_FORWARDING(E)                        \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_NO_FORWARDING(E)          \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
         boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_NO_FORWARDING(E)                                           \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_NO_FORWARDING(E)                             \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
         boost::flags::options::logical_and)                                               \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS_NO_FORWARDING(E)                                         \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable | boost::flags::options::unary_plus)           \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS_NO_FORWARDING(E)                      \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)                                        \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)          \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and | boost::flags::options::unary_plus)   \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)                             \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)                                               \
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2216,7 +2268,7 @@ BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                         \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                         \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                          \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                  \

@@ -27,6 +27,18 @@ macro(add_test_executable name)
        target_include_directories(${name} INTERFACE ${Boost_INCLUDE_DIRS})
     endif()
     add_test(NAME ${name} COMMAND ${name} --gtest_catch_exceptions=1)
+
+# add unscoped version
+    add_executable(${name}_unscoped ${name}.cpp)
+    target_compile_definitions(${name}_unscoped PRIVATE   
+           TEST_COMPILE_UNSCOPED  
+        )   
+    target_include_directories(${name}_unscoped PUBLIC ${Boost_INCLUDE_DIRS})
+    target_include_directories(${name}_unscoped PUBLIC ${CMAKE_SOURCE_DIR}/../include)
+    if (Boost_FOUND)
+       target_include_directories(${name}_unscoped INTERFACE ${Boost_INCLUDE_DIRS})
+    endif()
+    add_test(NAME ${name}_unscoped COMMAND ${name}_unscoped --gtest_catch_exceptions=1)
 endmacro()
 
 add_test_executable(test_adl)
@@ -40,6 +52,7 @@ add_test_executable(test_logical_and)
 add_test_executable(test_rel_ops)
 add_test_executable(test_utilities)
 add_test_executable(test_macros)
+add_test_executable(test_unary_plus)
 
 
 
