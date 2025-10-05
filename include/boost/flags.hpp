@@ -1377,10 +1377,20 @@ namespace boost {
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<=, &, T1&)
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>=, &, T1&)
 
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(-)
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(++)
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(--)
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(++)
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(--)
+
+#if BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T>
+            requires IsFlags<T> && !HasUnaryPlus<T>
+#else // BOOST_FLAGS_HAS_CONCEPTS
+        template<typename T,
+            typename std::enable_if<IsFlags<T>::value && !HasUnaryPlus<T>::value, int*>::type = nullptr >
+#endif // BOOST_FLAGS_HAS_CONCEPTS
+        constexpr T& operator+(T) = delete;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -1795,6 +1805,8 @@ BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                            
 BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                      \
 using ::boost::flags::operator&&;                                                         \
 using ::boost::flags::operator||;                                                         \
+using ::boost::flags::operator++;                                                         \
+using ::boost::flags::operator--;                                                         \
 using ::boost::flags::operator+;                                                          \
 using ::boost::flags::operator-;                                                          \
 using ::boost::flags::operator*;                                                          \
