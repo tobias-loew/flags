@@ -429,7 +429,7 @@ jobs:
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
 
   cuda-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
