@@ -1385,7 +1385,7 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
-            requires IsFlags<T> && !HasUnaryPlus<T>
+            requires (IsFlags<T> && !HasUnaryPlus<T>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T,
             typename std::enable_if<IsFlags<T>::value && !HasUnaryPlus<T>::value, int*>::type = nullptr >
