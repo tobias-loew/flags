@@ -28,6 +28,14 @@ constexpr auto to_underlying(E value)
     return static_cast<typename std::underlying_type<E>::type>(value);
 }
 
+namespace another_ns {
+	template<typename T1, typename T2>
+	auto apply_binary_and_operator(T1 t1, T2 t2)
+#if defined(TEST_NO_CXX14_DECLTYPE_AUTO)
+-> decltype(t1 & t2)
+#endif // defined(TEST_NO_CXX14_DECLTYPE_AUTO)
+    { return t1 & t2; }
+}
 
 namespace test_in_class_ns {
     namespace test_1_ns {
@@ -90,9 +98,11 @@ void test_in_class() {
         v ^= s::c;
 
         // check De Morgan's laws
-        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
-        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
-    }
+		BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+		BOOST_TEST(~another_ns::apply_binary_and_operator(s::a, s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == another_ns::apply_binary_and_operator(~s::a, ~s::b));
+	}
 
     {
 #ifdef TEST_COMPILE_UNSCOPED
@@ -105,14 +115,73 @@ void test_in_class() {
         v ^= s::c;
 
         // check De Morgan's laws
-        BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
-        BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
-    }
+		BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+		BOOST_TEST(~another_ns::apply_binary_and_operator(s::a, s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == another_ns::apply_binary_and_operator(~s::a, ~s::b));
+	}
 
 }
 
+
+
+
+namespace test_3_ns {
+	enum
+#ifndef TEST_COMPILE_UNSCOPED
+		class
+#endif // TEST_COMPILE_UNSCOPED
+	flags_enum: unsigned int {
+	a = boost::flags::nth_bit(0), // == 0x01
+		b = boost::flags::nth_bit(1), // == 0x02
+		c = boost::flags::nth_bit(2), // == 0x04
+		d = boost::flags::nth_bit(3), // == 0x08
+	};
+	// enable flags_enum
+
+	BOOST_FLAGS_ENABLE(flags_enum)
+}
+
+
+void test_3() {
+
+	{
+		using s = test_3_ns::flags_enum;
+
+		s v = s::a | s::b;
+		v ^= s::c;
+
+		// check De Morgan's laws
+		BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+		BOOST_TEST(~another_ns::apply_binary_and_operator(s::a, s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == another_ns::apply_binary_and_operator(~s::a, ~s::b));
+	}
+
+	{
+#ifdef TEST_COMPILE_UNSCOPED
+		using s = test_in_class_ns::test_2_ns::s;
+#else // TEST_COMPILE_UNSCOPED
+		using s = test_in_class_ns::test_2_ns::s::flags_enum;
+#endif // TEST_COMPILE_UNSCOPED
+
+		test_in_class_ns::test_2_ns::s::flags_enum v = s::a | s::b;
+		v ^= s::c;
+
+		// check De Morgan's laws
+		BOOST_TEST(~(s::a & s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == (~s::a & ~s::b));
+		BOOST_TEST(~another_ns::apply_binary_and_operator(s::a, s::b) == (~s::a | ~s::b));
+		BOOST_TEST(~(s::a | s::b) == another_ns::apply_binary_and_operator(~s::a, ~s::b));
+	}
+
+}
+
+
+
 int main() {
-    test_in_class();
+	test_in_class();
+	test_3();
 
     return boost::report_errors();
 }

@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :source-language: cpp
 
 [#description]
-# Type-safe bitwise operations - TL;DR
+# Code hardening with type-safe bitwise operations - TL;DR
 :toc:
 :toc-title: 
 :idprefix:
@@ -490,7 +490,7 @@ there exists the option xref:disable_complement[`disable_complement`] which disa
 
 ## From flags to `bool`
 
-Since scoped enumerations prevent implicit conversion to `bool`, Boost.Flags provides the following functions:
+One of the recommendations when hardening existing code with Boost.Flags is the use of scoped enumerations, as they do not implicitly convert to their underlying type. But this will also prevent the conversion in boolean contexts. Therefore Boost.Flags provides the following functions:
 
 * `any(e) \-> bool` : equivalent to `e != E{}`
 * `none(e) \-> bool` : equivalent to `e == E{}`
@@ -502,23 +502,35 @@ Furthermore, to test for intersection and entailment of flag-sets:
 * `subseteq(e1, e2) \-> bool` : equivalent to `e1 & e2 == e1`
 * `subset(e1, e2) \-> bool` : equivalent to `subseteq(e1, e2) && e1 != e2`
 
-Instead of calling `any` and `none` we can use `operator!`
+Instead of the functions `any` and `none`, we can use `operator!`
 
 * `!e` : equivalent to `none(e)`
 * `!!e` : equivalent to `any(e)`
 
-## Flags `and` Flags
-Instead of `disjoint` and `intersect` we can write:
+and for `disjoint` and `intersect` we can write:
 
 * `!(e1 & e2)` : equivalent to `disjoint(e1, e2)`
 * `!!(e1 & e2)` : equivalent to `intersect(e1, e2)`
 
-If we update existing code with Boost.Flags, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
-Therefore, Boost.Flags provides a pseudo operator `BOOST_FLAGS_AND` with the same precedence and associativity as `&` but returning a `bool`:
+If existing code is hardened with Boost.Flags and unscoped enums are made scoped, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
+Therefore, Boost.Flags provides two alternatives:
 
-* `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
+[#unary_plus_operator]
+* the _unary_ plus operator `+e`, which wraps `e` into a type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. +
+So, with an previously unscoped enum and the code `e1 & ~(e2 | e3)` in boolean contexts, with Boost.Flags enabled all the following expression yield the same result:
 
-Alternatively, there is the option xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`], which enables `operator&&`, see xref:logical_and_and_or[next section].
+** `+(e1 & ~(e2 | e3))`
+** `+e1 & ~(e2 | e3)`
+** `e1 & ~(+e2 | e3)`
+** `+e1 & ~(+e2 | +e3)`
+** `+(+e1 & +(~(+e2 | +e3)))`
+** ...
+
+* a pseudo operator `BOOST_FLAGS_AND` with the same precedence and associativity as `&` but returning a `bool`:
+** `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
+
+// +
+// There is also the option xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`], which enables `operator&&`, see xref:logical_and_and_or[next section].
 
 [NOTE]
 ====

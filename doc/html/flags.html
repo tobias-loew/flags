@@ -558,7 +558,7 @@ pre.rouge .gs {
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#description">Type-safe bitwise operations - TL;DR</a>
+<li><a href="#description">Code hardening with type-safe bitwise operations - TL;DR</a>
 <ul class="sectlevel2">
 <li><a href="#how_to_use_boost_flags">How to use Boost.Flags</a></li>
 <li><a href="#why_use_boost_flags">Why use Boost.Flags</a></li>
@@ -575,7 +575,6 @@ pre.rouge .gs {
 <li><a href="#complementing_the_complement">Complementing the <code>complement</code></a></li>
 <li><a href="#mathematical_justification_for_complement">Mathematical justification for <code>complement</code></a></li>
 <li><a href="#from_flags_to_bool">From flags to <code>bool</code></a></li>
-<li><a href="#flags_and_flags">Flags <code>and</code> Flags</a></li>
 <li><a href="#logical_and_and_or">Logical <code>and</code> and <code>or</code></a></li>
 <li><a href="#calls_to_order">Calls to order</a></li>
 </ul>
@@ -609,8 +608,9 @@ pre.rouge .gs {
 <li><a href="#boost_flags_using_all">BOOST_FLAGS_USING_ALL</a></li>
 <li><a href="#boost_flags_forward_operators">BOOST_FLAGS_FORWARD_OPERATORS</a></li>
 <li><a href="#boost_flags_forward_operators_local">BOOST_FLAGS_FORWARD_OPERATORS_LOCAL</a></li>
-<li><a href="#boost_flags_enable_2">boost_flags_enable</a></li>
+<li><a href="#boost_flags_enable_3">boost_flags_enable</a></li>
 <li><a href="#enablet">enable&lt;T&gt;</a></li>
+<li><a href="#unary_plus">unary_plus</a></li>
 <li><a href="#logical_and">logical_and</a></li>
 <li><a href="#disable_complement">disable_complement</a></li>
 </ul>
@@ -631,6 +631,7 @@ pre.rouge .gs {
 <li><a href="#operator_5">operator|=</a></li>
 <li><a href="#operator_6">operator^=</a></li>
 <li><a href="#operator_7">operator!</a></li>
+<li><a href="#unary_operator">unary operator+</a></li>
 <li><a href="#pseudo_operator_boost_flags_and">Pseudo operator BOOST_FLAGS_AND</a></li>
 </ul>
 </li>
@@ -685,7 +686,7 @@ pre.rouge .gs {
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="description">Type-safe bitwise operations - TL;DR</h2>
+<h2 id="description">Code hardening with type-safe bitwise operations - TL;DR</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="how_to_use_boost_flags">How to use Boost.Flags</h3>
@@ -1350,7 +1351,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <div class="sect2">
 <h3 id="from_flags_to_bool">From flags to <code>bool</code></h3>
 <div class="paragraph">
-<p>Since scoped enumerations prevent implicit conversion to <code>bool</code>, Boost.Flags provides the following functions:</p>
+<p>One of the recommendations when hardening existing code with Boost.Flags is the use of scoped enumerations, as they do not implicitly convert to their underlying type. But this will also prevent the conversion in boolean contexts. Therefore Boost.Flags provides the following functions:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1382,7 +1383,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </ul>
 </div>
 <div class="paragraph">
-<p>Instead of calling <code>any</code> and <code>none</code> we can use <code>operator!</code></p>
+<p>Instead of the functions <code>any</code> and <code>none</code>, we can use <code>operator!</code></p>
 </div>
 <div class="ulist">
 <ul>
@@ -1394,11 +1395,8 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </li>
 </ul>
 </div>
-</div>
-<div class="sect2">
-<h3 id="flags_and_flags">Flags <code>and</code> Flags</h3>
 <div class="paragraph">
-<p>Instead of <code>disjoint</code> and <code>intersect</code> we can write:</p>
+<p>and for <code>disjoint</code> and <code>intersect</code> we can write:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1411,9 +1409,39 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </ul>
 </div>
 <div class="paragraph">
-<p>If we update existing code with Boost.Flags, then expressions like <code>e1 &amp; e2</code> in Boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
-Therefore, Boost.Flags provides a pseudo operator <code>BOOST_FLAGS_AND</code> with the same precedence and associativity as <code>&amp;</code> but returning a <code>bool</code>:</p>
+<p>If existing code is hardened with Boost.Flags and unscoped enums are made scoped, then expressions like <code>e1 &amp; e2</code> in Boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
+Therefore, Boost.Flags provides two alternatives:</p>
 </div>
+<div id="unary_plus_operator" class="ulist">
+<ul>
+<li>
+<p>the <em>unary</em> plus operator <code>+e</code>, which wraps <code>e</code> into a type which has an <code>explicit operator bool()</code> and promotes the wrapped type through further bitwise operations.<br>
+So, with an previously unscoped enum and the code <code>e1 &amp; ~(e2 | e3)</code> in boolean contexts, with Boost.Flags enabled all the following expression yield the same result:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>+(e1 &amp; ~(e2 | e3))</code></p>
+</li>
+<li>
+<p><code>+e1 &amp; ~(e2 | e3)</code></p>
+</li>
+<li>
+<p><code>e1 &amp; ~(+e2 | e3)</code></p>
+</li>
+<li>
+<p><code>+e1 &amp; ~(+e2 | +e3)</code></p>
+</li>
+<li>
+<p><code>+(+e1 &amp; +(~(+e2 | +e3)))</code></p>
+</li>
+<li>
+<p>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>a pseudo operator <code>BOOST_FLAGS_AND</code> with the same precedence and associativity as <code>&amp;</code> but returning a <code>bool</code>:</p>
 <div class="ulist">
 <ul>
 <li>
@@ -1421,8 +1449,8 @@ Therefore, Boost.Flags provides a pseudo operator <code>BOOST_FLAGS_AND</code> w
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>Alternatively, there is the option <a href="#boost_flags"><code>BOOST_FLAGS_LOGICAL_AND</code></a>, which enables <code>operator&amp;&amp;</code>, see <a href="#logical_and_and_or">next section</a>.</p>
+</li>
+</ul>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1967,6 +1995,9 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <div class="ulist">
 <ul>
 <li>
+<p><code>BOOST_FLAGS_UNARY_PLUS</code>            : additionally enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)</p>
+</li>
+<li>
 <p><code>BOOST_FLAGS_LOGICAL_AND</code>            : additionally enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)</p>
 </li>
 <li>
@@ -2079,6 +2110,21 @@ returning the next power of 2 (if applied to a power of 2)</p>
 </div>
 </div>
 <div class="sect4">
+<h5 id="boost_flags_enable_unary_plus">BOOST_FLAGS_ENABLE_UNARY_PLUS</h5>
+<div class="paragraph">
+<p>For an enumeration <code>E</code> at namespace scope the macro</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_UNARY_PLUS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>enables all operators of Boost.Flags and enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)<br>
+<code>BOOST_FLAGS_ENABLE_UNARY_PLUS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+</div>
+</div>
+<div class="sect4">
 <h5 id="boost_flags_enable_logical_and">BOOST_FLAGS_ENABLE_LOGICAL_AND</h5>
 <div class="paragraph">
 <p>For an enumeration <code>E</code> at namespace scope the macro</p>
@@ -2109,18 +2155,25 @@ returning the next power of 2 (if applied to a power of 2)</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="boost_flags_enable_disable_complement_logical_and">BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND</h5>
+<h5 id="boost_flags_enable_2">BOOST_FLAGS_ENABLE_&#8230;&#8203;</h5>
 <div class="paragraph">
-<p>For an enumeration <code>E</code> at namespace scope the macro</p>
+<p>the following macros provide combinations of the above macros:</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>enables all operators of Boost.Flags,disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>) and enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)<br>
-<code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS</code></p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect4">
@@ -2136,6 +2189,21 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <div class="paragraph">
 <p>enables all operators of Boost.Flags.<br>
 <code>BOOST_FLAGS_ENABLE_LOCAL(E)</code> creates friend functions for all operators of Boost.Flags for the enumeration <code>E</code> (cf. <a href="#boost_flags_forward_operators_local">BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)</a>).</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="boost_flags_enable_local_unary_plus">BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS</h5>
+<div class="paragraph">
+<p>For an enumeration <code>E</code> at class scope the macro</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>enables all operators of Boost.Flags and enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)<br>
+<code>BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
 </div>
 </div>
 <div class="sect4">
@@ -2169,18 +2237,25 @@ returning the next power of 2 (if applied to a power of 2)</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="boost_flags_enable_local_disable_complement_logical_and">BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND</h5>
+<h5 id="boost_flags_enable_local_2">BOOST_FLAGS_ENABLE_LOCAL_&#8230;&#8203;</h5>
 <div class="paragraph">
-<p>For an enumeration <code>E</code> at class scope the macro</p>
+<p>the following macros provide combinations of the above macros:</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>enables all operators of Boost.Flags,disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>) and enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)<br>
-<code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS</code></p>
+</li>
+<li>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS</code></p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -2257,7 +2332,7 @@ This will enable <a href="https://en.cppreference.com/w/cpp/language/adl" target
 </div>
 </div>
 <div class="sect3">
-<h4 id="boost_flags_enable_2">boost_flags_enable</h4>
+<h4 id="boost_flags_enable_3">boost_flags_enable</h4>
 <div class="paragraph">
 <p>The function <code>boost_flags_enable</code> can be overloaded for an enumeration <code>E</code> either</p>
 </div>
@@ -2283,6 +2358,9 @@ enumeration <code>boost::flags::options</code> has the following options:</p>
 <p><code>enable</code>:  enables <code>E</code></p>
 </li>
 <li>
+<p><code>unary_plus</code>:  enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)</p>
+</li>
+<li>
 <p><code>disable_complement</code>:  disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>)</p>
 </li>
 <li>
@@ -2291,7 +2369,8 @@ e.g.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">constexpr</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options_constant</span><span class="o">&lt;</span>
-        <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">enable</span>            <span class="c1">// enable E (required)</span>
+        <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">enable</span>               <span class="c1">// enable E (required)</span>
+        <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">unary_plus</span>         <span class="c1">// enable unary operator+</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">disable_complement</span> <span class="c1">// disable the usage of the complement</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">logical_and</span>        <span class="c1">// enable operator&amp;&amp;</span>
     <span class="o">&gt;</span>
@@ -2365,6 +2444,26 @@ e.g.</p>
 </div>
 </div>
 <div class="sect3">
+<h4 id="unary_plus">unary_plus</h4>
+<div class="paragraph">
+<p>If the specialization of <code>enable</code> additionally inherits from <code>unary_plus</code> then unary <code>operator+</code> is enabled.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span>
+    <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span>
+    <span class="p">,</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">unary_plus</span>
+    <span class="p">{};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(cf. <a href="#unary_plus_operator">unary operator+</a> <a href="#boost_flags"><code>BOOST_FLAGS_UNARY_PLUS</code></a>)</p>
+</div>
+</div>
+<div class="sect3">
 <h4 id="logical_and">logical_and</h4>
 <div class="paragraph">
 <p>If the specialization of <code>enable</code> additionally inherits from <code>logical_and</code> then <code>operator&amp;&amp;</code> is enabled.</p>
@@ -2381,7 +2480,7 @@ e.g.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>(cf. <a href="#boost_flags"><code>BOOST_FLAGS_LOGICAL_AND</code></a>)</p>
+<p>(cf. <a href="#logical_and_and_or">Logical <code>and</code> and <code>or</code></a>, <a href="#boost_flags"><code>BOOST_FLAGS_LOGICAL_AND</code></a>)</p>
 </div>
 </div>
 <div class="sect3">
@@ -2735,6 +2834,37 @@ There exists also a function object <code>total_order</code>:</p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// pseudo code</span>
     <span class="kt">bool</span> <span class="k">operator</span><span class="o">!</span><span class="p">(</span><span class="n">E</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e</span> <span class="o">==</span> <span class="n">E</span><span class="p">{};</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="unary_operator">unary operator+</h4>
+<div class="paragraph">
+<p>The unary <code>operator+</code> wraps a value <code>e</code> of type <code>E</code> into an implementation defined type, with the following properties:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>has an <code>explicit operator bool</code>, such that in boolean contexts <code>+e</code> and <code>any(e)</code> yield the same result</p>
+</li>
+<li>
+<p>has an (non explicit) <code>operator E</code>, which returns the value <code>e</code> back</p>
+</li>
+<li>
+<p>the wrapped type propagates through bitwise operators <code>&amp;</code>, <code>|</code>, <code>^</code> and <code>~</code>, i.e. when at least one of their arguments is wrapped then the result is also wrapped</p>
+</li>
+<li>
+<p>the wrapping is idempotent, i.e. <code>+(+e)</code> is equivalent to <code>+e</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp">    <span class="c1">// in boolean contexts</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">+</span><span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+
+    <span class="c1">// is equivalent to</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">any</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -3193,7 +3323,7 @@ It must be defined at global namespace.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-09-26 08:19:29 +0200
+Last updated 2025-10-02 11:00:59 +0200
 </div>
 </div>
 <style>

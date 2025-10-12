@@ -429,7 +429,7 @@ jobs:
           b2 --verbose -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release embed-manifest-via=linker
 
   cuda-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -441,9 +441,9 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - uses: Jimver/cuda-toolkit@v0.2.21
+      - uses: Jimver/cuda-toolkit@v0.2.16
         with:
-          cuda: '12.5.0'
+          cuda: '11.7.1'
           linux-local-args: '["--toolkit"]'
 
       - name: Setup Boost
