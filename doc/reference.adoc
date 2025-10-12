@@ -48,6 +48,7 @@ BOOST_FLAGS(E, OPTIONS)
 ----
 where OPTIONS is an optional comma separated list containing at most one of each of the following options:
 
+* `BOOST_FLAGS_UNARY_PLUS`            : additionally enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
 * `BOOST_FLAGS_LOGICAL_AND`            : additionally enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 * `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
 * `BOOST_FLAGS_NO_FORWARDING`       : will not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
@@ -109,6 +110,18 @@ BOOST_FLAGS_ENABLE(E)
 enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
+#### BOOST_FLAGS_ENABLE_UNARY_PLUS
+
+For an enumeration `E` at namespace scope the macro 
+[source]
+----
+BOOST_FLAGS_ENABLE_UNARY_PLUS(E)
+----
+enables all operators of Boost.Flags and enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`]) +
+`BOOST_FLAGS_ENABLE_UNARY_PLUS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+
+
+
 #### BOOST_FLAGS_ENABLE_LOGICAL_AND
 
 For an enumeration `E` at namespace scope the macro 
@@ -132,16 +145,14 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
-#### BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND
+#### BOOST_FLAGS_ENABLE_...
 
-For an enumeration `E` at namespace scope the macro 
-[source]
-----
-BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)
-----
-enables all operators of Boost.Flags,disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`]) and enables `operator&&` for `E` (see also xref:logical_and[`logical_and`]) +
-`BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+the following macros provide combinations of the above macros:
 
+* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND`
+* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS`
 
 
 
@@ -155,6 +166,17 @@ BOOST_FLAGS_ENABLE_LOCAL(E)
 ----
 enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
+
+
+#### BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS
+
+For an enumeration `E` at class scope the macro 
+[source]
+----
+BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)
+----
+enables all operators of Boost.Flags and enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`]) +
+`BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
 #### BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND
@@ -180,15 +202,16 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 
 
 
-#### BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND
 
-For an enumeration `E` at class scope the macro 
-[source]
-----
-BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)
-----
-enables all operators of Boost.Flags,disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`]) and enables `operator&&` for `E` (see also xref:logical_and[`logical_and`]) +
-`BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+
+#### BOOST_FLAGS_ENABLE_LOCAL_...
+
+the following macros provide combinations of the above macros:
+
+* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND`
+* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS`
 
 
 
@@ -254,6 +277,7 @@ enables Boost.Flags for an enumeration `E`. All optional features are disabled.
 * or with return-type `template<boost::flags::options Opts> boost::flags::options_constant`, where the 
  enumeration `boost::flags::options` has the following options:
 ** `enable`:  enables `E`
+** `unary_plus`:  enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
 ** `disable_complement`:  disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
 ** `logical_and`:  enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 e.g.
@@ -261,7 +285,8 @@ e.g.
 [source]
 ----
 constexpr boost::flags::options_constant<
-        boost::flags::options::enable            // enable E (required)
+        boost::flags::options::enable               // enable E (required)
+        | boost::flags::options::unary_plus         // enable unary operator+
         | boost::flags::options::disable_complement // disable the usage of the complement
         | boost::flags::options::logical_and        // enable operator&&
     > 
@@ -316,6 +341,23 @@ constexpr bool enable_v = enable<E>::value;
 ----
 is also provided.
 
+[#unary_plus]
+### unary_plus
+
+If the specialization of `enable` additionally inherits from `unary_plus` then unary `operator+` is enabled.
+
+Example:
+[source]
+----
+template<> struct boost::flags::enable<E> 
+    : std::true_type
+    , boost::flags::unary_plus 
+    {};
+----
+
+(cf. xref:unary_plus_operator[unary operator+] xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`])
+
+
 [#logical_and]
 ### logical_and
 
@@ -330,7 +372,7 @@ template<> struct boost::flags::enable<E>
     {};
 ----
 
-(cf. xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`])
+(cf. xref:logical_and_and_or[Logical `and` and `or`], xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`])
 
 
 [#disable_complement]
@@ -526,6 +568,25 @@ The `operator!` tests if a value is empty.
 ----
     // pseudo code
     bool operator!(E e) { return e == E{}; }
+----
+
+
+### unary operator+
+
+The unary `operator+` wraps a value `e` of type `E` into an implementation defined type, with the following properties:
+
+* has an `explicit operator bool`, such that in boolean contexts `+e` and `any(e)` yield the same result
+* has an (non explicit) `operator E`, which returns the value `e` back
+* the wrapped type propagates through bitwise operators `&`, `|`, `^` and `~`, i.e. when at least one of their arguments is wrapped then the result is also wrapped
+* the wrapping is idempotent, i.e. `+(+e)` is equivalent to `+e`
+
+[source]
+----
+    // in boolean contexts
+    if(+e) { ... }
+    
+    // is equivalent to
+    if(any(e)) { ... }
 ----
 
 
