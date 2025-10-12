@@ -441,8 +441,9 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - uses: Jimver/cuda-toolkit@master
+      - uses: Jimver/cuda-toolkit@v0.2.16
         with:
+          cuda: '11.7.1'
           linux-local-args: '["--toolkit"]'
 
       - name: Setup Boost
@@ -472,7 +473,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: Jimver/cuda-toolkit@master
+      - uses: Jimver/cuda-toolkit@v0.2.16
       - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup Boost
