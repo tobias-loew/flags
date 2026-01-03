@@ -11,6 +11,7 @@
 
 #include <boost/core/lightweight_test_trait.hpp>
 #include <boost/flags.hpp>
+#include <cstdint>
 
 #include "include_test_post.hpp"
 
