@@ -51,6 +51,7 @@ jobs:
           - toolset: gcc-9
             cxxstd: "11,14,17,2a"
             os: ubuntu-22.04
+            install: g++-9
           - toolset: gcc-10
             cxxstd: "11,14,17,2a"
             os: ubuntu-22.04
