@@ -1987,9 +1987,36 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
 
 #define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
+FRIEND bool operator< (E l, E r) = delete;                                                \
+FRIEND bool operator<= (E l, E r) = delete;                                               \
+FRIEND bool operator> (E l, E r) = delete;                                                \
+FRIEND bool operator>= (E l, E r) = delete;                                               \
 FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
                                                                                           \
 /* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2>                                                        \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2>                                                        \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2>                                                        \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2>                                                        \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
+                                                                                          \
 template<typename T1, typename T2>                                                        \
     requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
               std::is_same_v<E, boost::flags::enum_type_t<T2>> )                          \
@@ -2000,7 +2027,35 @@ FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
 
 #define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
 /* matches better than built-in relational operators */                                   \
+FRIEND bool operator< (E l, E r) = delete;                                                \
+FRIEND bool operator<= (E l, E r) = delete;                                               \
+FRIEND bool operator> (E l, E r) = delete;                                                \
+FRIEND bool operator>= (E l, E r) = delete;                                               \
 FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2,                                                        \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2,                                                        \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2,                                                        \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
+                                                                                          \
+/* matches all other E, complement<E> arguments */                                        \
+template<typename T1, typename T2,                                                        \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
                                                                                           \
 /* matches all other E, complement<E> arguments */                                        \
 template<typename T1, typename T2,                                                        \
