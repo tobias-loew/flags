@@ -446,6 +446,7 @@ jobs:
         with:
           cuda: '11.7.1'
           linux-local-args: '["--toolkit"]'
+          method: 'network'
 
       - name: Setup Boost
         run: |
@@ -501,6 +502,7 @@ jobs:
           nvcc -x cu -DTEST_COMPILE_FAIL_WITH_NOT_ENABLED -I ./include -I ../assert/include -I ../config/include -I ../core/include -std=c++14 -c test/test_incompat.cpp && exit /b
           (call )
           echo failed-as-expected
+
 
 
 
