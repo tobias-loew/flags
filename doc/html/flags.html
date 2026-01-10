@@ -799,6 +799,9 @@ pre.rouge .gs {
 </div>
 <div class="sect2">
 <h3 id="why_use_boost_flags">Why use Boost.Flags</h3>
+<div class="paragraph">
+<p>Boost.Flags main purpose is to harden code which uses flag-like enumerations by providing type-safe bitwise operations:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -824,10 +827,10 @@ pre.rouge .gs {
 <p>no dependencies (only standard-library includes)</p>
 </li>
 <li>
-<p>compile-time usable - everything is <code>constexpr</code></p>
+<p>compile-time usable: everything is <code>constexpr</code></p>
 </li>
 <li>
-<p>zero-overhead (in optimized builds)</p>
+<p>zero-overhead in optimized builds</p>
 </li>
 <li>
 <p>operators are found by <a href="https://en.cppreference.com/w/cpp/language/adl" target="_blank" rel="noopener">ADL</a></p>
@@ -1227,7 +1230,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <p>So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of <a href="https://en.wikipedia.org/wiki/Lattice_(order)" target="_blank" rel="noopener">mathematical lattices</a> and both are entangled by the operator <code>~</code>.</p>
 </div>
 <div class="paragraph">
-<p>Hence, for a Boost.Flags enabled enumeration <code>E</code> (where complement is not <a href="#disable_complement">disabled</a>) the bitwise not operator switches between the types <code>E</code> and <code>complement&lt;E&gt;</code></p>
+<p>Hence, for a Boost.Flags enabled enumeration <code>E</code> (where complement is not <a href="#disable_complement">disabled</a>) the bitwise <code>~</code> operator switches between the types <code>E</code> and <code>complement&lt;E&gt;</code></p>
 </div>
 <div class="ulist">
 <ul>
@@ -1410,7 +1413,7 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 </div>
 <div class="paragraph">
 <p>If existing code is hardened with Boost.Flags and unscoped enums are made scoped, then expressions like <code>e1 &amp; e2</code> in Boolean contexts would have to be replaced by <code>!!(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
-Therefore, Boost.Flags provides two alternatives:</p>
+To simplify the usage Boost.Flags provides two alternatives:</p>
 </div>
 <div id="unary_plus_operator" class="ulist">
 <ul>
@@ -1438,6 +1441,9 @@ So, with an previously unscoped enum and the code <code>e1 &amp; ~(e2 | e3)</cod
 <p>&#8230;&#8203;</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>To enable the unary plus operator for an enumeration <code>E</code>, use the option <a href="#boost_flags"><code>BOOST_FLAGS_UNARY_PLUS</code></a>.</p>
 </div>
 </li>
 <li>
@@ -1632,6 +1638,41 @@ Boost.Flags provides the following functions:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Definition</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>any</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e != E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>none</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e == E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>any</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e != E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intersect</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e1, E e2) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e1 &amp; e2 != E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>disjoint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e1, E e2) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e1 &amp; e2 == E{};</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>subseteq</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e1, E e2) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return e1 &amp; e2 == e1;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>subset</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e1, E e2) -&gt; bool</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return subseteq(e1, e2) &amp;&amp; (e1 != e2);</code></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>make_null</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E) -&gt; E</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>return E{};</code></p></td>
@@ -1640,16 +1681,6 @@ Boost.Flags provides the following functions:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>make_if</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, bool set) -&gt; E</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>return set ? e : E{};</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, E mod, bool set)  -&gt; E</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return set ? e | mod : e &amp; ~mod;</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify_inplace</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E&amp; e, E mod, bool set)  -&gt; E&amp;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = modify(e, mod, set); return e;</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>add_if</code></p></td>
@@ -1672,6 +1703,16 @@ Boost.Flags provides the following functions:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = remove_if(e, mod, remove); return e;</code></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e, E mod, bool set)  -&gt; E</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return set ? e | mod : e &amp; ~mod;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modify_inplace</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E&amp; e, E mod, bool set)  -&gt; E&amp;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>e = modify(e, mod, set); return e;</code></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>get_underlying</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>(E e) -&gt; typename underlying_type&lt;E&gt;::type</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>return static_cast&lt;typename underlying_type&lt;E&gt;::type&gt;(e);</code></p></td>
@@ -1680,6 +1721,16 @@ Boost.Flags provides the following functions:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>from_underlying</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>(typename underlying_type&lt;E&gt;::type u) -&gt; E</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>return static_cast&lt;E&gt;(u);</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>nth_bit</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(unsigned int n) -&gt;</code> <em>integer type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return 1 &lt;&lt; n;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>next_bit</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(T v) -&gt; T</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return v &lt;&lt; 1;</code></p></td>
 </tr>
 </tbody>
 </table>

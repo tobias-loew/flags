@@ -117,6 +117,8 @@ int main() {
 
 ## Why use Boost.Flags
 
+Boost.Flags main purpose is to harden code which uses flag-like enumerations by providing type-safe bitwise operations:
+
 * provides type-safe bitwise operations for flag-like scoped / unscoped enumerations
 * turns logical errors into type errors
 
@@ -125,8 +127,8 @@ int main() {
 * is non-intrusive - only a macro invocation is required to opt-in
 * single header-file library
 * no dependencies (only standard-library includes)
-* compile-time usable - everything is `constexpr`
-* zero-overhead (in optimized builds)
+* compile-time usable: everything is `constexpr`
+* zero-overhead in optimized builds
 * operators are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
 * requires at least C++11, uses newer features if available
 
@@ -440,7 +442,7 @@ Even though the underlying type together with its operators `&`, `|` and `~` den
 
 So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] and both are entangled by the operator `~`. 
 
-Hence, for a Boost.Flags enabled enumeration `E` (where complement is not xref:reference.adoc#disable_complement[disabled]) the bitwise not operator switches between the types `E` and `complement<E>`  
+Hence, for a Boost.Flags enabled enumeration `E` (where complement is not xref:reference.adoc#disable_complement[disabled]) the bitwise `~` operator switches between the types `E` and `complement<E>`  
 
 * `operator~(E) \-> complement<E>`
 * `operator~(complement<E>) \-> E`
@@ -513,7 +515,7 @@ and for `disjoint` and `intersect` we can write:
 * `!!(e1 & e2)` : equivalent to `intersect(e1, e2)`
 
 If existing code is hardened with Boost.Flags and unscoped enums are made scoped, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
-Therefore, Boost.Flags provides two alternatives:
+To simplify the usage Boost.Flags provides two alternatives:
 
 [#unary_plus_operator]
 * the _unary_ plus operator `+e`, which wraps `e` into a type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. +
@@ -525,6 +527,9 @@ So, with an previously unscoped enum and the code `e1 & ~(e2 | e3)` in boolean c
 ** `+e1 & ~(+e2 | +e3)`
 ** `+(+e1 & +(~(+e2 | +e3)))`
 ** ...
+
++
+To enable the unary plus operator for an enumeration `E`, use the option xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`].
 
 * a pseudo operator `BOOST_FLAGS_AND` with the same precedence and associativity as `&` but returning a `bool`:
 ** `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
@@ -627,6 +632,34 @@ Boost.Flags provides the following functions:
 |Type
 |Definition
 
+|`any`
+|`(E e) \-> bool`
+|`return e != E{};`
+
+|`none`
+|`(E e) \-> bool`
+|`return e == E{};`
+
+|`any`
+|`(E e) \-> bool`
+|`return e != E{};`
+
+|`intersect`
+|`(E e1, E e2) \-> bool`
+|`return e1 & e2 != E{};`
+
+|`disjoint`
+|`(E e1, E e2) \-> bool`
+|`return e1 & e2 == E{};`
+
+|`subseteq`
+|`(E e1, E e2) \-> bool`
+|`return e1 & e2 == e1;`
+
+|`subset`
+|`(E e1, E e2) \-> bool`
+|`return subseteq(e1, e2) && (e1 != e2);`
+
 |`make_null`
 |`(E) \-> E`
 |`return E{};`
@@ -634,14 +667,6 @@ Boost.Flags provides the following functions:
 |`make_if`
 |`(E e, bool set) \-> E`
 |`return set ? e : E{};`
-
-|`modify`
-|`(E e, E mod, bool set)  \-> E`
-|`return set ? e \| mod : e & ~mod;`
-
-|`modify_inplace`
-|`(E& e, E mod, bool set)  \-> E&`
-|`e = modify(e, mod, set); return e;`
 
 |`add_if`
 |`(E e, E mod, bool add)  \-> E`
@@ -659,6 +684,14 @@ Boost.Flags provides the following functions:
 |`(E& e, E mod, bool remove)  \-> E&`
 |`e = remove_if(e, mod, remove); return e;`
 
+|`modify`
+|`(E e, E mod, bool set)  \-> E`
+|`return set ? e \| mod : e & ~mod;`
+
+|`modify_inplace`
+|`(E& e, E mod, bool set)  \-> E&`
+|`e = modify(e, mod, set); return e;`
+
 |`get_underlying`
 |`(E e) \-> typename underlying_type<E>::type`
 |`return static_cast<typename underlying_type<E>::type>(e);`
@@ -666,6 +699,14 @@ Boost.Flags provides the following functions:
 |`from_underlying`
 |`(typename underlying_type<E>::type u) \-> E`
 |`return static_cast<E>(u);`
+
+|`nth_bit`
+|`(unsigned int n) \->` __integer type__
+|`return 1 << n;`
+
+|`next_bit`
+|`(T v) \-> T`
+|`return v << 1;`
 |===
 
 
