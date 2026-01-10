@@ -1323,37 +1323,37 @@ namespace boost {
         // 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                                          \
-        template<typename T1, typename T2>                                                            \
-            requires (IsFlags<T1> || IsFlags<T2>) && impl::BothImplicitIntegralConvertible<T1, T2> \
+#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                           \
+        template<typename T1, typename T2>                                                          \
+            requires (IsFlags<T1> || IsFlags<T2>) && impl::BothImplicitIntegralConvertible<T1, T2>  \
         constexpr result_type operator op (T1 ref, T2) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                             \
-        template<typename T>                                                              \
-            requires IsFlags<T>                                                           \
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                                       \
+        template<typename T>                                                                        \
+            requires IsFlags<T>                                                                     \
         constexpr T& operator op (T) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                            \
-        template<typename T>                                                              \
-            requires IsFlags<T>                                                           \
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                                      \
+        template<typename T>                                                                        \
+            requires IsFlags<T>                                                                     \
         constexpr T operator op (T, int) = delete;
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                                            \
-        template<typename T1, typename T2,                                                           \
-            typename std::enable_if<(IsFlags<T1>::value || IsFlags<T2>::value) &&                    \
+#define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                           \
+        template<typename T1, typename T2,                                                          \
+            typename std::enable_if<(IsFlags<T1>::value || IsFlags<T2>::value) &&                   \
             impl::BothImplicitIntegralConvertible<T1, T2>::value, int*>::type = nullptr >           \
         constexpr result_type operator op (T1 ref, T2) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                             \
-        template<typename T,                                                              \
-            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >            \
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(op)                                       \
+        template<typename T,                                                                        \
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >                      \
         constexpr T& operator op (T) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                            \
-        template<typename T,                                                              \
-            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >            \
+#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                                      \
+        template<typename T,                                                                        \
+            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >                      \
         constexpr T operator op (T, int) = delete;
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -1682,20 +1682,20 @@ namespace boost {
 // Specifying the enum type directly as parameter type ensures that these overloads are 
 // distinguishable from the templates in namespace boost::flags.
 
-#define BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, op, RET)                           \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E l, E r) noexcept {     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, op, RET)                                     \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E l, E r) noexcept {               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
-#define BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, op, RET)                            \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E v) noexcept {          \
-    return ::boost::flags::operator op(v);                                                \
-}                                                                                         \
+#define BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, op, RET)                                      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(E v) noexcept {                    \
+    return ::boost::flags::operator op(v);                                                          \
+}                                                                                                   \
 
-#define BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, op)                            \
-FRIEND constexpr E& operator op(E& l, E r) noexcept {                                     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, op)                                      \
+FRIEND constexpr E& operator op(E& l, E r) noexcept {                                               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
 
 // NOTE: The deleted forwarding operators must use concepts/SFINAE, as this may not be
@@ -1703,43 +1703,43 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                            \
-template<typename T> requires std::is_same<T, E>::value                                   \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                                      \
+template<typename T> requires std::is_same<T, E>::value                                             \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
-#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                             \
-template<typename T> requires std::is_same<T, E>::value                                   \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {          \
-    return ::boost::flags::operator op(v);                                                \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                                       \
+template<typename T> requires std::is_same<T, E>::value                                             \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {                    \
+    return ::boost::flags::operator op(v);                                                          \
+}                                                                                                   \
 
-#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                             \
-template<typename T> requires std::is_same<T, E>::value                                   \
-FRIEND constexpr E& operator op(T& l, T r) noexcept {                                     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                                       \
+template<typename T> requires std::is_same<T, E>::value                                             \
+FRIEND constexpr E& operator op(T& l, T r) noexcept {                                               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                           \
-template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, op, RET)                                      \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr>      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T l, T r) noexcept {               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
-#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                            \
-template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {          \
-    return ::boost::flags::operator op(v);                                                \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_UNARY_OPERATOR(E, FRIEND, op, RET)                                       \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr>      \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND constexpr RET operator op(T v) noexcept {                    \
+    return ::boost::flags::operator op(v);                                                          \
+}                                                                                                   \
 
-#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                            \
-template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr> \
-FRIEND constexpr E& operator op(T& l, T r) noexcept {                                     \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, op)                                       \
+template<typename T, typename std::enable_if<std::is_same<T, E>::value, int*>::type = nullptr>      \
+FRIEND constexpr E& operator op(T& l, T r) noexcept {                                               \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
@@ -1749,28 +1749,28 @@ FRIEND constexpr E& operator op(T& l, T r) noexcept {                           
 
 #if !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
-#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                         \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                    \
-constexpr RET operator op(E l, std::nullptr_t r) noexcept {                               \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                    \
-constexpr RET operator op(std::nullptr_t l, E r) noexcept {                               \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                   \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                              \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                                         \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                              \
+constexpr RET operator op(std::nullptr_t l, E r) noexcept {                                         \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
 
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL   using ::boost::flags::operator!=;
-# define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                \
+# define BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                          \
 BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, !=, bool)
 
 #else // !(BOOST_FLAGS_HAS_REWRITTEN_CANDIDATES)
 
-#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                         \
-BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                    \
-constexpr RET operator op(E l, std::nullptr_t r) noexcept {                               \
-    return ::boost::flags::operator op(l, r);                                             \
-}                                                                                         \
+#define BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, op, RET)                                   \
+BOOST_FLAGS_ATTRIBUTE_NODISCARD FRIEND                                                              \
+constexpr RET operator op(E l, std::nullptr_t r) noexcept {                                         \
+    return ::boost::flags::operator op(l, r);                                                       \
+}                                                                                                   \
 
 
 # define BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL
@@ -1782,7 +1782,7 @@ constexpr RET operator op(E l, std::nullptr_t r) noexcept {                     
 #if BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 # define BOOST_FLAGS_USING_OPERATOR_SPACESHIP using ::boost::flags::operator<=>;
-# define BOOST_FLAGS_FORWARD_OPERATOR_SPACESHIP(E, FRIEND)                                \
+# define BOOST_FLAGS_FORWARD_OPERATOR_SPACESHIP(E, FRIEND)                                          \
 BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, <=>, std::partial_ordering)
 
 #else // BOOST_FLAGS_HAS_PARTIAL_ORDERING
@@ -1791,191 +1791,191 @@ BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, <=>, std::partial_ordering)
 #endif // BOOST_FLAGS_HAS_PARTIAL_ORDERING
 
 
-#define BOOST_FLAGS_USING_OPERATORS()                                                     \
-using ::boost::flags::operator|;                                                          \
-using ::boost::flags::operator&;                                                          \
-using ::boost::flags::operator^;                                                          \
-using ::boost::flags::operator~;                                                          \
-using ::boost::flags::operator|=;                                                         \
-using ::boost::flags::operator&=;                                                         \
-using ::boost::flags::operator^=;                                                         \
-using ::boost::flags::operator!;                                                          \
-using ::boost::flags::operator==;                                                         \
-BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                                      \
-BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                      \
-using ::boost::flags::operator&&;                                                         \
-using ::boost::flags::operator||;                                                         \
-using ::boost::flags::operator++;                                                         \
-using ::boost::flags::operator--;                                                         \
-using ::boost::flags::operator+;                                                          \
-using ::boost::flags::operator-;                                                          \
-using ::boost::flags::operator*;                                                          \
-using ::boost::flags::operator/;                                                          \
-using ::boost::flags::operator%;                                                          \
-using ::boost::flags::operator<<;                                                         \
-using ::boost::flags::operator>>;                                                         \
-using ::boost::flags::operator+=;                                                         \
-using ::boost::flags::operator-=;                                                         \
-using ::boost::flags::operator*=;                                                         \
-using ::boost::flags::operator/=;                                                         \
-using ::boost::flags::operator%=;                                                         \
-using ::boost::flags::operator<<=;                                                        \
+#define BOOST_FLAGS_USING_OPERATORS()                                                               \
+using ::boost::flags::operator|;                                                                    \
+using ::boost::flags::operator&;                                                                    \
+using ::boost::flags::operator^;                                                                    \
+using ::boost::flags::operator~;                                                                    \
+using ::boost::flags::operator|=;                                                                   \
+using ::boost::flags::operator&=;                                                                   \
+using ::boost::flags::operator^=;                                                                   \
+using ::boost::flags::operator!;                                                                    \
+using ::boost::flags::operator==;                                                                   \
+BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                                                \
+BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                                \
+using ::boost::flags::operator&&;                                                                   \
+using ::boost::flags::operator||;                                                                   \
+using ::boost::flags::operator++;                                                                   \
+using ::boost::flags::operator--;                                                                   \
+using ::boost::flags::operator+;                                                                    \
+using ::boost::flags::operator-;                                                                    \
+using ::boost::flags::operator*;                                                                    \
+using ::boost::flags::operator/;                                                                    \
+using ::boost::flags::operator%;                                                                    \
+using ::boost::flags::operator<<;                                                                   \
+using ::boost::flags::operator>>;                                                                   \
+using ::boost::flags::operator+=;                                                                   \
+using ::boost::flags::operator-=;                                                                   \
+using ::boost::flags::operator*=;                                                                   \
+using ::boost::flags::operator/=;                                                                   \
+using ::boost::flags::operator%=;                                                                   \
+using ::boost::flags::operator<<=;                                                                  \
 using ::boost::flags::operator>>=;
 
 
-#define BOOST_FLAGS_USING_UTILITIES()                                                     \
-using ::boost::flags::any;                                                                \
-using ::boost::flags::none;                                                               \
-using ::boost::flags::subseteq;                                                           \
-using ::boost::flags::subset;                                                             \
-using ::boost::flags::intersect;                                                          \
-using ::boost::flags::disjoint;                                                           \
-using ::boost::flags::make_null;                                                          \
-using ::boost::flags::make_if;                                                            \
-using ::boost::flags::modify;                                                             \
-using ::boost::flags::modify_inplace;                                                     \
-using ::boost::flags::add_if;                                                             \
-using ::boost::flags::add_if_inplace;                                                     \
-using ::boost::flags::remove_if;                                                          \
-using ::boost::flags::remove_if_inplace;                                                  \
-using ::boost::flags::get_underlying;                                                     \
+#define BOOST_FLAGS_USING_UTILITIES()                                                               \
+using ::boost::flags::any;                                                                          \
+using ::boost::flags::none;                                                                         \
+using ::boost::flags::subseteq;                                                                     \
+using ::boost::flags::subset;                                                                       \
+using ::boost::flags::intersect;                                                                    \
+using ::boost::flags::disjoint;                                                                     \
+using ::boost::flags::make_null;                                                                    \
+using ::boost::flags::make_if;                                                                      \
+using ::boost::flags::modify;                                                                       \
+using ::boost::flags::modify_inplace;                                                               \
+using ::boost::flags::add_if;                                                                       \
+using ::boost::flags::add_if_inplace;                                                               \
+using ::boost::flags::remove_if;                                                                    \
+using ::boost::flags::remove_if_inplace;                                                            \
+using ::boost::flags::get_underlying;                                                               \
 
-#define BOOST_FLAGS_USING_ALL()                                                           \
-BOOST_FLAGS_USING_OPERATORS()                                                             \
-BOOST_FLAGS_USING_UTILITIES()                                                             \
-
-
+#define BOOST_FLAGS_USING_ALL()                                                                     \
+BOOST_FLAGS_USING_OPERATORS()                                                                       \
+BOOST_FLAGS_USING_UTILITIES()                                                                       \
 
 
-#define BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, C, FRIEND)                                  \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, |, E)                                      \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &, E)                                      \
-BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, ^, E)                                      \
-BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, ~, C)                                       \
-BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, |=)                                    \
-BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, &=)                                    \
-BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                                    \
-BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                    \
-BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                \
-BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                         \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, +, unsigned int)                              \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, -, unsigned int)                              \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, *, unsigned int)                              \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, / , unsigned int)                          \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, %, unsigned int)                              \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, << , unsigned int)                          \
-BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, >> , unsigned int)                          \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, +=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, -=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, *=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, /=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, %=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, <<=)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, >>=)
 
 
-#define BOOST_FLAGS_FORWARD_OPERATORS(E)                                                  \
+#define BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, C, FRIEND)                                            \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, |, E)                                                \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &, E)                                                \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, ^, E)                                                \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, ~, C)                                                 \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, |=)                                              \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, &=)                                              \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                                              \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                              \
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                          \
+BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                                   \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, +, unsigned int)                                      \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, -, unsigned int)                                      \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, *, unsigned int)                                      \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, / , unsigned int)                                     \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, %, unsigned int)                                      \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, << , unsigned int)                                    \
+BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, >> , unsigned int)                                    \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, +=)                                               \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, -=)                                               \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, *=)                                               \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, /=)                                               \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, %=)                                               \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, <<=)                                              \
+BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, >>=)                                              \
+
+
+#define BOOST_FLAGS_FORWARD_OPERATORS(E)                                                            \
 BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, BOOST_FLAGS_EMPTY())
 
-#define BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                            \
+#define BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                      \
 BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, ::boost::flags::complement<E>, friend)
 
 
-#define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                                \
- /* specialize std::less for E and complement<E> */                                       \
- /* at least gcc < version 7 is not conforming with template specialization */            \
- /* put it explicitly into namespace std to make them all happy */                        \
-namespace std {                                                                           \
-    template<>                                                                            \
-    struct less<E> {                                                                      \
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                   \
-            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {        \
-            return boost::flags::total_order(lhs, rhs);                                   \
-        }                                                                                 \
-    };                                                                                    \
-    template<>                                                                            \
-    struct less<boost::flags::complement<E>> {                                            \
-        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                   \
-            constexpr bool operator()(                                                    \
-                boost::flags::complement<E> const& lhs,                                   \
-                boost::flags::complement<E> const& rhs                                    \
-                ) const noexcept {                                                        \
-            return boost::flags::total_order(lhs, rhs);                                   \
-        }                                                                                 \
-    };                                                                                    \
+#define BOOST_FLAGS_SPECIALIZE_STD_LESS(E)                                                          \
+ /* specialize std::less for E and complement<E> */                                                 \
+ /* at least gcc < version 7 is not conforming with template specialization */                      \
+ /* put it explicitly into namespace std to make them all happy */                                  \
+namespace std {                                                                                     \
+    template<>                                                                                      \
+    struct less<E> {                                                                                \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                             \
+            constexpr bool operator()(E const& lhs, E const& rhs) const noexcept {                  \
+            return boost::flags::total_order(lhs, rhs);                                             \
+        }                                                                                           \
+    };                                                                                              \
+    template<>                                                                                      \
+    struct less<boost::flags::complement<E>> {                                                      \
+        BOOST_FLAGS_ATTRIBUTE_NODISCARD                                                             \
+            constexpr bool operator()(                                                              \
+                boost::flags::complement<E> const& lhs,                                             \
+                boost::flags::complement<E> const& rhs                                              \
+                ) const noexcept {                                                                  \
+            return boost::flags::total_order(lhs, rhs);                                             \
+        }                                                                                           \
+    };                                                                                              \
 } /* namespace std */                                                               
 
 #if !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
-/* matches better than built-in relational operators */                                   \
-FRIEND bool operator< (E l, E r) = delete;                                                \
-FRIEND bool operator<= (E l, E r) = delete;                                               \
-FRIEND bool operator> (E l, E r) = delete;                                                \
-FRIEND bool operator>= (E l, E r) = delete;                                               \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                                      \
+/* matches better than built-in relational operators */                                             \
+FRIEND bool operator< (E l, E r) = delete;                                                          \
+FRIEND bool operator<= (E l, E r) = delete;                                                         \
+FRIEND bool operator> (E l, E r) = delete;                                                          \
+FRIEND bool operator>= (E l, E r) = delete;                                                         \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
 
 
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
-/* matches better than built-in relational operators */                                   \
-FRIEND bool operator< (E l, E r) = delete;                                                \
-FRIEND bool operator<= (E l, E r) = delete;                                               \
-FRIEND bool operator> (E l, E r) = delete;                                                \
-FRIEND bool operator>= (E l, E r) = delete;                                               \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                                      \
+/* matches better than built-in relational operators */                                             \
+FRIEND bool operator< (E l, E r) = delete;                                                          \
+FRIEND bool operator<= (E l, E r) = delete;                                                         \
+FRIEND bool operator> (E l, E r) = delete;                                                          \
+FRIEND bool operator>= (E l, E r) = delete;                                                         \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
 
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -1985,90 +1985,90 @@ FRIEND bool operator>= (T1 l, T2 r) = delete;                                   
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
-/* matches better than built-in relational operators */                                   \
-FRIEND bool operator< (E l, E r) = delete;                                                \
-FRIEND bool operator<= (E l, E r) = delete;                                               \
-FRIEND bool operator> (E l, E r) = delete;                                                \
-FRIEND bool operator>= (E l, E r) = delete;                                               \
-FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                     \
-FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-template<typename T1, typename T2>                                                        \
-    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                         \
-              std::is_same_v<E, boost::flags::enum_type_t<T2>> )                          \
-FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                                      \
+/* matches better than built-in relational operators */                                             \
+FRIEND bool operator< (E l, E r) = delete;                                                          \
+FRIEND bool operator<= (E l, E r) = delete;                                                         \
+FRIEND bool operator> (E l, E r) = delete;                                                          \
+FRIEND bool operator>= (E l, E r) = delete;                                                         \
+FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+    std::is_same_v<E, boost::flags::enum_type_t<T2>>)                                               \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+template<typename T1, typename T2>                                                                  \
+    requires (std::is_same_v<E, boost::flags::enum_type_t<T1>> ||                                   \
+              std::is_same_v<E, boost::flags::enum_type_t<T2>> )                                    \
+FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;                                     \
 
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
-#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                            \
-/* matches better than built-in relational operators */                                   \
-FRIEND bool operator< (E l, E r) = delete;                                                \
-FRIEND bool operator<= (E l, E r) = delete;                                               \
-FRIEND bool operator> (E l, E r) = delete;                                                \
-FRIEND bool operator>= (E l, E r) = delete;                                               \
-FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator< (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator<= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator> (T1 l, T2 r) = delete;                                              \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND bool operator>= (T1 l, T2 r) = delete;                                             \
-                                                                                          \
-/* matches all other E, complement<E> arguments */                                        \
-template<typename T1, typename T2,                                                        \
-    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||      \
-    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>         \
-FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;
+#define BOOST_FLAGS_DELETE_REL_IMPL(E, FRIEND)                                                      \
+/* matches better than built-in relational operators */                                             \
+FRIEND bool operator< (E l, E r) = delete;                                                          \
+FRIEND bool operator<= (E l, E r) = delete;                                                         \
+FRIEND bool operator> (E l, E r) = delete;                                                          \
+FRIEND bool operator>= (E l, E r) = delete;                                                         \
+FRIEND std::partial_ordering operator<=> (E l, E r) = delete;                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator< (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator<= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator> (T1 l, T2 r) = delete;                                                        \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND bool operator>= (T1 l, T2 r) = delete;                                                       \
+                                                                                                    \
+/* matches all other E, complement<E> arguments */                                                  \
+template<typename T1, typename T2,                                                                  \
+    typename std::enable_if<std::is_same<E, boost::flags::enum_type_t<T1>>::value ||                \
+    std::is_same<E, boost::flags::enum_type_t<T2>>::value, int*>::type = nullptr>                   \
+FRIEND std::partial_ordering operator<=> (T1 l, T2 r) = delete;                                     
 
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
 #endif // !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
-#define BOOST_FLAGS_DELETE_REL(E)                                                         \
+#define BOOST_FLAGS_DELETE_REL(E)                                                                   \
 BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 #define BOOST_FLAGS_LOCAL_DELETE_REL(E)  BOOST_FLAGS_DELETE_REL_IMPL(E, friend)
 
@@ -2082,135 +2082,139 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 
 
 // enabling macro for enum E at namespace scope
-#define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                                    \
-    BOOST_FLAGS_CONSTEVAL inline                                                          \
-    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
-        return {};                                                                        \
-    }                                                                                     \
+#define BOOST_FLAGS_ENABLE_EX(E, OPTS)                                                              \
+    BOOST_FLAGS_CONSTEVAL inline                                                                    \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                                    \
+        return {};                                                                                  \
+    }                                                                                               \
 
-#define BOOST_FLAGS_ENABLE(E)                                                             \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)                               \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE(E)                                                                       \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable)                                         \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                                          \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::disable_complement)                                        \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT(E)                                                    \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::disable_complement)                                                  \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)                              \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND(E)                                        \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)             \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_LOGICAL_AND(E)                                                 \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::logical_and)                                               \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND(E)                                                           \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::logical_and)                                                         \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_UNARY_PLUS(E)                                                  \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::unary_plus)                                                \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_UNARY_PLUS(E)                                                            \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::unary_plus)                                                          \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS(E)                               \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::disable_complement | boost::flags::options::unary_plus)    \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS(E)                                         \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)              \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                   \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and |  \
-        boost::flags::options::unary_plus)                                                \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                             \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
+        boost::flags::options::unary_plus)                                                          \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS(E)                                      \
-    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                              \
-        boost::flags::options::logical_and | boost::flags::options::unary_plus)           \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS(E)                                                \
+    BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)                     \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
 
 // enabling macro for enum E at class scope
-#define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                                              \
-    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
-    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
-        return {};                                                                        \
-    }                                                                                     \
-    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
+#define BOOST_FLAGS_ENABLE_LOCAL_EX(E, OPTS)                                                        \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                             \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                                    \
+        return {};                                                                                  \
+    }                                                                                               \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                          \
 
 
-#define BOOST_FLAGS_ENABLE_LOCAL(E)                                                       \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)                         \
+#define BOOST_FLAGS_ENABLE_LOCAL(E)                                                                 \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable)                                   \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                                    \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::disable_complement)                                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT(E)                                              \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::disable_complement)                                                  \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)                        \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND(E)                                  \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)             \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                                           \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::logical_and)                                               \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND(E)                                                     \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::logical_and)                                                         \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)                                                       \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable | boost::flags::options::unary_plus)                         \
+#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)                                                      \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::unary_plus)                                                          \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS(E)                                    \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::disable_complement | boost::flags::options::unary_plus)                                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS(E)                                   \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)              \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                        \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and | boost::flags::options::unary_plus)   \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS(E)                       \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
+        boost::flags::options::unary_plus)                                                          \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS(E)                                           \
-    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                        \
-        boost::flags::options::logical_and | boost::flags::options::unary_plus)                                               \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
-
-
-
-
-#define BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, OPTS)                                \
-    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
-    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                          \
-        return {};                                                                        \
-    }                                                                                     \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS(E)                                          \
+    BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)                     \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
 
-#define BOOST_FLAGS_ENABLE_LOCAL_NO_FORWARDING(E)                                         \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable)           \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_NO_FORWARDING(E)                      \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::disable_complement)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_NO_FORWARDING(E)          \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and)   \
+#define BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, OPTS)                                          \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                             \
+    boost::flags::options_constant<OPTS> boost_flags_enable(E) {                                    \
+        return {};                                                                                  \
+    }                                                                                               \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_NO_FORWARDING(E)                             \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::logical_and)                                               \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS_NO_FORWARDING(E)                                         \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable | boost::flags::options::unary_plus)           \
+#define BOOST_FLAGS_ENABLE_LOCAL_NO_FORWARDING(E)                                                   \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable)                     \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS_NO_FORWARDING(E)                      \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::disable_complement | boost::flags::options::unary_plus)                                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_NO_FORWARDING(E)                                \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::disable_complement)                                                  \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)          \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::disable_complement | boost::flags::options::logical_and | boost::flags::options::unary_plus)   \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_NO_FORWARDING(E)                    \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and)             \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)                             \
-    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |          \
-        boost::flags::options::logical_and | boost::flags::options::unary_plus)                                               \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_NO_FORWARDING(E)                                       \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::logical_and)                                                         \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS_NO_FORWARDING(E)                                        \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::unary_plus)                                                          \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS_NO_FORWARDING(E)                     \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::disable_complement | boost::flags::options::unary_plus)              \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)         \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
+        boost::flags::options::unary_plus)                                                          \
+
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS_NO_FORWARDING(E)                            \
+    BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
+        boost::flags::options::logical_and | boost::flags::options::unary_plus)                     \
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2246,22 +2250,22 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 // - specifying more than one relational-operator option
 //
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                          \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                                    \
 | boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                           \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                                     \
 | boost::flags::options::unary_plus BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                   \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                             \
 | boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                        \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                                  \
 BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                          \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                                    \
 BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                           \
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                                     \
 BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_OP_(...) 
@@ -2270,84 +2274,84 @@ BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__)
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) 1
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                  \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                            \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)          \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                    \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)               \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                         \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                 \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                           \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                  \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                            \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_(...) 0
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP(NAME, ...)                                         \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP(NAME, ...)                                                   \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_UNARY_PLUS(NAME, ...) 1
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                  \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                            \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)           \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                     \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                          \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                  \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                            \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                   \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                             \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_HAS_UNARY_PLUS_OP_(...) 0
-#define BOOST_FLAGS_HAS_UNARY_PLUS_OP(NAME, ...)                                          \
+#define BOOST_FLAGS_HAS_UNARY_PLUS_OP(NAME, ...)                                                    \
 BOOST_FLAGS_HAS_UNARY_PLUS_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_NO_FORWARDING(NAME, ...) 1 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                   \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                             \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                   \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                              \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)            \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                      \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                   \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                             \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...)                    \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DELETE_REL(NAME, ...)                              \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_IS_NO_FORWARDING_(...) 0
-#define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...)                                           \
+#define BOOST_FLAGS_IS_NO_FORWARDING(NAME, ...)                                                     \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__) 
 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                         \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                                   \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                          \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PLUS(NAME, ...)                                    \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                  \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                            \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                       \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                                 \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                         \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                                   \
 BOOST_FLAGS_GENERATE_DEFAULT_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DELETE_REL(NAME, ...)                          \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DELETE_REL(NAME, ...)                                    \
 BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_(...) 
@@ -2355,29 +2359,29 @@ BOOST_FLAGS_GENERATE_DELETE_REL BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__)
 
 
 
-#define BOOST_FLAGS_GENERATE_OPS(E, OPS)                                                  \
-    BOOST_FLAGS_CONSTEVAL inline                                                          \
-    boost::flags::options_constant<boost::flags::options::enable OPS>                     \
-    boost_flags_enable(E) {                                                               \
-        return {};                                                                        \
-    }                                                                                     \
+#define BOOST_FLAGS_GENERATE_OPS(E, OPS)                                                            \
+    BOOST_FLAGS_CONSTEVAL inline                                                                    \
+    boost::flags::options_constant<boost::flags::options::enable OPS>                               \
+    boost_flags_enable(E) {                                                                         \
+        return {};                                                                                  \
+    }                                                                                               \
 
 
 // this is the default case, when no relation-option is specified
-#define BOOST_FLAGS_GENERATE_REL_(E)                                                      \
+#define BOOST_FLAGS_GENERATE_REL_(E)                                                                \
     BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                      \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                                \
 
-#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                       \
+#define BOOST_FLAGS_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                                 \
     BOOST_FLAGS_DELETE_REL(E)
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_GENERATE_DEFAULT_REL(E) ;                                             \
+#define BOOST_FLAGS_GENERATE_DEFAULT_REL(E) ;                                                       \
 static_assert(false, "multiple relational operation options specified");
 
-#define BOOST_FLAGS_GENERATE_DELETE_REL(E) ;                                              \
+#define BOOST_FLAGS_GENERATE_DELETE_REL(E) ;                                                        \
 static_assert(false, "multiple relational operation options specified");
 
 
@@ -2390,79 +2394,79 @@ static_assert(false, "multiple relational operation options specified");
 
 // please see comment above about usage and possible errors with the variadic macro BOOST_FLAGS(E, ...)
 
-#define BOOST_FLAGS(E, ...)                                                               \
-    BOOST_FLAGS_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                      \
-    BOOST_FLAGS_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                     \
-    BOOST_FLAGS_USING_OPERATORS()                                                         \
+#define BOOST_FLAGS(E, ...)                                                                         \
+    BOOST_FLAGS_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                                \
+    BOOST_FLAGS_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                               \
+    BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
 
 // additional macros for BOOST_FLAGS_LOCAL
 
 #define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_0(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_1(E)                               \
-    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                              \
+#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_1(E)                                         \
+    BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)                                   \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_##VALUE(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, VALUE)                          \
+#define BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, VALUE)                                    \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)
 
 
 #define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_0(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_1(E)                                \
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_1(E)                                          \
     BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, friend, +, ::boost::flags::impl::bool_convertible<E>)
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_(E, VALUE)                          \
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_(E, VALUE)                                    \
     BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_##VALUE(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD(E, VALUE)                           \
+#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD(E, VALUE)                                     \
     BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD_(E, VALUE)
 
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND, UNARY_PLUS)             \
-    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                \
-    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                        \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND, UNARY_PLUS)                       \
+    BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                          \
+    BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                                  \
     BOOST_FLAGS_LOCAL_GENERATE_UNARY_PLUS_FORWARD(E, UNARY_PLUS)
 
 #define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND, UNARY_PLUS)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)       \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)                 \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND, UNARY_PLUS)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)        \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)                  \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PLUS)
 
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                            \
-    friend BOOST_FLAGS_CONSTEVAL inline                                                   \
-    boost::flags::options_constant<boost::flags::options::enable OPS>                     \
-    boost_flags_enable(E) {                                                               \
-        return {};                                                                        \
+#define BOOST_FLAGS_LOCAL_GENERATE_OPS(E, OPS)                                                      \
+    friend BOOST_FLAGS_CONSTEVAL inline                                                             \
+    boost::flags::options_constant<boost::flags::options::enable OPS>                               \
+    boost_flags_enable(E) {                                                                         \
+        return {};                                                                                  \
     }
 
 
 // this is the default case, when no relation-option is specified
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_(E)                                                \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_(E)                                                          \
     BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DEFAULT_REL(E)                          \
 
-#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                 \
+#define BOOST_FLAGS_LOCAL_GENERATE_REL_BOOST_FLAGS_GENERATE_DELETE_REL(E)                           \
     BOOST_FLAGS_LOCAL_DELETE_REL(E)
 
 
 // for better diagnostics, when more than one relational operation options is specified
-#define BOOST_FLAGS_LOCAL_GENERATE_DEFAULT_REL(E) ;                                       \
+#define BOOST_FLAGS_LOCAL_GENERATE_DEFAULT_REL(E) ;                                                 \
 static_assert(false, "multiple relational operation options specified");
 
-#define BOOST_FLAGS_LOCAL_GENERATE_DELETE_REL(E) ;                                        \
+#define BOOST_FLAGS_LOCAL_GENERATE_DELETE_REL(E) ;                                                  \
 static_assert(false, "multiple relational operation options specified");
 
 
@@ -2472,11 +2476,11 @@ static_assert(false, "multiple relational operation options specified");
 #define BOOST_FLAGS_LOCAL_GENERATE_REL(E, REL)  BOOST_FLAGS_LOCAL_GENERATE_REL2(E, REL)
 
 
-#define BOOST_FLAGS_LOCAL(E, ...)                                                         \
-    BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__),     \
-        BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__),                                      \
-        BOOST_FLAGS_HAS_UNARY_PLUS_OP(__VA_ARGS__))                                       \
-    BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))               \
+#define BOOST_FLAGS_LOCAL(E, ...)                                                                   \
+    BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                          \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__),               \
+        BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__),                                                \
+        BOOST_FLAGS_HAS_UNARY_PLUS_OP(__VA_ARGS__))                                                 \
+    BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                         \
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED

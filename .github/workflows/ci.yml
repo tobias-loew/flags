@@ -185,6 +185,12 @@ jobs:
             os: ubuntu-latest
             install: clang-20
           - toolset: clang
+            compiler: clang++-21
+            cxxstd: "11,14,17,20,23,26"
+            container: ubuntu:25.04
+            os: ubuntu-latest
+            install: clang-21
+          - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-14
           - toolset: clang
@@ -328,13 +334,13 @@ jobs:
             os: windows-2025
             msvcver: 2022
           - toolset: gcc
-            cxxstd: "11,14,17,20,23"
+            cxxstd: "11,14,17,20,23,26"
             addrmd: 64
             os: windows-2022
             msvcver: 2019
             set_env: "set GCC_ON_WINDOWS=1"
           - toolset: gcc
-            cxxstd: "11,14,17,20,23"
+            cxxstd: "11,14,17,20,23,26"
             addrmd: 64
             os: windows-2025
             msvcver: 2019
