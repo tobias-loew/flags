@@ -1330,11 +1330,6 @@ namespace boost {
             requires IsFlags<T>                                                                     \
         constexpr T& operator op (T) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                                      \
-        template<typename T>                                                                        \
-            requires IsFlags<T>                                                                     \
-        constexpr T operator op (T, int) = delete;
-
 #else // BOOST_FLAGS_HAS_CONCEPTS
 
 #define BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(op, ref, result_type)                           \
@@ -1348,15 +1343,12 @@ namespace boost {
             typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >                      \
         constexpr T& operator op (T) = delete;
 
-#define BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(op)                                      \
-        template<typename T,                                                                        \
-            typename std::enable_if<IsFlags<T>::value, int*>::type = nullptr >                      \
-        constexpr T operator op (T, int) = delete;
-
 #endif // BOOST_FLAGS_HAS_CONCEPTS
 
 
 
+        // deleting arithmetic operators and unary minus
+        // (builtin assignment and in-/decrement operators are implicitly deleted)
 
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(+, BOOST_FLAGS_EMPTY(), unsigned int)
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(-, BOOST_FLAGS_EMPTY(), unsigned int)
@@ -1366,19 +1358,8 @@ namespace boost {
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<, BOOST_FLAGS_EMPTY(), unsigned int)
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>, BOOST_FLAGS_EMPTY(), unsigned int)
 
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(+=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(-=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(*=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(/=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(%=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<=, &, T1&)
-        BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>=, &, T1&)
-
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(-)
-        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(++)
-        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(--)
-        BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(++)
-        BOOST_FLAGS_INTERNAL_DELETE_UNARY_POSTFIX_OPERATOR(--)
+
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>

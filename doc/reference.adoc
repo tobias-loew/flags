@@ -34,7 +34,7 @@ Concepts are used if available and not disabled by xref:BOOST_FLAGS_HAS_CONCEPTS
 
 ### BOOST_FLAGS
 
-For an enumeration `E` at namespace scope the following variadic macro enables all operators of Boost.Flags
+For an enumeration `E` at namespace scope the following variadic macro enables the operators of Boost.Flags
 [source]
 ----
 BOOST_FLAGS(E)
@@ -48,10 +48,10 @@ BOOST_FLAGS(E, OPTIONS)
 ----
 where OPTIONS is an optional comma separated list containing at most one of each of the following options:
 
-* `BOOST_FLAGS_UNARY_PLUS`            : additionally enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
-* `BOOST_FLAGS_LOGICAL_AND`            : additionally enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
+* `BOOST_FLAGS_UNARY_PLUS`            : enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
+* `BOOST_FLAGS_LOGICAL_AND`            : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 * `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
-* `BOOST_FLAGS_NO_FORWARDING`       : will not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
+* [[BOOST_FLAGS_NO_FORWARDING]]`BOOST_FLAGS_NO_FORWARDING`       : will not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
 
 
 furthermore at most one of the following relational-operator options may be specified:
@@ -59,7 +59,7 @@ furthermore at most one of the following relational-operator options may be spec
 * `BOOST_FLAGS_DEFAULT_REL`                : use operators <, \<=, >, >= and \<\=> which accept two compatible flag-arguments and compare their underlying values (cf. xref:BOOST_FLAGS_SPECIALIZE_STD_LESS[`BOOST_FLAGS_SPECIALIZE_STD_LESS`])
 * `BOOST_FLAGS_DELETE_REL`             : delete operators <, \<=, >, >= and \<\=> for type E (cf. xref:BOOST_FLAGS_DELETE_REL[`BOOST_FLAGS_DELETE_REL`])
 
-If no relational-operator option is specified, the macro defaults to using `BOOST_FLAGS_DEFAULT_REL`.
+If no relational-operator option is specified, `BOOST_FLAGS` defaults to using `BOOST_FLAGS_DEFAULT_REL`.
 
 [NOTE]
 ====
@@ -77,7 +77,7 @@ When errors are encountered using `BOOST_FLAGS(E, ...)` this can have multiple r
 
 ### BOOST_FLAGS_LOCAL
 
-For an enumeration `E` at class scope use the following variadic macro to enables all operators of Boost.Flags
+For an enumeration `E` at class scope use the following variadic macro to enables the operators of Boost.Flags
 [source]
 ----
 BOOST_FLAGS_LOCAL(E)
@@ -93,7 +93,7 @@ enables all operators of Boost.Flags.
 
 For the description of `OPTIONS` please refer to xref:BOOST_FLAGS[BOOST_FLAGS].
 
-By default `BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
+By default `BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_NO_FORWARDING[BOOST_FLAGS_NO_FORWARDING] and xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
 
 
 ### Non-variadic macros for enabling
@@ -165,7 +165,7 @@ For an enumeration `E` at class scope the macro
 BOOST_FLAGS_ENABLE_LOCAL(E)
 ----
 enables all operators of Boost.Flags. +
-`BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
+`BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_NO_FORWARDING[BOOST_FLAGS_NO_FORWARDING] and xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
 
 
 #### BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS
@@ -225,13 +225,13 @@ The functions, types and macros in this section are usually not used directly, b
 ### BOOST_FLAGS_USING_OPERATORS
 
 The macro `BOOST_FLAGS_USING_OPERATORS()` imports all operators from `namespace boost::flags` into the current namespace. +
-This will enable https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank] for Boost.Flags operators for enumerations in the current namespace. 
+This enables https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank] for Boost.Flags operators for enumerations in the current namespace. 
 
 
 ### BOOST_FLAGS_USING_UTILITIES
 
 The macro `BOOST_FLAGS_USING_UTILITIES()` imports all utility functions from `namespace boost::flags` into the current namespace. +
-This will enable https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank] for Boost.Flags utility functions for enumerations in the current namespace. 
+This enables https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank] for Boost.Flags utility functions for enumerations in the current namespace. 
 
 ### BOOST_FLAGS_USING_ALL
 
@@ -241,7 +241,7 @@ The macro `BOOST_FLAGS_USING_ALL()` is a shorthand for
 BOOST_FLAGS_USING_OPERATORS()
 BOOST_FLAGS_USING_UTILITIES()
 ----
-(cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS], xref:BOOST_FLAGS_USING_UTILITIES[BOOST_FLAGS_USING_UTILITIES])
+(cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS] and xref:BOOST_FLAGS_USING_UTILITIES[BOOST_FLAGS_USING_UTILITIES])
 
 
 ### BOOST_FLAGS_FORWARD_OPERATORS
@@ -344,7 +344,7 @@ is also provided.
 [#unary_plus]
 ### unary_plus
 
-If the specialization of `enable` additionally inherits from `unary_plus` then unary `operator+` is enabled.
+If the specialization of `enable` inherits from `unary_plus` then unary `operator+` is enabled.
 
 Example:
 [source]
@@ -355,13 +355,18 @@ template<> struct boost::flags::enable<E>
     {};
 ----
 
-(cf. xref:unary_plus_operator[unary operator+] xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`])
+
+
+For an expression `e` of an enabled enumeration, the unary plus operator `+e` wraps `e` into an implementation defined type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. 
+In boolean contexts, the expression `+e` is equivalent to `any(e)`.
+
+(cf. xref:unary operator+[unary operator+] and xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`])
 
 
 [#logical_and]
 ### logical_and
 
-If the specialization of `enable` additionally inherits from `logical_and` then `operator&&` is enabled.
+If the specialization of `enable` inherits from `logical_and` then `operator&&` is enabled.
 
 Example:
 [source]
@@ -372,13 +377,13 @@ template<> struct boost::flags::enable<E>
     {};
 ----
 
-(cf. xref:logical_and_and_or[Logical `and` and `or`], xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`])
+(cf. #xref:logical_and[Logical `and`]# and xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`])
 
 
 [#disable_complement]
 ### disable_complement
 
-If the specialization of class template `enable` additionally inherits from `disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
+If the specialization of class template `enable` inherits from `disable_complement` then the usage of the `complement` template (cf. xref:negation_operation[`operator~`]) is disabled.
 
 When `disable_complement` is used, then the used enumeration must either be scoped, or has an explicit specified underlying type, otherwise the `operator~` may invoke undefined behavior (cf. xref:underlying_type[The underlying type] and xref:BOOST_FLAGS[`BOOST_FLAGS_DISABLE_COMPLEMENT`]).
 
@@ -389,14 +394,14 @@ When `disable_complement` is used, then the used enumeration must either be scop
 ### complement<T>
 
 The template `complement` indicates that a value is the bitwise negation of a flag-value.
-It is used to distinguish flag-values from _negative masks_.
+(Usually, the result of applying `operator~` to a flag-value.) It is used to distinguish flag-values from _negative masks_.
 
 [source]
 ----
 template<typename T> struct complement; 
 ----
 
-By default the usage of `complement` is enabled, but can be disabled using xref:BOOST_FLAGS[`BOOST_FLAGS_DISABLE_COMPLEMENT`].
+By default the usage of `complement` is enabled, but can be disabled using xref:BOOST_FLAGS[`BOOST_FLAGS_DISABLE_COMPLEMENT`]. See also xref:negation_operation[`operator~`].
 
 
 
@@ -576,7 +581,7 @@ The `operator!` tests if a value is empty.
 The unary `operator+` wraps a value `e` of type `E` into an implementation defined type, with the following properties:
 
 * has an `explicit operator bool`, such that in boolean contexts `+e` and `any(e)` yield the same result
-* has an (non explicit) `operator E`, which returns the value `e` back
+* has a (non explicit) `operator E`, which returns the value `e` back
 * the wrapped type propagates through bitwise operators `&`, `|`, `^` and `~`, i.e. when at least one of their arguments is wrapped then the result is also wrapped
 * the wrapping is idempotent, i.e. `+(+e)` is equivalent to `+e`
 
@@ -589,7 +594,7 @@ The unary `operator+` wraps a value `e` of type `E` into an implementation defin
     if(any(e)) { ... }
 ----
 
-
+[#BOOST_FLAGS_AND]
 ### Pseudo operator BOOST_FLAGS_AND
 
 The pseudo operator `BOOST_FLAGS_AND` computes the bitwise AND of its arguments and converts the result to `bool`.
@@ -597,7 +602,7 @@ The pseudo operator `BOOST_FLAGS_AND` computes the bitwise AND of its arguments 
 [source]
 ----
     // pseudo code
-    bool operator BOOST_FLAGS_AND(E e1, E e2) { return !!(e1 & e2); }
+    bool operator BOOST_FLAGS_AND(E e1, E e2) { return any(e1 & e2); }
 ----
 
 `BOOST_FLAGS_AND` has same precedence and associativity as `operator&`. It is a macro defined as +
@@ -877,7 +882,7 @@ It must be defined at global namespace.
 
 [INFO]
 ====
-The definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` will not enable range algorithms to use that total order. Here it is required to explicitly specify xref:total_order_t[`total_order`] as compare object.
+The definition of `BOOST_FLAGS_SPECIALIZE_STD_LESS(E)` does not enable range algorithms to use that total order. For this purpose it is required to explicitly specify xref:total_order_t[`total_order`] as compare object.
 ====
 
 

@@ -121,13 +121,14 @@ Boost.Flags main purpose is to harden code which uses flag-like enumerations by 
 
 * provides type-safe bitwise operations for flag-like scoped / unscoped enumerations
 * turns logical errors into type errors
+* disables all built-in arithmetic operators for enabled enumerations
 
 ## Characteristics of Boost.Flags
 
 * is non-intrusive - only a macro invocation is required to opt-in
 * single header-file library
 * no dependencies (only standard-library includes)
-* compile-time usable: everything is `constexpr`
+* usable at compile-time / in template arguments: everything is `constexpr`
 * zero-overhead in optimized builds
 * operators are found by https://en.cppreference.com/w/cpp/language/adl[ADL,window=_blank]
 * requires at least C++11, uses newer features if available
@@ -174,7 +175,7 @@ class my_class {
 ----
 
 The reason is, that `BOOST_FLAGS_LOCAL(E)` generates `friend` operators which are _declared_ in the class but _defined_ is after it, thus they are 
-inaccessible for in-class `constexpr` constructions. To work around this limitation, please use the following code:
+inaccessible for in-class `constexpr` constructions. To work around this limitation, please ensure that `BOOST_FLAGS_USING_OPERATORS()` is used before the class definition, e.g.
 [source]
 ----
 BOOST_FLAGS_USING_OPERATORS()
@@ -195,20 +196,18 @@ class my_class {
 In case you want to check whether an enumeration is enabled for Boost.Flags, you can test it using `boost::flags::enable` (resp. `boost::flags::enable_v` for C++14 or later), e.g.
 [source]
 ----
-static_assert(boost::flags::enable<E>::value, "Please check if boost/flags.hpp is included and E is enabled correctly.");
+static_assert(boost::flags::enable<E>::value, "Please ensure that boost/flags.hpp is included and E is enabled correctly.");
 ----
 
 
 
 ## _Scoped_ or _Unscoped_ enumerations
 
-The usage of scoped enumeration is strongly recommended, as they prohibit implicit conversion to the underlying integer type and thus provide more type safety. Further, by default scoped enumerations do not pollute the current namespace with the names of their enumerators.
-
-Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.
+The usage of scoped enumeration is strongly recommended, as they prohibit implicit conversion to the underlying integer type and thus provide more type safety. Further, by default scoped enumerations do not pollute the current namespace with the names of their enumerators. Nevertheless, for both kinds of enumerations Boost.Flags will detect semantical errors when using bitwise operations.
 
 For scoped enumerations the language does not provide built-in bitwise and logical operators, so Boost.Flags will provide them as requested.
 
-For unscoped enumerations the language provides built-in bitwise and logical operators. Hence, Boost.Flags will delete binary operators `&`, `|`, `^`, `&&`, `||`, `==` and `!=` if
+For unscoped enumerations the language provides built-in bitwise, logical and arithmetic operators. Hence, Boost.Flags will delete binary operators `&`, `|`, `^`, `&&`, `||`, `==`, `!=`, `+`, `-`, `*`, `/`, `%`, `<<` and `>>` if
 
 * at least one of its arguments is enabled for Boost.Flags 
 
@@ -220,20 +219,21 @@ and
 
 * for enumeration `E` both arguments are not xref:compatible[compatible]
 
+Furthermore, the unary minus operator is deleted for enabled unscoped enumerations. For unary plus cf. xref:unary operator+[unary operator+].
 
 ## The underlying type
 
-In most situations the usage of Boost.Flags does not depend on the enumeration's underlying type.
-Only when Boost.Flags is used with an *unscoped* enumeration `E` in connection with option `disable_complement` (i.e. `operator~(E) \-> E`) then the specification of the underlying type is required to prevent undefined behavior. For details xref:underlying_type[see below.]
+In most situations the usage of Boost.Flags does not depend on the underlying type of the enumeration.
+Only when Boost.Flags is used with an *unscoped* enumeration `E` in connection with option xref:disable_complement[`disable_complement`] (i.e. `operator~(E) \-> E`) then the specification of the underlying type is required to prevent undefined behavior. For details xref:underlying_type[see below.]
 
 # The long story
 
-Why do we use the bits of integer types for Boolean options?
+Why are the bits of integer types used for encoding Boolean options?
 
 - easy to define, e.g. as macros, integer constants or enumerators
 - language support for setting and querying through bitwise operators
 - compact representation in memory
-- simple bulk transfer in interfaces (e.g. on many platforms an `unsigned int` can hold up to 32 different Boolean options)
+- simple bulk transfer in interfaces (e.g. an `uint32_t` can hold up to 32 different Boolean options)
 - enforces the usage of names, especially to prevent `bool` parameters in interfaces
 
 C++ has everything built-in to work with boolean flags, so why do we need Boost.Flags? 
@@ -268,7 +268,7 @@ instead, we produced syntactically correct code but semantical nonsense.
 If the Windows team had decided to use unscoped enumerations instead of macros it wouldn't have helped: the arguments of built-in bitwise operators are subject to integral promotion, i.e. they forget about the enumeration's semantic overhead. Even worse:
 
 
-* The built-in operators `&`, `|`, `^` and `~` return integer types. Assigning their results to enumeration-type variables require explicit casts, which is another source for errors undetectable by the compiler.
+* The built-in operators `&`, `|`, `^` and `~` return integer types. Assigning their results to enumeration-type variables would require explicit casts, which is another source for errors undetectable by the compiler.
 * The built-in operators `&=`, `|=`, `^=` require the left-hand type to be arithmetic, which excludes enumerations.
 
 Furthermore, scoped enumerations (which didn't exist when `WinUser.h` was created) prohibit implicit integral promotion and therefore don't work with built-in bitwise operators at all.
@@ -279,11 +279,11 @@ Furthermore, scoped enumerations (which didn't exist when `WinUser.h` was create
 On the other hand, enumerations, and especially scoped enumerations, improve the type-safety of our code:
 
 * variables and arguments of enumeration type can only by assigned (resp. invoked) with a values of the correct type
-* there is no implicit integral promotion for scoped enumerations
+* scoped enumerations are not subject to implicit integral promotion
 
 [discrete]
-### With Boost.Flags you can get both 
-With Boost.Flags we get support for all bitwise operators and type-safety. E.g. the following code
+### With Boost.Flags we can get both 
+With Boost.Flags we get both support for all bitwise operators and type-safety. E.g. the following code
 [source]
 ----
 enum class E { a=1, b=2, c=4, d=8 };
@@ -292,13 +292,13 @@ BOOST_FLAGS(E)
 
 * enables all the operators `~`, `&`, `|`, `^`, `&=`, `|=`, `^=` for `E` and `complement<E>` (xref:complementing_the_complement[see below])
 * the bitwise negation `~` changes the type from `E` to `complement<E>` and vice-versa
-* the binary operators require both arguments to be from the enumeration resp. its `complement`
+* the binary operators require both arguments to be of enumeration `E` resp. `complement<E>`
 
 
 [#underlying_type]
 ## The underlying type
 
-Here is a standard conforming decision diagram, whether the specification of the underlying type required:
+Here is a standard conforming decision diagram, whether the specification of the underlying type is required:
 [ditaa, target=underlying_type_decision_diagram_conforming]
 ----
                           /-------------\
@@ -334,7 +334,7 @@ Here is a standard conforming decision diagram, whether the specification of the
 
 ----
 
-Ok, the `unsigned` requirement for pre C\\++20 compilers is more of a theoretical issue, since all C++ compilers already used two's complement for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
+The `unsigned` requirement for pre C\\++20 compilers is more of a theoretical issue: it ensures that the underlying uses __two's complement__ for representation, which was always mandatory for unsigned integer types. But all major C++ compilers used two's complement also for signed integers, even before it got mandatory with C++20 (https://en.cppreference.com/w/cpp/language/types[, window=_blank]).
 
 
 So, in case your compiler uses signed two's complement, you can use the following simplified decision diagram:
@@ -394,6 +394,27 @@ enum TriBool {
 has underlying type `int` on all major compilers, but its valid values are just 
 `0`, `1`, `2` and `3` as the __hypothetical integer value type with minimal width__ is a 2-bit unsigned integer.
 
+E.g. compiling the following code with Clang 16
+
+[source]
+----
+enum TriBool {
+    false_ = 0,
+    true_ = 1,
+    undefined = 2
+};
+
+BOOST_FLAGS(TriBool, BOOST_FLAGS_DISABLE_COMPLEMENT)
+
+static constexpr TriBool t = ~false_;
+----
+produces the error message
+[source]
+----
+error: integer value 4294967295 is outside the valid range of values [0, 3] for this enumeration type
+----
+
+
 ====
 
 
@@ -426,7 +447,7 @@ One day, the troublemaker Alice came to the kingdom and the Queen ordered the cr
     strikeout = 8
 ----
 +++<span style="font-family:'Times New Roman'">
-which should be used for Alice's name. So it got added to the `font_styles` enumeration.<br/>
+which should be used for Alice's name. So, it got added to the `font_styles` enumeration.<br/>
 The next day the following proclamation appeared in the newspaper:<br/>
 <span style="font-size:150%">All persons whose names are stricken out are enemies of the kingdom, <i><s><u>the Queen</u></s></i>!</span><br/> 
 The last thing the programmer heard, as he ran away from the kingdom, was the queen shouting "Off with his head!".
@@ -434,13 +455,13 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 ====
 There are two morals of this tale:
 
-* a *syntactical*: the negation flips all bits of the underlying integer. Even though `~bold` did the job in the beginning, it is different from `queen_of_hearts_name`. 
-* a *semantical*: `~bold` isn't a set of font-modifications. Its purpose is to exclude boldness from a given set of flags.
+* a *syntactical*: the negation flips all bits of the underlying integer. Even though `~bold` did the job in the beginning, it was different from `queen_of_hearts_name`. 
+* a *semantical*: `~bold` is not a set of font-modifications: its purpose is to exclude boldness from a given set of flags.
 
 
-Even though the underlying type together with its operators `&`, `|` and `~` denotes a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank], when using it as set of flags only the operator `&` and `|` are endo-functions: the operator `~` returns an element from a __complemented__ set. 
+Even though the underlying type together with its operators `&`, `|` and `~` denotes a https://en.wikipedia.org/wiki/Boolean_algebra_(structure)[Boolean algebra,window=_blank], when using it as set of flags only the operator `&` and `|` are endo-functions for the realm of flags: the operator `~` returns an element from a __complemented__ set. 
 
-So, inside the Boolean algebra of the underlying type, there exist two sets of flags, where each of them resembles the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] and both are entangled by the operator `~`. 
+So, inside the Boolean algebra of the underlying type, there exist two sets of flags, the usual one and the set of complemented flags. Both of them resemble the semantics of https://en.wikipedia.org/wiki/Lattice_(order)[mathematical lattices, window=_blank] and are entangled by the operator `~`. 
 
 Hence, for a Boost.Flags enabled enumeration `E` (where complement is not xref:reference.adoc#disable_complement[disabled]) the bitwise `~` operator switches between the types `E` and `complement<E>`  
 
@@ -448,7 +469,7 @@ Hence, for a Boost.Flags enabled enumeration `E` (where complement is not xref:r
 * `operator~(complement<E>) \-> E`
 
 [#compatible]
-We will call arguments for binary operators _compatible_ if the Boost.Flags provided operators are viable, i.e. each one is implicitly convertible to `E` or `complement<E>`. Additionally, for `operator==` and `operator!=` both have to be convertible to `E` or both have to be convertible to `complement<E>`. For assignment operators additional requirements apply (cf. xref:Operators[Operators]).
+We call arguments for binary operators _compatible_ if the Boost.Flags provided operators are viable, i.e. each one is implicitly convertible to `E` or `complement<E>`. Additionally, for `operator==` and `operator!=` both have to be convertible to `E` or both have to be convertible to `complement<E>`. For assignment operators additional requirements apply (cf. xref:Operators[Operators]).
 
 ## Mathematical justification for `complement`
 
@@ -460,7 +481,7 @@ This section provides a mathematical explanation, why `complement` is required. 
 
 Semantically, the elements of pass:[<span style="font-size:115%;font-style: italic"><span style="text-decoration:overline">F</span>&setminus; F</span>] are not combinations of flags but negative flag-masks. The distinction of `E` and `complement<E>` keeps them apart on the type-level. 
 
-Finally, for the binary operators we have
+Finally, for the binary operators we have the following declarations and return types:
 
 * `operator&`
 ** `operator&(E, E) \-> E`
@@ -484,37 +505,39 @@ Which means, on the meta-level the typeset pass:[<span style="font-size:115%">{E
 
 For the rare cases where 
 
-* the set of flags semantically form a Boolean algebra and additionally
+* the set of flags semantically forms a Boolean algebra, i.e. also `operator~(E) \-> E` has semantical meaning and additionally
 * all bits of the underlying type correspond to flags
 
-there exists the option xref:disable_complement[`disable_complement`] which disables the usage of `complement` and sets `operator~(E) \-> E`. 
+there exists the option xref:disable_complement[`disable_complement`] to disable the usage of `complement` and sets `operator~(E) \-> E`. 
 
 
 ## From flags to `bool`
 
-One of the recommendations when hardening existing code with Boost.Flags is the use of scoped enumerations, as they do not implicitly convert to their underlying type. But this will also prevent the conversion in boolean contexts. Therefore Boost.Flags provides the following functions:
+One of the recommendations when hardening existing code with Boost.Flags is the use of scoped enumerations, as they do not implicitly convert to their underlying type. But this also prevents the implicit conversion in boolean contexts. Therefore Boost.Flags provides the following functions:
 
-* `any(e) \-> bool` : equivalent to `e != E{}`
-* `none(e) \-> bool` : equivalent to `e == E{}`
+* `any(e) \-> bool` is equivalent to `e != E{}`
+* `none(e) \-> bool` is equivalent to `e == E{}`
 
 Furthermore, to test for intersection and entailment of flag-sets:
 
-* `intersect(e1, e2) \-> bool` : equivalent to `e1 & e2 != E{}`
-* `disjoint(e1, e2) \-> bool` : equivalent to `e1 & e2 == E{}`
-* `subseteq(e1, e2) \-> bool` : equivalent to `e1 & e2 == e1`
-* `subset(e1, e2) \-> bool` : equivalent to `subseteq(e1, e2) && e1 != e2`
+* `intersect(e1, e2) \-> bool` is equivalent to `e1 & e2 != E{}`
+* `disjoint(e1, e2) \-> bool` is equivalent to `e1 & e2 == E{}`
+* `subseteq(e1, e2) \-> bool` is equivalent to `e1 & e2 == e1`
+* `subset(e1, e2) \-> bool` is equivalent to `subseteq(e1, e2) && e1 != e2`
+
+Boost.Flags utility functions are defined in `namespace boost::flags`. To use them without qualification, please use the macro xref:BOOST_FLAGS_USING_UTILITIES[`BOOST_FLAGS_USING_UTILITIES`].
 
 Instead of the functions `any` and `none`, we can use `operator!`
 
-* `!e` : equivalent to `none(e)`
-* `!!e` : equivalent to `any(e)`
+* `!e` is equivalent to `none(e)`
+* `!!e` is equivalent to `any(e)`
 
 and for `disjoint` and `intersect` we can write:
 
-* `!(e1 & e2)` : equivalent to `disjoint(e1, e2)`
-* `!!(e1 & e2)` : equivalent to `intersect(e1, e2)`
+* `!(e1 & e2)` is equivalent to `disjoint(e1, e2)`
+* `!!(e1 & e2)` is equivalent to `intersect(e1, e2)`
 
-If existing code is hardened with Boost.Flags and unscoped enums are made scoped, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `!!(e1 & e2)`. This is tedious and requires adding parenthesis. +
+If existing code is hardened with Boost.Flags and unscoped enums are turned into scoped ones, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `any(e1 & e2)`. This is tedious and requires adding parenthesis. +
 To simplify the usage Boost.Flags provides two alternatives:
 
 [#unary_plus_operator]
@@ -529,13 +552,13 @@ So, with an previously unscoped enum and the code `e1 & ~(e2 | e3)` in boolean c
 ** ...
 
 +
-To enable the unary plus operator for an enumeration `E`, use the option xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`].
+To enable the unary plus operator for an enumeration `E`, use the option  xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`] (see also xref:unary operator+[unary operator+]).
 
-* a pseudo operator `BOOST_FLAGS_AND` with the same precedence and associativity as `&` but returning a `bool`:
-** `e1 BOOST_FLAGS_AND e2` : equivalent to `!!(e1 & e2)` 
+* a pseudo operator xref:BOOST_FLAGS_AND[`BOOST_FLAGS_AND`] with the same precedence and associativity as `operator&` but returning a `bool`:
+** `e1 BOOST_FLAGS_AND e2` is equivalent to `any(e1 & e2)` 
 
 // +
-// There is also the option xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`], which enables `operator&&`, see xref:logical_and_and_or[next section].
+// There is also the option xref:BOOST_FLAGS[`BOOST_FLAGS_LOGICAL_AND`], which enables `operator&&`, see xref:logical_operator_and[next section].
 
 [NOTE]
 ====
@@ -543,17 +566,67 @@ To enable the unary plus operator for an enumeration `E`, use the option xref:BO
 The first `&` stores its left-hand argument in an intermediate type, which the second `&` evaluates with its right-hand argument.
 ====
 
-[#logical_and_and_or]
-## Logical `and` and `or`
+## Logical operators
 
 The logical `operator&&` and `operator||` are special among overloadable operators in C++: their built-in versions use short-circuit evaluation, but overloaded versions behave like regular functions and always evaluate both arguments.
+
+
+[#logical_operator_and]
+### Logical `and`
+
+For integer and (non Boost.Flags enabled) unscoped enumeration-typed expressions `a` and `b`, both `(a) & (b)` and `(a) && (b)` are syntactically valid expressions but with different semantics
+
+* argument evaluation: `(a) & (b)` always evaluates `b` while `(a) && (b)` uses short-circuit evaluation
+* type:`(a) & (b)` is of integer type while `(a) && (b)` has type `bool`
+
+Even in Boolean contexts `(a) & (b)` and `(a) && (b)` return may have different results (e.g. `1 & 2 == false` and `1 && 2 == true`).
+
+To be on the safe side, Boost.Flags by default deletes `operator&&` for enabled enumerations. When applied to existing code, this will lead to compilation errors and enforces code revision.
+
+Nevertheless, sometimes `operator&&` is required, e.g. when Boost.Flags is used together with other generic libraries. If for an enumeration `E`
+[source]
+----
+BOOST_FLAGS(E, BOOST_FLAGS_LOGICAL_AND)
+
+// resp. for a class local enum
+BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_LOGICAL_AND)
+----
+is defined, then `operator&&` is overloaded for `E` with the semantics
+[source]
+----
+    operator&&(e1, e2) -> bool { return any(e1 & e2); } 
+----
+Please note, that there is **no short-circuit** evaluation!
+
+[WARNING]
+====
+When applying Boost.Flags to existing code, please be cautious enabling `operator&&` 
+
+* it evaluates differently than the built-in version and doesn't provide short-circuit evaluation
+* `operator&&` may have been used accidentally instead of the operator `&`
+
+So, before specifying `BOOST_FLAGS_LOGICAL_AND`, it is recommended to compile the code without it and check whether the uses of `operator&&` are correct.
+====
+
+[NOTE]
+====
+Short-circuit evaluation can be achieved by first converting the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
+====
+
+
+
+### Logical `or`
+
+TODO!!!
+
+The logical `operator||` does not provide 
 
 Furthermore, for integer and (non Boost.Flags enabled) unscoped enumeration-typed expressions `a` and `b`, both `(a) & (b)` and `(a) && (b)` (resp. `(a) | (b)` and `(a) || (b)`) are all syntactically valid expressions but with different semantics
 
 * `(a) & (b)` (resp. `(a) | (b)`) always evaluates `b`
 * `(a) & (b)` and `(a) && (b)` (resp. `(a) | (b)` and `(a) || (b)`) have different result-types
 
-Even in Boolean contexts `(a) & (b)` and `(a) && (b)` return different results (e.g. for arguments `1` and `2`).
+In Boolean contexts `(a) | (b)` and `(a) || (b)` return different results (e.g. for arguments `1` and `2`).
 
 To be on the safe side, Boost.Flags by default deletes `operator&&` and `operator||` for enabled enumerations. When applied to existing code, this will lead to compilation errors and enforces revisiting their uses.
 
@@ -568,7 +641,7 @@ BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_LOGICAL_AND)
 is defined, then `operator&&` is overloaded for `E` with the semantics
 [source]
 ----
-    operator&&(e1, e2) -> bool { return !!(e1 & e2); } 
+    operator&&(e1, e2) -> bool { return any(e1 & e2); } 
 ----
 and there is **no short-circuit** evaluation!
 
@@ -577,7 +650,7 @@ and there is **no short-circuit** evaluation!
 When applying Boost.Flags to existing code, please be cautious enabling `operator&&` 
 
 * it evaluates differently than the built-in version and doesn't provide short-circuit evaluation
-* the usage of `operator&&` may have been wrong and `operator&` was intended
+* `operator&&` was accidentally used instead of the `operator&`
 
 So, before enabling `operator&&`, it is best to compile the code without it and check whether the uses of `operator&&` are correct.
 ====
@@ -586,6 +659,7 @@ So, before enabling `operator&&`, it is best to compile the code without it and 
 ====
 To achieve short-circuit evaluation for expressions with flags, first convert the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
 ====
+
 
 
 ## Calls to order
