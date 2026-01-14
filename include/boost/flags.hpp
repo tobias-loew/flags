@@ -58,9 +58,6 @@
 # if __has_attribute(nodiscard)
 #  define BOOST_FLAGS_ATTRIBUTE_NODISCARD [[nodiscard]]
 # endif
-# if __has_attribute(no_unique_address)
-#  define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
-# endif
 # elif defined(__has_cpp_attribute)
 // clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
 # if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L)) && !(defined(__GNUC__) && (__cplusplus < 201100))
@@ -195,7 +192,7 @@ namespace boost {
         // derive `enable` from this type to enable support for logical and
         struct logical_and {};
 
-        // derive `enable` from this type to enable support for uanry plus
+        // derive `enable` from this type to enable support for unary plus
         struct unary_plus {};
 
 
@@ -210,7 +207,7 @@ namespace boost {
 
 
             // the `bool` versions for the options-detectors
-            // the overloads for `options` are define below and will be found by ADL
+            // the overloads for `options` are defined below and will be found by ADL
             BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(bool v) { return v; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(bool) { return false; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(bool) { return false; }
@@ -616,7 +613,7 @@ namespace boost {
                 using E1 = enum_type_t<T1>;
 
                 using op_type = typename std::conditional<
-                    enable<E1>::value,        // check if undelying enum is enabled
+                    enable<E1>::value,        // check if underlying enum is enabled
                     typename std::conditional<
 #if BOOST_FLAGS_HAS_CONCEPTS
                     IsComplementDisabled<T1>,
@@ -657,7 +654,7 @@ namespace boost {
                 //    );
 
                 using op_type = typename std::conditional<
-                    std::is_same<E1, E2>::value&& enable<E1>::value,        // check undelying enums are the same and enabled
+                    std::is_same<E1, E2>::value&& enable<E1>::value,        // check underlying enums are the same and enabled
                     typename std::conditional<
                     BinOp<is_complement<T1>, is_complement<T2>>::value,
                     complement<E1>,
@@ -1678,7 +1675,7 @@ namespace boost {
 
 
 // NOTE: The forwarding operators deliberately do not use concepts/SFINAE, as this will generate
-// ambiguity errors if the operators are also found via `uisng`-declarations.
+// ambiguity errors if the operators are also found via `using`-declarations.
 // Specifying the enum type directly as parameter type ensures that these overloads are 
 // distinguishable from the templates in namespace boost::flags.
 
@@ -1699,7 +1696,7 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 
 
 // NOTE: The deleted forwarding operators must use concepts/SFINAE, as this may not be
-// instatiated eagerly, and otherwise would lead to hard errors.
+// instantiated and otherwise would lead to hard errors
 
 #if BOOST_FLAGS_HAS_CONCEPTS
 
@@ -1903,7 +1900,7 @@ namespace std {                                                                 
             return boost::flags::total_order(lhs, rhs);                                             \
         }                                                                                           \
     };                                                                                              \
-} /* namespace std */                                                               
+} /* namespace std */
 
 #if !(BOOST_FLAGS_HAS_THREE_WAY_COMPARISON)
 
@@ -2237,7 +2234,7 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 //  
 // furthermore at most one of the following relational-operator options may be specified:
 // - BOOST_FLAGS_DEFAULT_REL            : use operators <, <=, >, >= and <=> as specified by the C++ standard
-// - BOOST_FLAGS_DELETE_REL             : delete operators <, <=, >, >= and <=> if at least on e argument is of type E (or `complement`s of E)
+// - BOOST_FLAGS_DELETE_REL             : delete operators <, <=, >, >= and <=> if at least one argument is of type E (or `complement`s of E)
 //
 // If no relational-operator option is specified, the macro defaults to using BOOST_FLAGS_DEFAULT_REL
 // 
