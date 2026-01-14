@@ -1316,6 +1316,8 @@ namespace boost {
 #define BOOST_FLAGS_EMPTY()
 
 
+#if defined(BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS) && BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS == 1
+
         // disable all other arithmetic operators
         // 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1369,6 +1371,8 @@ namespace boost {
             typename std::enable_if<IsFlags<T>::value && !HasUnaryPlus<T>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T& operator+(T) = delete;
+
+#endif // defined(BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS) && BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS == 1
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -1676,7 +1680,7 @@ FRIEND constexpr E& operator op(E& l, E r) noexcept {                           
 }                                                                                                   \
 
 
-// NOTE: The deleted forwarding operators must use concepts/SFINAE, as this may not be
+// NOTE: The deleted forwarding operators must use concepts/SFINAE, as these may not be
 // instantiated and otherwise would lead to hard errors
 
 #if BOOST_FLAGS_HAS_CONCEPTS
@@ -1783,8 +1787,6 @@ BOOST_FLAGS_USING_OPERATOR_NOT_EQUAL                                            
 BOOST_FLAGS_USING_OPERATOR_SPACESHIP                                                                \
 using ::boost::flags::operator&&;                                                                   \
 using ::boost::flags::operator||;                                                                   \
-using ::boost::flags::operator++;                                                                   \
-using ::boost::flags::operator--;                                                                   \
 using ::boost::flags::operator+;                                                                    \
 using ::boost::flags::operator-;                                                                    \
 using ::boost::flags::operator*;                                                                    \
@@ -1792,13 +1794,6 @@ using ::boost::flags::operator/;                                                
 using ::boost::flags::operator%;                                                                    \
 using ::boost::flags::operator<<;                                                                   \
 using ::boost::flags::operator>>;                                                                   \
-using ::boost::flags::operator+=;                                                                   \
-using ::boost::flags::operator-=;                                                                   \
-using ::boost::flags::operator*=;                                                                   \
-using ::boost::flags::operator/=;                                                                   \
-using ::boost::flags::operator%=;                                                                   \
-using ::boost::flags::operator<<=;                                                                  \
-using ::boost::flags::operator>>=;
 
 
 #define BOOST_FLAGS_USING_UTILITIES()                                                               \
@@ -1824,6 +1819,7 @@ BOOST_FLAGS_USING_UTILITIES()                                                   
 
 
 
+#if defined(BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS) && BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS == 1
 
 #define BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, C, FRIEND)                                            \
 BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, |, E)                                                \
@@ -1843,13 +1839,22 @@ BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, / , unsigned int)                 
 BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, %, unsigned int)                                      \
 BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, << , unsigned int)                                    \
 BOOST_FLAGS_DELETE_BINARY_OPERATOR(E, FRIEND, >> , unsigned int)                                    \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, +=)                                               \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, -=)                                               \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, *=)                                               \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, /=)                                               \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, %=)                                               \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, <<=)                                              \
-BOOST_FLAGS_DELETE_ASSIGNMENT_OPERATOR(E, FRIEND, >>=)                                              \
+
+#else // defined(BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS) && BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS == 1
+
+#define BOOST_FLAGS_FORWARD_OPERATORS_IMPL(E, C, FRIEND)                                            \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, |, E)                                                \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, &, E)                                                \
+BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, FRIEND, ^, E)                                                \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, ~, C)                                                 \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, |=)                                              \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, &=)                                              \
+BOOST_FLAGS_FORWARD_ASSIGNMENT_OPERATOR(E, FRIEND, ^=)                                              \
+BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, FRIEND, !, bool)                                              \
+BOOST_FLAGS_FORWARD_EQUALITY_OPERATOR(E, FRIEND, ==, bool)                                          \
+BOOST_FLAGS_FORWARD_OPERATOR_NOT_EQUAL(E, FRIEND)                                                   \
+
+#endif // defined(BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS) && BOOST_FLAGS_DELETE_ARITHMETIC_OPERATORS == 1
 
 
 #define BOOST_FLAGS_FORWARD_OPERATORS(E)                                                            \
