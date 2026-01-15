@@ -36,7 +36,7 @@ namespace TEST_NAMESPACE {
 #ifndef TEST_COMPILE_UNSCOPED
         class
 #endif // TEST_COMPILE_UNSCOPED
-    flags_no_up_enum: unsigned int {
+    flags_no_pre_increment_enum: unsigned int {
         no_up_bit_0 = boost::flags::nth_bit(0), // == 0x01
         no_up_bit_1 = boost::flags::nth_bit(1), // == 0x02
         no_up_bit_2 = boost::flags::nth_bit(2), // == 0x04
@@ -44,7 +44,7 @@ namespace TEST_NAMESPACE {
     };
 
     // enable relops_builtin_enum
-    BOOST_FLAGS_ENABLE(flags_no_up_enum)
+    BOOST_FLAGS_ENABLE(flags_no_pre_increment_enum)
 
 
 void test_pre_increment() {
@@ -75,7 +75,7 @@ void test_pre_increment() {
 
 #ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_4
     {
-        if (flags_no_up_enum::no_up_bit_0) {
+        if (flags_no_pre_increment_enum::no_up_bit_0) {
             BOOST_TEST(true);
         }
     }
@@ -83,14 +83,14 @@ void test_pre_increment() {
 
 #ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_5
     {
-        auto i = 2 + (++flags_no_up_enum::no_up_bit_0);
+        auto i = 2 + (++flags_no_pre_increment_enum::no_up_bit_0);
         BOOST_TEST(i == i);
     }
 #endif // TEST_COMPILE_FAIL_PRE_INCREMENT_5
 
 #ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_6
     {
-        auto i = 2 + flags_no_up_enum::no_up_bit_0;
+        auto i = 2 + flags_no_pre_increment_enum::no_up_bit_0;
         BOOST_TEST(i == i);
     }
 #endif // TEST_COMPILE_FAIL_PRE_INCREMENT_6

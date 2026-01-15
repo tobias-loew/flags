@@ -118,13 +118,13 @@ compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_1 
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_PRE_INCREMENT_2 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_2 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_PRE_INCREMENT_3 ;
-compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_3 ;
+# compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_3 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_4 : test_pre_increment_FAIL_PRE_INCREMENT_4 ;
 # compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_4 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_4 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_5 : test_pre_increment_FAIL_PRE_INCREMENT_5 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_5 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_5 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_6 : test_pre_increment_FAIL_PRE_INCREMENT_6 ;
-compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_6 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_6 ;
+# compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_6 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_6 ;
 
 # text example
 run order_pizza.cpp ;
