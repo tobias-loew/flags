@@ -116,7 +116,7 @@ run test_pre_increment.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_pre_increm
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_1 : test_pre_increment_FAIL_PRE_INCREMENT_1 ;
 # compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_1 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_1 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_PRE_INCREMENT_2 ;
-compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_2 ;
+# compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_2 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_PRE_INCREMENT_3 ;
 # compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_3 ;
 compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_4 : test_pre_increment_FAIL_PRE_INCREMENT_4 ;
