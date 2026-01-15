@@ -219,7 +219,9 @@ and
 
 * for enumeration `E` both arguments are not xref:compatible[compatible]
 
-Furthermore, the unary minus operator is deleted for enabled unscoped enumerations. For unary plus cf. xref:unary operator+[unary operator+].
+Furthermore, the unary plus and unary minus operator are deleted for enabled unscoped enumerations.
+
+For pre-increment `operator++` cf. xref:pre-increment operator++[pre-increment operator++].
 
 ## The underlying type
 
@@ -540,19 +542,19 @@ and for `disjoint` and `intersect` we can write:
 If existing code is hardened with Boost.Flags and unscoped enums are turned into scoped ones, then expressions like `e1 & e2` in Boolean contexts would have to be replaced by `any(e1 & e2)`. This is tedious and requires adding parenthesis. +
 To simplify the usage Boost.Flags provides two alternatives:
 
-[#unary_plus_operator]
-* the _unary_ plus operator `+e`, which wraps `e` into a type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. +
+[#pre_increment_operator]
+* the pre-increment operator `++e`, which wraps `e` into a type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. +
 So, with an previously unscoped enum and the code `e1 & ~(e2 | e3)` in boolean contexts, with Boost.Flags enabled all the following expression yield the same result:
 
-** `+(e1 & ~(e2 | e3))`
-** `+e1 & ~(e2 | e3)`
-** `e1 & ~(+e2 | e3)`
-** `+e1 & ~(+e2 | +e3)`
-** `+(+e1 & +(~(+e2 | +e3)))`
+** `++(e1 & ~(e2 | e3))`
+** `++e1 & ~(e2 | e3)`
+** `e1 & ~(++e2 | e3)`
+** `++e1 & ~(++e2 | ++e3)`
+** `+(++e1 & +(~(++e2 | ++e3)))`
 ** ...
 
 +
-To enable the unary plus operator for an enumeration `E`, use the option  xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`] (see also xref:unary operator+[unary operator+]).
+To enable the pre-increment `operator++` for an enumeration `E`, use the option  xref:BOOST_FLAGS[`BOOST_FLAGS_PRE_INCREMENT`] (see also xref:pre-increment operator++[pre-increment operator++]).
 
 * a pseudo operator xref:BOOST_FLAGS_AND[`BOOST_FLAGS_AND`] with the same precedence and associativity as `operator&` but returning a `bool`:
 ** `e1 BOOST_FLAGS_AND e2` is equivalent to `any(e1 & e2)` 

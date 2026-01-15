@@ -52,7 +52,7 @@ add_test_executable(test_logical_and)
 add_test_executable(test_rel_ops)
 add_test_executable(test_utilities)
 add_test_executable(test_macros)
-add_test_executable(test_unary_plus)
+add_test_executable(test_pre_increment)
 
 
 

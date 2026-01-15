@@ -180,7 +180,7 @@ namespace boost {
             enable              = 0x1,
             disable_complement  = 0x2,
             logical_and         = 0x4,
-            unary_pp            = 0x8,
+            pre_increment       = 0x8,
         };
 
         template< options Opts >
@@ -192,8 +192,8 @@ namespace boost {
         // derive `enable` from this type to enable support for logical and
         struct logical_and {};
 
-        // derive `enable` from this type to enable support for unary plus
-        struct unary_pp {};
+        // derive `enable` from this type to enable support for pre-increment operator
+        struct pre_increment {};
 
 
 
@@ -211,7 +211,7 @@ namespace boost {
             BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(bool v) { return v; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(bool) { return false; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(bool) { return false; }
-            BOOST_FLAGS_CONSTEVAL inline bool has_option_unary_pp(bool) { return false; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_pre_increment(bool) { return false; }
 
 
             // type to calculate the enabling (using concepts/SFINAE)
@@ -238,8 +238,8 @@ namespace boost {
                                                 disable_complement, impl::empty<disable_complement>>::type
                 , std::conditional<has_option_logical_and(decltype(boost_flags_enable(E{})){}.value),
                                                 logical_and, impl::empty<logical_and>>::type
-                , std::conditional< has_option_unary_pp(decltype(boost_flags_enable(E{})){}.value),
-                                                unary_pp, impl::empty<unary_pp>>::type
+                , std::conditional< has_option_pre_increment(decltype(boost_flags_enable(E{})){}.value),
+                                                pre_increment, impl::empty<pre_increment>>::type
             {};
 
         }
@@ -459,12 +459,12 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
-        concept HasUnaryPlus =
-            std::is_base_of_v<unary_pp, enable<enum_type_t<T>>>;
+        concept HasPreIncrement =
+            std::is_base_of_v<pre_increment, enable<enum_type_t<T>>>;
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
-        struct HasUnaryPlus : std::integral_constant<bool,
-            std::is_base_of<unary_pp, enable<typename enum_type<T>::type>>::value
+        struct HasPreIncrement : std::integral_constant<bool,
+            std::is_base_of<pre_increment, enable<typename enum_type<T>::type>>::value
         > {
         };
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -769,9 +769,9 @@ namespace boost {
         concept LogicalAndEnabled = LogicalOperationEnabled<T1, T2, impl::conjunction>&& HasLogicalAnd<T1>;
 
         // concept checking argument is flags
-        // and unary_pp is enabled
+        // and pre_increment is enabled
         template<typename T1>
-        concept UnaryPlusEnabled = IsEnabled<T1> && HasUnaryPlus<T1>;
+        concept PreIncrementEnabled = IsEnabled<T1> && HasPreIncrement<T1>;
 
 #else // BOOST_FLAGS_HAS_CONCEPTS
         // concept checking if arguments is enabled
@@ -808,10 +808,10 @@ namespace boost {
         > {};
 
         // concept checking argument is flags
-        // and unary_pp is enabled
+        // and pre_increment is enabled
         template<typename T1>
-        struct UnaryPlusEnabled : std::integral_constant<bool,
-            is_flags<T1>::value && HasUnaryPlus<T1>::value
+        struct PreIncrementEnabled : std::integral_constant<bool,
+            is_flags<T1>::value && HasPreIncrement<T1>::value
         > {};
 
 #endif // BOOST_FLAGS_HAS_CONCEPTS
@@ -1265,10 +1265,10 @@ namespace boost {
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
-            requires UnaryPlusEnabled<T>
+            requires PreIncrementEnabled<T>
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T,
-            typename std::enable_if<UnaryPlusEnabled<T>::value, int*>::type = nullptr >
+            typename std::enable_if<PreIncrementEnabled<T>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         BOOST_FLAGS_ATTRIBUTE_NODISCARD
             constexpr auto
@@ -1348,7 +1348,7 @@ namespace boost {
 
 
 
-        // deleting arithmetic operators and unary minus
+        // deleting arithmetic operators and unary plus and unary minus
         // (builtin assignment and in-/decrement operators are implicitly deleted)
 
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(+, BOOST_FLAGS_EMPTY(), unsigned int)
@@ -1359,15 +1359,16 @@ namespace boost {
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(<<, BOOST_FLAGS_EMPTY(), unsigned int)
         BOOST_FLAGS_INTERNAL_DELETE_BINARY_OPERATOR(>>, BOOST_FLAGS_EMPTY(), unsigned int)
 
+        BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(+)
         BOOST_FLAGS_INTERNAL_DELETE_UNARY_PREFIX_OPERATOR(-)
 
 
 #if BOOST_FLAGS_HAS_CONCEPTS
         template<typename T>
-            requires (IsFlags<T> && !HasUnaryPlus<T>)
+            requires (IsFlags<T> && !HasPreIncrement<T>)
 #else // BOOST_FLAGS_HAS_CONCEPTS
         template<typename T,
-            typename std::enable_if<IsFlags<T>::value && !HasUnaryPlus<T>::value, int*>::type = nullptr >
+            typename std::enable_if<IsFlags<T>::value && !HasPreIncrement<T>::value, int*>::type = nullptr >
 #endif // BOOST_FLAGS_HAS_CONCEPTS
         constexpr T& operator++(T) = delete;
 
@@ -1638,13 +1639,13 @@ namespace boost {
             BOOST_FLAGS_CONSTEVAL inline bool has_option_enable(options v) { return (v & options::enable) != 0; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_disable_complement(options v) { return (v & options::disable_complement) != 0; }
             BOOST_FLAGS_CONSTEVAL inline bool has_option_logical_and(options v) { return (v & options::logical_and) != 0; }
-            BOOST_FLAGS_CONSTEVAL inline bool has_option_unary_pp(options v) { return (v & options::unary_pp) != 0; }
+            BOOST_FLAGS_CONSTEVAL inline bool has_option_pre_increment(options v) { return (v & options::pre_increment) != 0; }
 
         }
         using impl::has_option_enable;
         using impl::has_option_disable_complement;
         using impl::has_option_logical_and;
-        using impl::has_option_unary_pp;
+        using impl::has_option_pre_increment;
 
 
     }
@@ -2109,25 +2110,25 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
         boost::flags::options::logical_and)                                                         \
     BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_UNARY_PP(E)                                                              \
+#define BOOST_FLAGS_ENABLE_PRE_INCREMENT(E)                                                         \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
     BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PP(E)                                           \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_PRE_INCREMENT(E)                                      \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
-        boost::flags::options::disable_complement | boost::flags::options::unary_pp)                \
+        boost::flags::options::disable_complement | boost::flags::options::pre_increment)           \
     BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PP(E)                               \
+#define BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT(E)                          \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
         boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
     BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
-#define BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PP(E)                                                  \
+#define BOOST_FLAGS_ENABLE_LOGICAL_AND_PRE_INCREMENT(E)                                             \
     BOOST_FLAGS_ENABLE_EX(E, boost::flags::options::enable |                                        \
-        boost::flags::options::logical_and | boost::flags::options::unary_pp)                       \
+        boost::flags::options::logical_and | boost::flags::options::pre_increment)                  \
     BOOST_FLAGS_USING_OPERATORS()                                                                   \
 
 
@@ -2157,23 +2158,23 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
         boost::flags::options::logical_and)                                                         \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PP(E)                                                        \
+#define BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT(E)                                                   \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PP(E)                                     \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_PRE_INCREMENT(E)                                \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
-        boost::flags::options::disable_complement | boost::flags::options::unary_pp)                \
+        boost::flags::options::disable_complement | boost::flags::options::pre_increment)           \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PP(E)                         \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT(E)                    \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
         boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PP(E)                                            \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_PRE_INCREMENT(E)                                       \
     BOOST_FLAGS_ENABLE_LOCAL_EX(E, boost::flags::options::enable |                                  \
-        boost::flags::options::logical_and | boost::flags::options::unary_pp)                       \
+        boost::flags::options::logical_and | boost::flags::options::pre_increment)                  \
     BOOST_FLAGS_FORWARD_BINARY_OPERATOR(E, friend, &&, bool)                                        \
 
 
@@ -2201,22 +2202,22 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
     BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
         boost::flags::options::logical_and)                                                         \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_UNARY_PP_NO_FORWARDING(E)                                          \
+#define BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT_NO_FORWARDING(E)                                     \
     BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PP_NO_FORWARDING(E)                       \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_PRE_INCREMENT_NO_FORWARDING(E)                  \
     BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
-        boost::flags::options::disable_complement | boost::flags::options::unary_pp)                \
+        boost::flags::options::disable_complement | boost::flags::options::pre_increment)           \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PP_NO_FORWARDING(E)           \
+#define BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT_NO_FORWARDING(E)      \
     BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
         boost::flags::options::disable_complement | boost::flags::options::logical_and |            \
-        boost::flags::options::unary_pp)                                                            \
+        boost::flags::options::pre_increment)                                                       \
 
-#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PP_NO_FORWARDING(E)                              \
+#define BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_PRE_INCREMENT_NO_FORWARDING(E)                         \
     BOOST_FLAGS_ENABLE_LOCAL_EX_NO_FORWARDING(E, boost::flags::options::enable |                    \
-        boost::flags::options::logical_and | boost::flags::options::unary_pp)                       \
+        boost::flags::options::logical_and | boost::flags::options::pre_increment)                  \
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2230,7 +2231,7 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 // where OPTIONS is an optional comma separated list (if OPTIONS is empty the comma after E may be omitted)
 // containing at most one of each of the following options:
 // - BOOST_FLAGS_LOGICAL_AND            : enable operator&& for enum E
-// - BOOST_FLAGS_UNARY_PP               : enable unary operator++ for enum E
+// - BOOST_FLAGS_PRE_INCREMENT               : enable unary operator++ for enum E
 // - BOOST_FLAGS_DISABLE_COMPLEMENT     : disable 'complement' template for enum E
 // - BOOST_FLAGS_NO_FORWARDING          : do not forward operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS)
 //                                        This is required when using operators from namespace boost::flags inside classes 
@@ -2255,8 +2256,8 @@ BOOST_FLAGS_DELETE_REL_IMPL(E, BOOST_FLAGS_EMPTY())
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                                    \
 | boost::flags::options::logical_and BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_UNARY_PP(NAME, ...)                                       \
-| boost::flags::options::unary_pp BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_PRE_INCREMENT(NAME, ...)                                  \
+| boost::flags::options::pre_increment BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                             \
 | boost::flags::options::disable_complement BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__) 
@@ -2276,7 +2277,7 @@ BOOST_FLAGS_EXPAND_OP_##NAME(__VA_ARGS__)
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...) 1
-#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_UNARY_PP(NAME, ...)                              \
+#define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_PRE_INCREMENT(NAME, ...)                         \
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_HAS_LOGICAL_AND_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                    \
@@ -2296,32 +2297,32 @@ BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__)
 BOOST_FLAGS_HAS_LOGICAL_AND_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_UNARY_PP(NAME, ...) 1
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                              \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_PRE_INCREMENT(NAME, ...) 1
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                         \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                       \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                  \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                            \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_NO_FORWARDING(NAME, ...)                       \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                              \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_DEFAULT_REL(NAME, ...)                         \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                               \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_BOOST_FLAGS_DELETE_REL(NAME, ...)                          \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_HAS_UNARY_PP_OP_(...) 0
-#define BOOST_FLAGS_HAS_UNARY_PP_OP(NAME, ...)                                                      \
-BOOST_FLAGS_HAS_UNARY_PP_OP_##NAME(__VA_ARGS__) 
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP_(...) 0
+#define BOOST_FLAGS_HAS_PRE_INCREMENT_OP(NAME, ...)                                                 \
+BOOST_FLAGS_HAS_PRE_INCREMENT_OP_##NAME(__VA_ARGS__) 
 
 // needed for BOOST_FLAGS_LOCAL
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_NO_FORWARDING(NAME, ...) 1 
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                             \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
-#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_UNARY_PP(NAME, ...)                                \
+#define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_PRE_INCREMENT(NAME, ...)                           \
 BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 
 #define BOOST_FLAGS_IS_NO_FORWARDING_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                      \
@@ -2341,7 +2342,7 @@ BOOST_FLAGS_IS_NO_FORWARDING_##NAME(__VA_ARGS__)
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_LOGICAL_AND(NAME, ...)                                   \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
-#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_UNARY_PP(NAME, ...)                                      \
+#define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_PRE_INCREMENT(NAME, ...)                                 \
 BOOST_FLAGS_EXPAND_REL_##NAME(__VA_ARGS__) 
 
 #define BOOST_FLAGS_EXPAND_REL_BOOST_FLAGS_DISABLE_COMPLEMENT(NAME, ...)                            \
@@ -2417,32 +2418,32 @@ static_assert(false, "multiple relational operation options specified");
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD_(E, VALUE)
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD_0(E)
+#define BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD_0(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD_1(E)                                            \
+#define BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD_1(E)                                       \
     BOOST_FLAGS_FORWARD_UNARY_OPERATOR(E, friend, +, ::boost::flags::impl::bool_convertible<E>)
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD_(E, VALUE)                                      \
-    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD_##VALUE(E)
+#define BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD_(E, VALUE)                                 \
+    BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD_##VALUE(E)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD(E, VALUE)                                       \
-    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD_(E, VALUE)
+#define BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD(E, VALUE)                                  \
+    BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD_(E, VALUE)
 
 
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND, UNARY_PP)                         \
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_0(E, LOGICAL_AND, PRE_INCREMENT)                    \
     BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)                                                          \
     BOOST_FLAGS_LOCAL_GENERATE_LOGICAL_AND_FORWARD(E, LOGICAL_AND)                                  \
-    BOOST_FLAGS_LOCAL_GENERATE_UNARY_PP_FORWARD(E, UNARY_PP)
+    BOOST_FLAGS_LOCAL_GENERATE_PRE_INCREMENT_FORWARD(E, PRE_INCREMENT)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND, UNARY_PP)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_1(E, LOGICAL_AND, PRE_INCREMENT)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PP)                   \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND, UNARY_PP)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, PRE_INCREMENT)              \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_NOT_##NOT_VALUE(E, LOGICAL_AND, PRE_INCREMENT)
 
-#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND, UNARY_PP)                    \
-    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, UNARY_PP)
+#define BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, NOT_VALUE, LOGICAL_AND, PRE_INCREMENT)               \
+    BOOST_FLAGS_LOCAL_GENERATE_FORWARDS_(E, NOT_VALUE, LOGICAL_AND, PRE_INCREMENT)
 
 
 
@@ -2482,7 +2483,7 @@ static_assert(false, "multiple relational operation options specified");
     BOOST_FLAGS_LOCAL_GENERATE_OPS(E, BOOST_FLAGS_EXPAND_OPS(__VA_ARGS__))                          \
     BOOST_FLAGS_LOCAL_GENERATE_FORWARDS(E, BOOST_FLAGS_IS_NO_FORWARDING(__VA_ARGS__),               \
         BOOST_FLAGS_HAS_LOGICAL_AND_OP(__VA_ARGS__),                                                \
-        BOOST_FLAGS_HAS_UNARY_PP_OP(__VA_ARGS__))                                                   \
+        BOOST_FLAGS_HAS_PRE_INCREMENT_OP(__VA_ARGS__))                                              \
     BOOST_FLAGS_LOCAL_GENERATE_REL(E, BOOST_FLAGS_EXPAND_RELS(__VA_ARGS__))                         \
 
 #endif  // BOOST_FLAGS_HPP_INCLUDED

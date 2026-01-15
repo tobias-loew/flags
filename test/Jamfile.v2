@@ -111,20 +111,20 @@ compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT1
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SORT2 : test_macros_FAIL_MACROS_DELETE_REL_SORT2 ;
 compile-fail test_macros.cpp : <define>TEST_COMPILE_FAIL_MACROS_DELETE_REL_SET : test_macros_FAIL_MACROS_DELETE_REL_SET ;
 
-run test_unary_plus.cpp ;
-run test_unary_plus.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_unary_plus_UNSCOPED ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_1 : test_unary_plus_FAIL_UNARY_PLUS_1 ;
-# compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_1 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_1 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_2 : test_unary_plus_FAIL_UNARY_PLUS_2 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_2 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_2 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_3 : test_unary_plus_FAIL_UNARY_PLUS_3 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_3 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_3 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_4 : test_unary_plus_FAIL_UNARY_PLUS_4 ;
-# compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_4 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_4 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_5 : test_unary_plus_FAIL_UNARY_PLUS_5 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_5 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_5 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_FAIL_UNARY_PLUS_6 : test_unary_plus_FAIL_UNARY_PLUS_6 ;
-compile-fail test_unary_plus.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_UNARY_PLUS_6 : test_unary_plus_FAIL_UNSCOPED_UNARY_PLUS_6 ;
+run test_pre_increment.cpp ;
+run test_pre_increment.cpp : : : <define>TEST_COMPILE_UNSCOPED : test_pre_increment_UNSCOPED ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_1 : test_pre_increment_FAIL_PRE_INCREMENT_1 ;
+# compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_1 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_1 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_PRE_INCREMENT_2 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_2 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_2 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_PRE_INCREMENT_3 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_3 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_3 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_4 : test_pre_increment_FAIL_PRE_INCREMENT_4 ;
+# compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_4 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_4 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_5 : test_pre_increment_FAIL_PRE_INCREMENT_5 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_5 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_5 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_FAIL_PRE_INCREMENT_6 : test_pre_increment_FAIL_PRE_INCREMENT_6 ;
+compile-fail test_pre_increment.cpp : <define>TEST_COMPILE_UNSCOPED <define>TEST_COMPILE_FAIL_PRE_INCREMENT_6 : test_pre_increment_FAIL_UNSCOPED_PRE_INCREMENT_6 ;
 
 # text example
 run order_pizza.cpp ;

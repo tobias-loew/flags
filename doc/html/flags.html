@@ -615,7 +615,7 @@ pre.rouge .gs {
 <li><a href="#boost_flags_forward_operators_local">BOOST_FLAGS_FORWARD_OPERATORS_LOCAL</a></li>
 <li><a href="#boost_flags_enable_3">boost_flags_enable</a></li>
 <li><a href="#enablet">enable&lt;T&gt;</a></li>
-<li><a href="#unary_plus">unary_plus</a></li>
+<li><a href="#pre_increment">pre_increment</a></li>
 <li><a href="#logical_and">logical_and</a></li>
 <li><a href="#disable_complement">disable_complement</a></li>
 </ul>
@@ -636,7 +636,7 @@ pre.rouge .gs {
 <li><a href="#operator_5">operator|=</a></li>
 <li><a href="#operator_6">operator^=</a></li>
 <li><a href="#operator_7">operator!</a></li>
-<li><a href="#unary_operator">unary operator+</a></li>
+<li><a href="#pre_increment_operator_2">pre-increment operator++</a></li>
 <li><a href="#BOOST_FLAGS_AND">Pseudo operator BOOST_FLAGS_AND</a></li>
 </ul>
 </li>
@@ -972,7 +972,10 @@ inaccessible for in-class <code>constexpr</code> constructions. To work around t
 </ul>
 </div>
 <div class="paragraph">
-<p>Furthermore, the unary minus operator is deleted for enabled unscoped enumerations. For unary plus cf. <a href="#unary_operator">unary operator+</a>.</p>
+<p>Furthermore, the unary plus and unary minus operator are deleted for enabled unscoped enumerations.</p>
+</div>
+<div class="paragraph">
+<p>For pre-increment `operator` cf. xref:pre-increment operator[pre-increment operator++].</p>
 </div>
 </div>
 <div class="sect2">
@@ -1450,27 +1453,27 @@ The last thing the programmer heard, as he ran away from the kingdom, was the qu
 <p>If existing code is hardened with Boost.Flags and unscoped enums are turned into scoped ones, then expressions like <code>e1 &amp; e2</code> in Boolean contexts would have to be replaced by <code>any(e1 &amp; e2)</code>. This is tedious and requires adding parenthesis.<br>
 To simplify the usage Boost.Flags provides two alternatives:</p>
 </div>
-<div id="unary_plus_operator" class="ulist">
+<div id="pre_increment_operator" class="ulist">
 <ul>
 <li>
-<p>the <em>unary</em> plus operator <code>+e</code>, which wraps <code>e</code> into a type which has an <code>explicit operator bool()</code> and promotes the wrapped type through further bitwise operations.<br>
+<p>the pre-increment operator <code>++e</code>, which wraps <code>e</code> into a type which has an <code>explicit operator bool()</code> and promotes the wrapped type through further bitwise operations.<br>
 So, with an previously unscoped enum and the code <code>e1 &amp; ~(e2 | e3)</code> in boolean contexts, with Boost.Flags enabled all the following expression yield the same result:</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>+(e1 &amp; ~(e2 | e3))</code></p>
+<p><code>++(e1 &amp; ~(e2 | e3))</code></p>
 </li>
 <li>
-<p><code>+e1 &amp; ~(e2 | e3)</code></p>
+<p><code>++e1 &amp; ~(e2 | e3)</code></p>
 </li>
 <li>
-<p><code>e1 &amp; ~(+e2 | e3)</code></p>
+<p><code>e1 &amp; ~(++e2 | e3)</code></p>
 </li>
 <li>
-<p><code>+e1 &amp; ~(+e2 | +e3)</code></p>
+<p><code>e1 &amp; ~(e2 | ++e3)</code></p>
 </li>
 <li>
-<p><code>+(+e1 &amp; +(~(+e2 | +e3)))</code></p>
+<p><code>+(e1 &amp; +(~(e2 | ++e3)))</code></p>
 </li>
 <li>
 <p>&#8230;&#8203;</p>
@@ -1478,7 +1481,7 @@ So, with an previously unscoped enum and the code <code>e1 &amp; ~(e2 | e3)</cod
 </ul>
 </div>
 <div class="paragraph">
-<p>To enable the unary plus operator for an enumeration <code>E</code>, use the option  <a href="#boost_flags"><code>BOOST_FLAGS_UNARY_PLUS</code></a> (see also <a href="#unary_operator">unary operator+</a>).</p>
+<p>To enable the pre-increment `operator` for an enumeration `E`, use the option  xref:BOOST_FLAGS[`BOOST_FLAGS_PRE_INCREMENT`] (see also xref:pre-increment operator[pre-increment operator++]).</p>
 </div>
 </li>
 <li>
@@ -2175,10 +2178,10 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>BOOST_FLAGS_UNARY_PLUS</code>            : enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)</p>
+<p><code>BOOST_FLAGS_PRE_INCREMENT</code>         : enables pre-increment <code>operator++</code> for <code>E</code> (see also <a href="#pre_increment"><code>pre_increment</code></a>)</p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_LOGICAL_AND</code>            : enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)</p>
+<p><code>BOOST_FLAGS_LOGICAL_AND</code>           : enables <code>operator&amp;&amp;</code> for <code>E</code> (see also <a href="#logical_and"><code>logical_and</code></a>)</p>
 </li>
 <li>
 <p><code>BOOST_FLAGS_DISABLE_COMPLEMENT</code>    : disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>)</p>
@@ -2290,18 +2293,18 @@ returning the next power of 2 (if applied to a power of 2)</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="boost_flags_enable_unary_plus">BOOST_FLAGS_ENABLE_UNARY_PLUS</h5>
+<h5 id="boost_flags_enable_pre_increment">BOOST_FLAGS_ENABLE_PRE_INCREMENT</h5>
 <div class="paragraph">
 <p>For an enumeration <code>E</code> at namespace scope the macro</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_UNARY_PLUS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_PRE_INCREMENT</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>enables all operators of Boost.Flags and enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)<br>
-<code>BOOST_FLAGS_ENABLE_UNARY_PLUS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+<p>enables all operators of Boost.Flags and enables pre-increment <code>operator++</code> for <code>E</code> (see also <a href="#pre_increment"><code>pre_increment</code></a>)<br>
+<code>BOOST_FLAGS_ENABLE_PRE_INCREMENT(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
 </div>
 </div>
 <div class="sect4">
@@ -2345,13 +2348,13 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_PRE_INCREMENT</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_LOGICAL_AND_PRE_INCREMENT</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT</code></p>
 </li>
 </ul>
 </div>
@@ -2372,18 +2375,18 @@ returning the next power of 2 (if applied to a power of 2)</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="boost_flags_enable_local_unary_plus">BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS</h5>
+<h5 id="boost_flags_enable_local_pre_increment">BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT</h5>
 <div class="paragraph">
 <p>For an enumeration <code>E</code> at class scope the macro</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>enables all operators of Boost.Flags and enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)<br>
-<code>BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
+<p>enables all operators of Boost.Flags and enables pre-increment <code>operator++</code> for <code>E</code> (see also <a href="#pre_increment"><code>pre_increment</code></a>)<br>
+<code>BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT(E)</code> imports all operators of Boost.Flags into the current namespace (cf. <a href="#boost_flags_using_operators">BOOST_FLAGS_USING_OPERATORS()</a>).</p>
 </div>
 </div>
 <div class="sect4">
@@ -2427,13 +2430,13 @@ returning the next power of 2 (if applied to a power of 2)</p>
 <p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_PRE_INCREMENT</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_PRE_INCREMENT</code></p>
 </li>
 <li>
-<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS</code></p>
+<p><code>BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT</code></p>
 </li>
 </ul>
 </div>
@@ -2538,7 +2541,7 @@ enumeration <code>boost::flags::options</code> has the following options:</p>
 <p><code>enable</code>:  enables <code>E</code></p>
 </li>
 <li>
-<p><code>unary_plus</code>:  enables unary <code>operator+</code> for <code>E</code> (see also <a href="#unary_plus"><code>unary_plus</code></a>)</p>
+<p><code>pre_increment</code>:  enables pre-increment`operator++` for <code>E</code> (see also <a href="#pre_increment"><code>pre_increment</code></a>)</p>
 </li>
 <li>
 <p><code>disable_complement</code>:  disables the usage of <code>complement&lt;E&gt;</code> (see also <a href="#disable_complement"><code>disable_complement</code></a>)</p>
@@ -2550,7 +2553,7 @@ e.g.</p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">constexpr</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options_constant</span><span class="o">&lt;</span>
         <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">enable</span>               <span class="c1">// enable E (required)</span>
-        <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">unary_plus</span>         <span class="c1">// enable unary operator+</span>
+        <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">pre_increment</span>      <span class="c1">// enable pre-increment operator++</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">disable_complement</span> <span class="c1">// disable the usage of the complement</span>
         <span class="o">|</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">options</span><span class="o">::</span><span class="n">logical_and</span>        <span class="c1">// enable operator&amp;&amp;</span>
     <span class="o">&gt;</span>
@@ -2624,9 +2627,9 @@ e.g.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="unary_plus">unary_plus</h4>
+<h4 id="pre_increment">pre_increment</h4>
 <div class="paragraph">
-<p>If the specialization of <code>enable</code> inherits from <code>unary_plus</code> then unary <code>operator+</code> is enabled.</p>
+<p>If the specialization of <code>enable</code> inherits from <code>pre_increment</code> then pre-increment <code>operator++</code> is enabled.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -2635,16 +2638,16 @@ e.g.</p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="cpp"><span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">enable</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span>
     <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span>
-    <span class="p">,</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">unary_plus</span>
+    <span class="p">,</span> <span class="n">boost</span><span class="o">::</span><span class="n">flags</span><span class="o">::</span><span class="n">pre_increment</span>
     <span class="p">{};</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>For an expression <code>e</code> of an enabled enumeration, the unary plus operator <code>+e</code> wraps <code>e</code> into an implementation defined type which has an <code>explicit operator bool()</code> and promotes the wrapped type through further bitwise operations.
-In boolean contexts, the expression <code>+e</code> is equivalent to <code>any(e)</code>.</p>
+<p>For an expression <code>e</code> of an enabled enumeration, the pre-increment operator wraps <code>e` into an implementation defined type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations.
+In boolean contexts, the expression `e</code> is equivalent to <code>any(e)</code>.</p>
 </div>
 <div class="paragraph">
-<p>(cf. <a href="#unary_operator">unary operator+</a> and <a href="#boost_flags"><code>BOOST_FLAGS_UNARY_PLUS</code></a>)</p>
+<p>(cf. <a href="#pre-increment operator[pre-increment operator] and xref:BOOST_FLAGS"><code>BOOST_FLAGS_PRE_INCREMENT</code></a>)</p>
 </div>
 </div>
 <div class="sect3">
@@ -3022,9 +3025,9 @@ There exists also a function object <code>total_order</code>:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="unary_operator">unary operator+</h4>
+<h4 id="pre_increment_operator_2">pre-increment operator++</h4>
 <div class="paragraph">
-<p>The unary <code>operator+</code> wraps a value <code>e</code> of type <code>E</code> into an implementation defined type, with the following properties:</p>
+<p>The pre-increment <code>operator++</code> wraps a value <code>e</code> of type <code>E</code> into an implementation defined type, with the following properties:</p>
 </div>
 <div class="ulist">
 <ul>

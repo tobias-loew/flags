@@ -6,7 +6,7 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 
-#define TEST_NAMESPACE test_unary_plus
+#define TEST_NAMESPACE test_pre_increment
 #include "include_test.hpp"
 
 #include <boost/core/lightweight_test_trait.hpp>
@@ -30,7 +30,7 @@ namespace TEST_NAMESPACE {
     };
 
     // enable relops_builtin_enum
-    BOOST_FLAGS_ENABLE_UNARY_PLUS(flags_enum)
+    BOOST_FLAGS_ENABLE_PRE_INCREMENT(flags_enum)
 
     enum
 #ifndef TEST_COMPILE_UNSCOPED
@@ -47,53 +47,53 @@ namespace TEST_NAMESPACE {
     BOOST_FLAGS_ENABLE(flags_no_up_enum)
 
 
-void test_unary_plus() {
+void test_pre_increment() {
 
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_1
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_1
     {
         if (flags_enum::bit_0) {
             BOOST_TEST(true);
         }
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_1
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_1
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_2
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_2
     {
         auto i = 2 + (+flags_enum::bit_0);
         BOOST_TEST(i == i);
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_2
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_2
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_3
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_3
     {
         auto i = 2 + flags_enum::bit_0;
         BOOST_TEST(i == i);
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_3
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_3
 
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_4
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_4
     {
         if (flags_no_up_enum::no_up_bit_0) {
             BOOST_TEST(true);
         }
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_4
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_4
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_5
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_5
     {
         auto i = 2 + (+flags_no_up_enum::no_up_bit_0);
         BOOST_TEST(i == i);
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_5
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_5
 
-#ifdef TEST_COMPILE_FAIL_UNARY_PLUS_6
+#ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_6
     {
         auto i = 2 + flags_no_up_enum::no_up_bit_0;
         BOOST_TEST(i == i);
     }
-#endif // TEST_COMPILE_FAIL_UNARY_PLUS_6
+#endif // TEST_COMPILE_FAIL_PRE_INCREMENT_6
 
 
 
@@ -196,7 +196,7 @@ void test_unary_plus() {
 
 int main() {
     report_config();
-    test_unary_plus();
+    test_pre_increment();
 
     return boost::report_errors();
 }

@@ -48,8 +48,8 @@ BOOST_FLAGS(E, OPTIONS)
 ----
 where OPTIONS is an optional comma separated list containing at most one of each of the following options:
 
-* `BOOST_FLAGS_UNARY_PLUS`            : enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
-* `BOOST_FLAGS_LOGICAL_AND`            : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
+* `BOOST_FLAGS_PRE_INCREMENT`         : enables pre-increment `operator++` for `E` (see also xref:pre_increment[`pre_increment`])
+* `BOOST_FLAGS_LOGICAL_AND`           : enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 * `BOOST_FLAGS_DISABLE_COMPLEMENT`    : disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
 * [[BOOST_FLAGS_NO_FORWARDING]]`BOOST_FLAGS_NO_FORWARDING`       : will not generate forwarding `friend` operators when using BOOST_FLAGS_LOCAL (has no effect for BOOST_FLAGS) (see also xref:Opt-in[Opt-in] and xref:BOOST_FLAGS_FORWARD_OPERATORS[`BOOST_FLAGS_FORWARD_OPERATORS`])
 
@@ -110,15 +110,15 @@ BOOST_FLAGS_ENABLE(E)
 enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
-#### BOOST_FLAGS_ENABLE_UNARY_PLUS
+#### BOOST_FLAGS_ENABLE_PRE_INCREMENT
 
 For an enumeration `E` at namespace scope the macro 
 [source]
 ----
-BOOST_FLAGS_ENABLE_UNARY_PLUS(E)
+BOOST_FLAGS_ENABLE_PRE_INCREMENT(E)
 ----
-enables all operators of Boost.Flags and enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`]) +
-`BOOST_FLAGS_ENABLE_UNARY_PLUS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+enables all operators of Boost.Flags and enables pre-increment `operator++` for `E` (see also xref:pre_increment[`pre_increment`]) +
+`BOOST_FLAGS_ENABLE_PRE_INCREMENT(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
 
@@ -150,9 +150,9 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 the following macros provide combinations of the above macros:
 
 * `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND`
-* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_UNARY_PLUS`
-* `BOOST_FLAGS_ENABLE_LOGICAL_AND_UNARY_PLUS`
-* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_PRE_INCREMENT`
+* `BOOST_FLAGS_ENABLE_LOGICAL_AND_PRE_INCREMENT`
+* `BOOST_FLAGS_ENABLE_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT`
 
 
 
@@ -168,15 +168,15 @@ enables all operators of Boost.Flags. +
 `BOOST_FLAGS_ENABLE_LOCAL(E)` creates friend functions for all operators of Boost.Flags for the enumeration `E` (cf. xref:BOOST_FLAGS_NO_FORWARDING[BOOST_FLAGS_NO_FORWARDING] and xref:BOOST_FLAGS_FORWARD_OPERATORS_LOCAL[BOOST_FLAGS_FORWARD_OPERATORS_LOCAL(E)]).
 
 
-#### BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS
+#### BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT
 
 For an enumeration `E` at class scope the macro 
 [source]
 ----
-BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)
+BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT(E)
 ----
-enables all operators of Boost.Flags and enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`]) +
-`BOOST_FLAGS_ENABLE_LOCAL_UNARY_PLUS(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
+enables all operators of Boost.Flags and enables pre-increment `operator++` for `E` (see also xref:pre_increment[`pre_increment`]) +
+`BOOST_FLAGS_ENABLE_LOCAL_PRE_INCREMENT(E)` imports all operators of Boost.Flags into the current namespace (cf. xref:BOOST_FLAGS_USING_OPERATORS[BOOST_FLAGS_USING_OPERATORS()]).
 
 
 #### BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND
@@ -209,9 +209,9 @@ enables all operators of Boost.Flags and disables the usage of `complement<E>` (
 the following macros provide combinations of the above macros:
 
 * `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND`
-* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_UNARY_PLUS`
-* `BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_UNARY_PLUS`
-* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_UNARY_PLUS`
+* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_PRE_INCREMENT`
+* `BOOST_FLAGS_ENABLE_LOCAL_LOGICAL_AND_PRE_INCREMENT`
+* `BOOST_FLAGS_ENABLE_LOCAL_DISABLE_COMPLEMENT_LOGICAL_AND_PRE_INCREMENT`
 
 
 
@@ -277,7 +277,7 @@ enables Boost.Flags for an enumeration `E`. All optional features are disabled.
 * or with return-type `template<boost::flags::options Opts> boost::flags::options_constant`, where the 
  enumeration `boost::flags::options` has the following options:
 ** `enable`:  enables `E`
-** `unary_plus`:  enables unary `operator+` for `E` (see also xref:unary_plus[`unary_plus`])
+** `pre_increment`:  enables pre-increment`operator++` for `E` (see also xref:pre_increment[`pre_increment`])
 ** `disable_complement`:  disables the usage of `complement<E>` (see also xref:disable_complement[`disable_complement`])
 ** `logical_and`:  enables `operator&&` for `E` (see also xref:logical_and[`logical_and`])
 e.g.
@@ -286,7 +286,7 @@ e.g.
 ----
 constexpr boost::flags::options_constant<
         boost::flags::options::enable               // enable E (required)
-        | boost::flags::options::unary_plus         // enable unary operator+
+        | boost::flags::options::pre_increment      // enable pre-increment operator++
         | boost::flags::options::disable_complement // disable the usage of the complement
         | boost::flags::options::logical_and        // enable operator&&
     > 
@@ -341,26 +341,26 @@ constexpr bool enable_v = enable<E>::value;
 ----
 is also provided.
 
-[#unary_plus]
-### unary_plus
+[#pre_increment]
+### pre_increment
 
-If the specialization of `enable` inherits from `unary_plus` then unary `operator+` is enabled.
+If the specialization of `enable` inherits from `pre_increment` then pre-increment `operator++` is enabled.
 
 Example:
 [source]
 ----
 template<> struct boost::flags::enable<E> 
     : std::true_type
-    , boost::flags::unary_plus 
+    , boost::flags::pre_increment 
     {};
 ----
 
 
 
-For an expression `e` of an enabled enumeration, the unary plus operator `+e` wraps `e` into an implementation defined type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. 
-In boolean contexts, the expression `+e` is equivalent to `any(e)`.
+For an expression `e` of an enabled enumeration, the pre-increment operator wraps `++e` into an implementation defined type which has an `explicit operator bool()` and promotes the wrapped type through further bitwise operations. 
+In boolean contexts, the expression `++e` is equivalent to `any(e)`.
 
-(cf. xref:unary operator+[unary operator+] and xref:BOOST_FLAGS[`BOOST_FLAGS_UNARY_PLUS`])
+(cf. xref:pre-increment operator++[pre-increment operator++] and xref:BOOST_FLAGS[`BOOST_FLAGS_PRE_INCREMENT`])
 
 
 [#logical_and]
@@ -576,9 +576,9 @@ The `operator!` tests if a value is empty.
 ----
 
 
-### unary operator+
+### pre-increment operator++
 
-The unary `operator+` wraps a value `e` of type `E` into an implementation defined type, with the following properties:
+The pre-increment `operator++` wraps a value `e` of type `E` into an implementation defined type, with the following properties:
 
 * has an `explicit operator bool`, such that in boolean contexts `+e` and `any(e)` yield the same result
 * has a (non explicit) `operator E`, which returns the value `e` back
