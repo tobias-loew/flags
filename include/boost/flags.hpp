@@ -409,7 +409,7 @@ namespace boost {
                 }
 
                 BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-                    constexpr operator T() const { return value; }
+                    constexpr explicit operator T() const { return value; }
 
                 BOOST_FLAGS_ATTRIBUTE_NODISCARD
                     constexpr explicit operator bool() const { return !!value; }
