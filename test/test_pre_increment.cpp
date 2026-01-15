@@ -60,7 +60,7 @@ void test_pre_increment() {
 
 #ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_2
     {
-        auto i = 2 + (+flags_enum::bit_0);
+        auto i = 2 + (++flags_enum::bit_0);
         BOOST_TEST(i == i);
     }
 #endif // TEST_COMPILE_FAIL_PRE_INCREMENT_2
@@ -83,7 +83,7 @@ void test_pre_increment() {
 
 #ifdef TEST_COMPILE_FAIL_PRE_INCREMENT_5
     {
-        auto i = 2 + (+flags_no_up_enum::no_up_bit_0);
+        auto i = 2 + (++flags_no_up_enum::no_up_bit_0);
         BOOST_TEST(i == i);
     }
 #endif // TEST_COMPILE_FAIL_PRE_INCREMENT_5
@@ -101,7 +101,7 @@ void test_pre_increment() {
 
 
     {
-        if (+flags_enum::bit_0) {
+        if (++flags_enum::bit_0) {
             BOOST_TEST(true);
         }
         else {
@@ -110,7 +110,7 @@ void test_pre_increment() {
     }
 
     {
-        if (+flags_enum::bit_0 | flags_enum::bit_1) {
+        if (++flags_enum::bit_0 | flags_enum::bit_1) {
             BOOST_TEST(true);
         }
         else {
@@ -119,7 +119,7 @@ void test_pre_increment() {
     }
 
     {
-        if (+flags_enum::bit_0 & flags_enum::bit_1) {
+        if (++flags_enum::bit_0 & flags_enum::bit_1) {
             BOOST_TEST(false);
         }
         else {
@@ -128,7 +128,7 @@ void test_pre_increment() {
     }
 
     {
-        if (flags_enum::bit_0 & +flags_enum::bit_1) {
+        if (flags_enum::bit_0 & ++flags_enum::bit_1) {
             BOOST_TEST(false);
         }
         else {
@@ -137,7 +137,7 @@ void test_pre_increment() {
     }
 
     {
-        if (+flags_enum::bit_0 & +flags_enum::bit_1) {
+        if (++flags_enum::bit_0 & ++flags_enum::bit_1) {
             BOOST_TEST(false);
         }
         else {
@@ -146,7 +146,7 @@ void test_pre_increment() {
     }
 
     {
-        if (+(flags_enum::bit_0 & flags_enum::bit_1)) {
+        if (++(flags_enum::bit_0 & flags_enum::bit_1)) {
             BOOST_TEST(false);
         }
         else {
@@ -155,40 +155,13 @@ void test_pre_increment() {
     }
 
     {
-        if (+(+flags_enum::bit_0 & +flags_enum::bit_1)) {
+        if (++(++flags_enum::bit_0 & ++flags_enum::bit_1)) {
             BOOST_TEST(false);
         }
         else {
             BOOST_TEST(true);
         }
     }
-
-
-
-
-
-    //{
-    //    bool b = flags_enum::bit_0 && flags_enum::bit_1;
-    //    BOOST_TEST(!b);
-    //}
-
-    //{
-    //    bool b = flags_enum::bit_0 && ~flags_enum::bit_0;
-    //    BOOST_TEST(!b);
-    //}
-    //{
-    //    bool b = flags_enum::bit_0 && ~flags_enum::bit_1;
-    //    BOOST_TEST(b);
-    //}
-
-    //{
-    //    bool b = ~flags_enum::bit_0 && flags_enum::bit_0;
-    //    BOOST_TEST(!b);
-    //}
-    //{
-    //    bool b = ~flags_enum::bit_0 && flags_enum::bit_1;
-    //    BOOST_TEST(b);
-    //}
 
 }
 
