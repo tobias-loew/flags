@@ -581,7 +581,7 @@ The `operator!` tests if a value is empty.
 The pre-increment `operator++` wraps a value `e` of type `E` into an implementation defined type, with the following properties:
 
 * has an `explicit operator bool`, such that in boolean contexts `+e` and `any(e)` yield the same result
-* has an `explicit operator E`, which returns the value `e` back
+* has a member function `get_enum_value() const`, which returns the value `e` back
 * the wrapped type propagates through bitwise operators `&`, `|`, `^` and `~`, i.e. when at least one of their arguments is wrapped then the result is also wrapped
 * the wrapping is idempotent, i.e. `+(+e)` is equivalent to `+e`
 

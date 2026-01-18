@@ -408,12 +408,14 @@ namespace boost {
                 {
                 }
 
-                BOOST_FLAGS_ATTRIBUTE_NODISCARD_CTOR
-                    constexpr explicit operator T() const { return value; }
+                BOOST_FLAGS_ATTRIBUTE_NODISCARD
+                    constexpr T get_enum_value() const { return value; }
 
                 BOOST_FLAGS_ATTRIBUTE_NODISCARD
                     constexpr explicit operator bool() const { return !!value; }
 
+
+                protected:
                 T value;
             };
 
@@ -739,7 +741,7 @@ namespace boost {
             template<typename T>
             BOOST_FLAGS_ATTRIBUTE_NODISCARD
                 constexpr auto get_underlying_impl(bool_convertible<T> value) noexcept -> typename std::underlying_type<enum_type_t<T>>::type {
-                return get_underlying_impl(value.value);
+                return get_underlying_impl(value.get_enum_value());
             }
 } // namespace impl
 

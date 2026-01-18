@@ -1,11 +1,11 @@
 # flags
 type-safe and non-intrusive bitwise-operators for C++ enums
 
+[read the docs](https://tobias-loew.github.io/flags)
+
 [presentation at C++-Now 2024](https://youtu.be/2dzWasWblRc?si=TsqSNPOLkcOI9z7h)
 
 [slides from presentation at C++-Now 2024](presentations/C++Now-2024/flags_slides.pdf)
-
-[read the docs](https://tobias-loew.github.io/flags)
 
 [example on Godbolt compiler explorer](https://godbolt.org/z/PPoKaGrzc)
 

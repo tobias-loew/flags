@@ -570,18 +570,19 @@ The first `&` stores its left-hand argument in an intermediate type, which the s
 
 ## Logical operators
 
-The logical `operator&&` and `operator||` are special among overloadable operators in C++: their built-in versions use short-circuit evaluation, but overloaded versions behave like regular functions and always evaluate both arguments.
+The logical `operator&&` and `operator||` are special among overloadable operators in C++: their built-in versions use short-circuit evaluation, but overloaded versions behave like regular functions.
 
 
 [#logical_operator_and]
 ### Logical `and`
 
-For integer and (non Boost.Flags enabled) unscoped enumeration-typed expressions `a` and `b`, both `(a) & (b)` and `(a) && (b)` are syntactically valid expressions but with different semantics
+For integer and non Boost.Flags enabled unscoped enumeration-typed expressions `a` and `b`, both `(a) & (b)` and `(a) && (b)` are syntactically valid expressions but with different semantics
 
 * argument evaluation: `(a) & (b)` always evaluates `b` while `(a) && (b)` uses short-circuit evaluation
 * type:`(a) & (b)` is of integer type while `(a) && (b)` has type `bool`
-
-Even in Boolean contexts `(a) & (b)` and `(a) && (b)` return may have different results (e.g. `1 & 2 == false` and `1 && 2 == true`).
+* different results: assume `enum E { one = 1, two = 2 }` then in Boolean contexts 
+** `one & two` evaluates to `false`
+** `one && two` evaluates to `true`
 
 To be on the safe side, Boost.Flags by default deletes `operator&&` for enabled enumerations. When applied to existing code, this will lead to compilation errors and enforces code revision.
 
@@ -619,48 +620,15 @@ Short-circuit evaluation can be achieved by first converting the flag-value argu
 
 ### Logical `or`
 
-TODO!!!
+For the builtin logical `operator||` apply similar semantic considerations as for `operator&&`, with the exception of results in Boolean contexts: both `(a) | (b)` and `(a) || (b)` evaluate to `true` if and only if at least one of the arguments is non-zero. But still, `operator|` lacks short-circuit evaluation.
 
-The logical `operator||` does not provide 
-
-Furthermore, for integer and (non Boost.Flags enabled) unscoped enumeration-typed expressions `a` and `b`, both `(a) & (b)` and `(a) && (b)` (resp. `(a) | (b)` and `(a) || (b)`) are all syntactically valid expressions but with different semantics
-
-* `(a) & (b)` (resp. `(a) | (b)`) always evaluates `b`
-* `(a) & (b)` and `(a) && (b)` (resp. `(a) | (b)` and `(a) || (b)`) have different result-types
-
-In Boolean contexts `(a) | (b)` and `(a) || (b)` return different results (e.g. for arguments `1` and `2`).
-
-To be on the safe side, Boost.Flags by default deletes `operator&&` and `operator||` for enabled enumerations. When applied to existing code, this will lead to compilation errors and enforces revisiting their uses.
-
-Nevertheless, sometimes `operator&&` comes in handy or is even required, e.g. when Boost.Flags is used together with other generic libraries. If for an enumeration `E`
-[source]
-----
-BOOST_FLAGS(E, BOOST_FLAGS_LOGICAL_AND)
-
-// resp. for a class local enum
-BOOST_FLAGS_LOCAL(E, BOOST_FLAGS_LOGICAL_AND)
-----
-is defined, then `operator&&` is overloaded for `E` with the semantics
-[source]
-----
-    operator&&(e1, e2) -> bool { return any(e1 & e2); } 
-----
-and there is **no short-circuit** evaluation!
-
-[WARNING]
-====
-When applying Boost.Flags to existing code, please be cautious enabling `operator&&` 
-
-* it evaluates differently than the built-in version and doesn't provide short-circuit evaluation
-* `operator&&` was accidentally used instead of the `operator&`
-
-So, before enabling `operator&&`, it is best to compile the code without it and check whether the uses of `operator&&` are correct.
-====
+As `operator||` is of very limited use for flag-like enumerations, Boost.Flags deletes it, when at least one argument is an enabled enumeration. So, enforcing revisiting their uses in legacy code. There is no Boost.Flags option to prevent the deleting of `operator||`.
 
 [NOTE]
 ====
-To achieve short-circuit evaluation for expressions with flags, first convert the flag-value arguments to `bool` by using e.g. `!!(...) && !!(...)` or `any(...) && any(...)`.
+In cases where builtin short-circuit evaluation is needed, it can be achieved by first converting the flag-value arguments to `bool` by using e.g. `!!(...) || !!(...)` or `any(...) || any(...)`.
 ====
+
 
 
 
